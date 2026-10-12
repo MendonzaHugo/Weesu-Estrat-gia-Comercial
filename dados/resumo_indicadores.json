@@ -1,0 +1,110 @@
+{
+  "data_referencia_bases": "2026-07-02 (planilhas Omie); Senior e TOTVS sem data de emissão",
+  "funil": {
+    "linhas_brutas": 4397,
+    "registros_ativos": 2500,
+    "TAM": 2032,
+    "SAM": 949,
+    "SAM_com_erp_conhecido": 614,
+    "SOM": 157
+  },
+  "por_base": [
+    {
+      "base": "Omie – Ribeirão Preto Centro",
+      "linhas_brutas": 1176,
+      "registros_ativos": 618,
+      "TAM": 499,
+      "SAM": 218,
+      "SAM_erp_conhecido": 218,
+      "SOM": 74
+    },
+    {
+      "base": "Omie – MG",
+      "linhas_brutas": 2125,
+      "registros_ativos": 840,
+      "TAM": 518,
+      "SAM": 186,
+      "SAM_erp_conhecido": 186,
+      "SOM": 49
+    },
+    {
+      "base": "Senior – Noroeste Paulista",
+      "linhas_brutas": 871,
+      "registros_ativos": 817,
+      "TAM": 795,
+      "SAM": 448,
+      "SAM_erp_conhecido": 119,
+      "SOM": 27
+    },
+    {
+      "base": "TOTVS",
+      "linhas_brutas": 225,
+      "registros_ativos": 225,
+      "TAM": 220,
+      "SAM": 97,
+      "SAM_erp_conhecido": 91,
+      "SOM": 7
+    }
+  ],
+  "por_frente": [
+    {
+      "frente": "Varejo + E-commerce",
+      "SAM": 241,
+      "SAM_erp_conhecido": 185,
+      "SOM": 30,
+      "status": "oferta pronta"
+    },
+    {
+      "frente": "Indústria + Atacado/Distribuição",
+      "SAM": 708,
+      "SAM_erp_conhecido": 429,
+      "SOM": 127,
+      "status": "depende de evolução do WMS"
+    }
+  ],
+  "SAM_por_erp": {
+    "Omie": 404,
+    "A confirmar": 335,
+    "Senior": 119,
+    "TOTVS": 91
+  },
+  "SOM_por_erp": {
+    "Omie": 123,
+    "Senior": 27,
+    "TOTVS": 7
+  },
+  "SAM_por_ramo": {
+    "Indústria": 467,
+    "Atacado / Distribuição": 241,
+    "Varejo": 233,
+    "E-commerce": 8
+  },
+  "SOM_por_ramo": {
+    "Atacado / Distribuição": 64,
+    "Indústria": 63,
+    "Varejo": 24,
+    "E-commerce": 6
+  },
+  "SAM_por_produto": {
+    "WMS": 595,
+    "WMS + Hub": 253,
+    "Hub de Marketplaces": 101
+  },
+  "SOM_por_produto": {
+    "WMS": 84,
+    "WMS + Hub": 73
+  },
+  "descartados_por_motivo": {
+    "Serviços": 807,
+    "Atividade não identificável": 86,
+    "Construção / Incorporação": 59,
+    "Food service (restaurante, café, bar)": 50,
+    "Agropecuária": 35,
+    "Serviços – logística e transporte": 34,
+    "Mineração / Combustíveis": 12
+  },
+  "SAM_para_validar_cnae": 223,
+  "cnpjs_repetidos_entre_bases": 36,
+  "cnpjs_com_erp_conflitante": 9,
+  "mensalidade_omie_som_rs": 168640.28
+}
