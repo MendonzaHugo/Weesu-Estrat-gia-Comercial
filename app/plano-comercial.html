@@ -1,0 +1,666 @@
+<title>Plano Comercial Weesu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@87.5..112,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: barra fixa com as seções do plano; cada seção abre com a conclusão (resumo antes do detalhe), depois quadros, gráficos e tabelas. Mesma identidade da Carteira Comercial Weesu. */
+:root{
+  --bg:#F2F5F7; --surface:#FFFFFF; --ink:#15202B; --muted:#586674; --line:#D8DFE6; --soft:#E9EEF2;
+  --accent:#0A6C74; --accent-soft:#D9EEF0; --on-accent:#FFFFFF;
+  --good:#1B7A4B; --good-soft:#DDF1E6; --warn:#9A5B00; --warn-soft:#FBEBD0; --crit:#AE3329; --crit-soft:#F8DEDB;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif; --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F151B; --surface:#172029; --ink:#E7EDF2; --muted:#9BA8B4; --line:#2B3743; --soft:#1F2A34;
+  --accent:#55C4C0; --accent-soft:#16383B; --on-accent:#0B1A1C;
+  --good:#63C892; --good-soft:#173527; --warn:#E5A84C; --warn-soft:#3A2C12; --crit:#F0837A; --crit-soft:#40201D;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0F151B; --surface:#172029; --ink:#E7EDF2; --muted:#9BA8B4; --line:#2B3743; --soft:#1F2A34;
+  --accent:#55C4C0; --accent-soft:#16383B; --on-accent:#0B1A1C;
+  --good:#63C892; --good-soft:#173527; --warn:#E5A84C; --warn-soft:#3A2C12; --crit:#F0837A; --crit-soft:#40201D;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; color-scheme:dark }
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+h1,h2,h3,h4,p,ul,ol{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums;font-weight:700;font-stretch:90%}
+.label{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.mono{font-family:var(--mono);font-size:12px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:12px;display:flex;flex-direction:column;gap:10px}
+.brand{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px}
+.brand h1{font-family:var(--display);font-weight:800;font-stretch:88%;font-size:22px;line-height:1.1}
+.brand h1 span{color:var(--accent)}
+.brand p{font-size:12.5px;color:var(--muted)}
+.nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap;flex:none}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+.wrap{max-width:1120px;width:100%;margin:0 auto;padding-inline:20px;padding-block:24px 56px;display:flex;flex-direction:column;gap:18px}
+.sec-head{display:flex;flex-direction:column;gap:8px;max-width:78ch}
+.sec-head h2{font-family:var(--display);font-weight:800;font-stretch:88%;font-size:clamp(24px,4vw,32px);line-height:1.08;text-wrap:balance}
+.sec-head p{font-size:15.5px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px;min-width:0;display:flex;flex-direction:column;gap:14px}
+.card>h3{font-family:var(--display);font-weight:700;font-size:17px;text-wrap:balance}
+.card>h3 small{font-family:var(--body);font-weight:400;font-size:13px;color:var(--muted);margin-left:6px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
+
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.tile{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.tile .num{font-size:clamp(22px,3vw,28px);line-height:1.1}
+.tile .note{font-size:12.5px;color:var(--muted)}
+
+.callout{border-radius:6px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;background:var(--accent-soft)}
+.callout.warn{background:var(--warn-soft)}
+.callout.crit{background:var(--crit-soft)}
+.callout h4{font-family:var(--display);font-weight:700;font-size:16px}
+.callout p{font-size:14px}
+.insights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;background:var(--soft);color:var(--muted)}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.pill.acc{background:var(--accent-soft);color:var(--accent)}
+
+.scroll{overflow-x:auto;min-width:0}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+.t th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:0 10px 8px 0;white-space:nowrap;vertical-align:bottom}
+.t td{padding:8px 10px 8px 0;border-top:1px solid var(--line);vertical-align:top}
+.t td.r,.t th.r{text-align:right}
+.t tr.tot td{font-weight:600;border-top:2px solid var(--line)}
+.t tr.dim td{color:var(--muted)}
+.t .neg{color:var(--crit);font-weight:600}
+.t .pos{color:var(--good);font-weight:600}
+.t small{display:block;color:var(--muted);font-size:12px}
+
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart text{fill:var(--muted);font-family:var(--body);font-size:11px}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .axis{stroke:var(--muted);stroke-width:1}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.legend i.line{height:2px;width:16px;border-radius:0}
+.legend i.dash{height:0;width:16px;border-top:2px dashed var(--ink);border-radius:0}
+.tip{position:fixed;z-index:20;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:12.5px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:260px}
+.tip b{display:block;margin-bottom:4px}
+.tip div{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+
+.person{display:flex;flex-direction:column;gap:10px}
+.person h4{font-family:var(--display);font-weight:700;font-size:17px}
+.kv{display:flex;flex-direction:column}
+.kv div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px}
+.kv div span:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.ramp{display:grid;grid-template-columns:120px repeat(12,minmax(0,1fr));gap:3px;align-items:center;font-size:12px}
+.ramp .c{height:22px;border-radius:2px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.ramp .h{font-size:10.5px;color:var(--muted);text-align:center}
+
+.horiz{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.hz{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.hz header{display:flex;flex-direction:column;gap:2px}
+.hz h3{font-family:var(--display);font-weight:800;font-stretch:90%;font-size:19px}
+.hz .goal{font-size:13px;background:var(--accent-soft);border-radius:4px;padding:8px 10px}
+.acts{display:flex;flex-direction:column;gap:2px;list-style:none;padding:0}
+.act{display:grid;grid-template-columns:20px minmax(0,1fr);gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
+.act input{margin:2px 0 0;width:16px;height:16px;accent-color:var(--accent)}
+.act .who{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.act.done .txt{text-decoration:line-through;color:var(--muted)}
+.prog{height:6px;background:var(--soft);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent)}
+
+.form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:12.5px;color:var(--muted);font-weight:600}
+.field input,.field select,.field textarea{padding:7px 9px;border:1px solid var(--line);border-radius:4px;background:var(--bg);width:100%;font-variant-numeric:tabular-nums}
+.field small{font-size:11.5px;color:var(--muted)}
+.fgroup{display:flex;flex-direction:column;gap:10px}
+.fgroup>h4{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.btn{background:var(--accent);color:var(--on-accent);border:0;border-radius:4px;padding:8px 16px;font-weight:600;font-size:14px;cursor:pointer}
+.btn.ghost{background:none;color:var(--accent);border:1px solid var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.status{font-size:13px;color:var(--muted)}
+.empty{padding:20px;border:1px dashed var(--line);border-radius:6px;color:var(--muted);font-size:14px;text-align:center}
+select.inl,input.inl{padding:4px 6px;border:1px solid var(--line);border-radius:4px;background:var(--bg);font-size:13px;max-width:140px}
+input.inl{width:70px}
+
+.gaps{display:flex;flex-direction:column;gap:12px}
+.gap{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px}
+.gap h4{font-family:var(--display);font-weight:700;font-size:16px}
+.gap .ev{font-size:13.5px;display:flex;flex-direction:column;gap:6px}
+.gap .ctl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start}
+.gap .ctl .field:last-child{grid-column:1/-1}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{border:1px solid var(--line);border-radius:4px;padding:2px 7px;font-size:12px;font-weight:600}
+
+.funnel{display:flex;flex-direction:column;gap:6px}
+.fn{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr) 70px;gap:10px;align-items:center;font-size:13px}
+.fn .trk{height:20px;background:var(--soft);border-radius:3px;overflow:hidden}
+.fn .trk i{display:block;height:100%;background:var(--accent)}
+.fn .num{text-align:right;font-size:15px}
+
+.refs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ref{border-top:1px solid var(--line);padding-top:10px;font-size:13.5px;display:flex;flex-direction:column;gap:4px}
+.ref b{font-weight:600}
+a{color:var(--accent)}
+footer{font-size:12.5px;color:var(--muted)}
+
+@media (max-width:900px){
+  .horiz{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .insights,.cols3{grid-template-columns:minmax(0,1fr)}
+  .form{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  .cols,.gap,.refs{grid-template-columns:minmax(0,1fr)}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bar{position:static}
+  .ramp{grid-template-columns:72px repeat(12,minmax(0,1fr))}
+}
+@media (max-width:520px){
+  .horiz,.form{grid-template-columns:minmax(0,1fr)}
+  .fn{grid-template-columns:minmax(0,1fr) 60px}.fn .trk{grid-column:1/-1;grid-row:2}
+}
+@media (prefers-reduced-motion:no-preference){.chip{transition:background-color .15s,border-color .15s}}
+</style>
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand">
+      <h1>Plano Comercial <span>Weesu</span></h1>
+      <p>Seenc WMS e Weesu Hub · nov/2026 a out/2027 · cenário oficial de 5% ao mês</p>
+    </div>
+    <nav class="nav" id="nav" aria-label="Seções do plano"></nav>
+  </div>
+</header>
+<main id="main"></main>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- Premissas padrão (editáveis na seção Metas; ajustes ficam salvos) ---------- */
+var DEF = {
+  mrrInicial:202000, clientesIniciais:50, ticket:3000, metaM1:15000, crescimento:0.05, churn:0.015,
+  margemBruta:0.80, setupMedio:12500, pctImplantacao:0.80, pctBonusImplantacao:0.10,
+  comissaoParceiro:0.10, fatorEncargos:1.70,
+  sdrBase:6000, closerBase:11000, execBase:12000,
+  sdrPorReuniao:150, closerPctNmrr:0.40, execPctNmrrParceiro:0.25, execPorParceiro:500, execGarantia:2500,
+  reunioesSdrPlena:20, convReuniaoVenda:0.15, indicPorParceiro:1, convIndicacao:0.25, vendasIndicClientes:1
+};
+var RAMP_SDR = [0.5,0.8,1,1,1,1,1,1,1,1,1,1];
+var PARCEIROS = [2,4,6,8,10,12,13,14,16,17,18,20];
+var MESES = ['2026-11','2026-12','2027-01','2027-02','2027-03','2027-04','2027-05','2027-06','2027-07','2027-08','2027-09','2027-10'];
+var ROT = ['nov/26','dez/26','jan/27','fev/27','mar/27','abr/27','mai/27','jun/27','jul/27','ago/27','set/27','out/27'];
+
+var PREM_CAMPOS = [
+  ['Ponto de partida',[['mrrInicial','MRR atual (R$)','r'],['clientesIniciais','Clientes ativos','n'],['ticket','Ticket médio de mensalidade (R$)','r'],['setupMedio','Setup médio (R$)','r','faixa de R$ 10 a 15 mil']]],
+  ['Metas e retenção',[['metaM1','Meta de NMRR do mês 1 (R$)','r'],['crescimento','Crescimento da meta ao mês','p','cenário oficial: 5%'],['churn','Churn mensal do MRR','p','faixa de 1% a 2%'],['margemBruta','Margem bruta da mensalidade','p','premissa para payback e LTV']]],
+  ['Funil (até medir o real)',[['reunioesSdrPlena','Reuniões realizadas por mês (SDR pleno)','n'],['convReuniaoVenda','Reunião realizada → venda','p'],['indicPorParceiro','Indicações por parceiro ativo ao mês','n'],['convIndicacao','Indicação de parceiro → venda','p'],['vendasIndicClientes','Vendas por indicação de clientes ao mês','n']]],
+  ['Remuneração e custos',[['sdrBase','Salário base SDR sênior (R$)','r'],['closerBase','Salário base Closer sênior (R$)','r'],['execBase','Salário base Executivo de Negócios (R$)','r'],['fatorEncargos','Fator de encargos CLT','x','custo total ÷ salário'],['comissaoParceiro','Comissão recorrente do parceiro','p'],['pctImplantacao','Setup destinado à implantação','p'],['pctBonusImplantacao','Setup destinado ao bônus de quem implanta','p']]]
+];
+
+/* ---------- Ações por horizonte (conteúdo do plano) ---------- */
+var HORIZ = [
+ {id:'m1',nome:'Próximo mês',per:'novembro/2026',goal:'R$ 15.000 de NMRR, 5 contratos, vindos quase todos do pipeline atual',acts:[
+  ['m1a','Fechar os negócios com previsão para novembro: Pink Urban, All Filmes, Casa da Laurinha, Coutinho Shopping e Alex Araujo','Closer','NMRR ≥ R$ 15 mil'],
+  ['m1b','Aprovar a política comercial: piso de setup, alçada de desconto e condições específicas por pedido','Gestor comercial','Política publicada'],
+  ['m1c','Treinar o time em Seenc, Hub, Tabela A, roteiros por ERP e objeções (2 semanas)','Gestor comercial','Time certificado'],
+  ['m1d','Subir a Onda 1 (157 contas Hot) no CRM, com cadência por ERP (Omie, Senior, TOTVS)','SDR','157 contas em cadência · 10 reuniões'],
+  ['m1e','Mapear 30 parceiros-alvo (consultores logísticos, contadores, franquias de ERP) e assinar os 2 primeiros','Executivo de Negócios','2 parceiros ativos'],
+  ['m1f','Listar clientes do Hub sem Seenc e vice-versa para a primeira rodada de expansão','Closer + Implantação','Lista de expansão'],
+  ['m1g','Abrir a análise de viabilidade do WMS para indústria e distribuição com o time de produto','Gestor + Produto','Requisitos avaliados'],
+  ['m1h','Lançar este painel e o ritual semanal de previsto × realizado','Gestor comercial','Mês 1 lançado']]},
+ {id:'m3',nome:'Próximos 3 meses',per:'nov/2026 a jan/2027',goal:'R$ 47.300 de NMRR acumulado e o funil real medido',acts:[
+  ['m3a','Cadência em 100% da Onda 1 e início da Onda 2 (614 contas com ERP conhecido)','SDR','20 reuniões realizadas/mês'],
+  ['m3b','Kit do parceiro: material, treinamento de 1 hora, regra de 10% recorrente e formulário de indicação','Executivo de Negócios','6 parceiros ativos'],
+  ['m3c','Programa de indicação de clientes ativos (benefício por indicação que vira contrato)','Gestor + Implantação','1 venda/mês por indicação'],
+  ['m3d','Substituir as premissas do funil pelas conversões medidas no CRM (revisão mensal)','Gestor comercial','Premissas revisadas'],
+  ['m3e','Qualificar o ERP das 335 contas "A confirmar" em ligações curtas','SDR','335 contas classificadas'],
+  ['m3f','Manter pipeline de 3× a meta do mês seguinte','Closer','Cobertura ≥ 3×'],
+  ['m3g','Decidir, requisito a requisito, o que entra no roadmap do WMS para indústria','Gestor + Produto','Decisão registrada']]},
+ {id:'m6',nome:'Próximos 6 meses',per:'nov/2026 a abr/2027',goal:'R$ 102.000 de NMRR acumulado e 30% vindo de parceiros',acts:[
+  ['m6a','12 parceiros ativos, com reunião mensal de pipeline com cada um','Executivo de Negócios','≥ 30% do NMRR via parceiros'],
+  ['m6b','Publicar 3 casos com ROI (erros de expedição, produtividade, acuracidade)','Closer + Implantação','3 casos publicados'],
+  ['m6c','Revisar o comissionamento com os dados reais de 5 meses','Gestor comercial','Plano de remuneração v2'],
+  ['m6d','Se o WMS estiver liberado, abrir a frente de indústria e distribuição (127 contas Hot)','SDR + Closer','Frente aberta'],
+  ['m6e','Previsão de vendas ponderada por etapa com acerto de 80% ou mais','Gestor comercial','Acerto ≥ 80%'],
+  ['m6f','Avaliar segundo SDR se o SDR atual passar de 100% da capacidade com conversão confirmada','Gestor comercial','Decisão de contratação']]},
+ {id:'m12',nome:'Próximo ano',per:'nov/2026 a out/2027',goal:'R$ 238.800 de NMRR no ano e MRR acima de R$ 400 mil',acts:[
+  ['m12a','NMRR de R$ 25.650 no mês 12 e cerca de 128 clientes na base','Time comercial','Meta do mês 12'],
+  ['m12b','20 parceiros ativos e canal com 40% ou mais do NMRR','Executivo de Negócios','≥ 40% via parceiros'],
+  ['m12c','Expansão na base (Hub → Seenc e novos módulos) com NRR acima de 100%','Closer + Implantação','NRR > 100%'],
+  ['m12d','LTV:CAC ≥ 3 e payback ≤ 12 meses medidos com dados reais','Gestor comercial','Indicadores medidos'],
+  ['m12e','Plano 2028 a partir das conversões reais e novos territórios além de RP, MG e Noroeste Paulista','Gestor comercial','Plano 2028']]}
+];
+
+/* ---------- Requisitos para indústria e distribuição (conteúdo da análise) ---------- */
+var GAPS = [
+ {id:'validade',nome:'Lote e validade (FEFO)',hoje:'Pendente de confirmação nos diagnósticos',seg:'Indústria de alimentos, usinas, frigoríficos, distribuidoras de alimentos',ev:'Nutreline e Tropicália pedem controle por validade e lote. Na base Senior, boa parte do SAM industrial é de alimentos.',afeta:['nutreline','tropicalia']},
+ {id:'multicd',nome:'Vários CDs e galpões',hoje:'Em desenvolvimento',seg:'Distribuição com filiais, operadores logísticos',ev:'Rodolpho e Magnos operam vários CDs; Godfer tem 2 CDs.',afeta:['rodolpho','godfer']},
+ {id:'cnpjs',nome:'Estoque único entre CNPJs distintos',hoje:'Impeditivo quando são empresas distintas',seg:'Grupos com várias empresas, redes de varejo, distribuidoras',ev:'Auto Speed, Cia da Fantasia, Casa da Laurinha, All Filmes e Grupoucza têm 2 a 5 CNPJs na mesma operação.',afeta:['autospeed','ciafantasia','laurinha','allfilmes','grupoucza']},
+ {id:'lpn',nome:'LPN e controle por pallet',hoje:'Não existe',seg:'Atacado e distribuição, indústria com expedição paletizada',ev:'Godfer precisa de LPN por pallet; é rotina em distribuidoras B2B.',afeta:['godfer']},
+ {id:'reposicao',nome:'Reposição por mínimo (pulmão → picking)',hoje:'Em desenvolvimento',seg:'Distribuição e e-commerce de alto giro',ev:'Godfer pediu; tende a aparecer em toda operação com área de pulmão.',afeta:['godfer']},
+ {id:'kits',nome:'Kits e montagem',hoje:'Em estudo',seg:'Indústria de bens de consumo, kits para o Full',ev:'All Filmes e Rodolpho e Magnos montam kits para marketplace.',afeta:['allfilmes','rodolpho']},
+ {id:'granel',nome:'Granel e produto pesável (balança)',hoje:'A confirmar',seg:'Alimentos, insumos, cooperativas',ev:'Tropicália vende a granel e pesa na expedição.',afeta:['tropicalia']},
+ {id:'erps',nome:'Integração com ERPs corporativos',hoje:'A desenvolver, caso a caso',seg:'Senior (119 contas no SAM), TOTVS (91), Sankhya, Winthor, Millenium, Magis',ev:'Stoky (Sankhya), DBN (Winthor), Benelli (Millenium) e Stoel (Magis) dependem de integração fora da base.',afeta:['stoky','dbn','benelli','stoel']},
+ {id:'producao',nome:'Integração com a produção (MES)',hoje:'Fase 2, sob análise',seg:'Indústria com produção própria',ev:'Pink Urban usa o Prodata na manufatura; na fase 1 o produto acabado entra pelo coletor.',afeta:['pinkurban']},
+ {id:'carga',nome:'Expedição por carga, rota e doca',hoje:'A levantar',seg:'Distribuição B2B com frota ou transportadora dedicada',ev:'Sem caso no pipeline ainda. É requisito comum de atacado e deve ser levantado nas reuniões de diagnóstico.',afeta:[]}
+];
+
+/* ---------- utilidades ---------- */
+function brl(v,dec){ if(v==null||isNaN(v)) return '—'; return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0}); }
+function k(v){ if(v==null||isNaN(v)) return '—'; var a=Math.abs(v); if(a>=1e6) return 'R$ '+(v/1e6).toLocaleString('pt-BR',{maximumFractionDigits:2})+' mi'; if(a>=1e3) return 'R$ '+(v/1e3).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mil'; return brl(v); }
+function pct(v,d){ if(v==null||isNaN(v)||!isFinite(v)) return '—'; return (v*100).toLocaleString('pt-BR',{maximumFractionDigits:d==null?1:d})+'%'; }
+function nf(v,d){ if(v==null||isNaN(v)) return '—'; return Number(v).toLocaleString('pt-BR',{maximumFractionDigits:d==null?1:d}); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function sum(a){ return a.reduce(function(x,y){return x+(+y||0);},0); }
+function el(id){ return document.getElementById(id); }
+
+/* ---------- estado ---------- */
+var S = { prem:Object.assign({},DEF), pipeline:[], realizado:{}, acoes:{}, wms:{}, db:null, canWrite:false, loaded:{pipeline:false} };
+var aba = 'resumo';
+try{ var h=(location.hash||'').slice(1); if(h) aba=h; }catch(e){}
+
+/* ---------- modelo ---------- */
+function modelo(){
+  var p=S.prem, out={meta:[],deals:[],setup:[],mrr:[],clientes:[],churnR:[],capPipe:[],capSdr:[],capParc:[],capInd:[],cap:[],reunioes:[],parceiros:[],indic:[],
+    custoFixo:[],custoVar:[],comParc:[],custo:[],bonusImpl:[],abate:[]};
+  var mrr=p.mrrInicial, cli=p.clientesIniciais, mrrParc=0;
+  for(var m=0;m<12;m++){
+    var meta=p.metaM1*Math.pow(1+p.crescimento,m); out.meta.push(meta);
+    var deals=meta/p.ticket; out.deals.push(deals);
+    out.setup.push(deals*p.setupMedio);
+    var ch=mrr*p.churn; out.churnR.push(ch);
+    mrr=mrr-ch+meta; out.mrr.push(mrr);
+    cli=cli*(1-p.churn)+deals; out.clientes.push(cli);
+    // capacidade por canal
+    var pipe=0; S.pipeline.forEach(function(d){ if(d.status==='aberto'&&d.mes===MESES[m]) pipe+=(+d.mrr||0)*(+d.prob||0); });
+    out.capPipe.push(pipe);
+    var reun=p.reunioesSdrPlena*RAMP_SDR[m]; out.reunioes.push(reun);
+    out.capSdr.push(m>0? out.reunioes[m-1]*p.convReuniaoVenda*p.ticket : 0);
+    out.parceiros.push(PARCEIROS[m]); var ind=PARCEIROS[m]*p.indicPorParceiro; out.indic.push(ind);
+    var parc=m>0? out.indic[m-1]*p.convIndicacao*p.ticket : 0; out.capParc.push(parc);
+    var indc=p.vendasIndicClientes*p.ticket; out.capInd.push(indc);
+    out.cap.push(pipe+out.capSdr[m]+parc+indc);
+    // custos (sobre o cenário de meta; variável pela produção esperada)
+    var fixo=(p.sdrBase+p.closerBase+p.execBase)*p.fatorEncargos; out.custoFixo.push(fixo);
+    var novosParc=PARCEIROS[m]-(m>0?PARCEIROS[m-1]:0);
+    var execVar=Math.max(p.execPctNmrrParceiro*parc+p.execPorParceiro*novosParc, m<3?p.execGarantia:0);
+    var vari=(p.sdrPorReuniao*reun+p.closerPctNmrr*meta+execVar)*p.fatorEncargos; out.custoVar.push(vari);
+    mrrParc=mrrParc*(1-p.churn)+parc; var cp=mrrParc*p.comissaoParceiro; out.comParc.push(cp);
+    out.custo.push(fixo+vari+cp);
+    out.bonusImpl.push(out.setup[m]*p.pctBonusImplantacao);
+    out.abate.push(out.setup[m]*Math.max(0,1-p.pctImplantacao-p.pctBonusImplantacao));
+  }
+  var tDeals=sum(out.deals), tCusto=sum(out.custo), tAbate=sum(out.abate);
+  out.tot={nmrr:sum(out.meta),deals:tDeals,setup:sum(out.setup),custo:tCusto,abate:tAbate,cap:sum(out.cap),
+    cac:(tCusto-tAbate)/tDeals, cacBruto:tCusto/tDeals};
+  out.tot.payback=out.tot.cac/(p.ticket*p.margemBruta);
+  out.tot.ltv=p.ticket*p.margemBruta/p.churn;
+  out.tot.ltvcac=out.tot.ltv/out.tot.cac;
+  out.tot.arrAdic=(out.mrr[11]-p.mrrInicial)*12;
+  return out;
+}
+
+/* ---------- gráficos SVG ---------- */
+var tip=el('tip');
+function showTip(e,html){ tip.innerHTML=html; tip.hidden=false; var x=e.clientX+14, y=e.clientY+14; var w=tip.offsetWidth, hh=tip.offsetHeight; if(x+w>innerWidth-8) x=e.clientX-w-14; if(y+hh>innerHeight-8) y=e.clientY-hh-14; tip.style.left=x+'px'; tip.style.top=y+'px'; }
+function hideTip(){ tip.hidden=true; }
+function niceMax(v){ if(v<=0) return 1; var e=Math.pow(10,Math.floor(Math.log10(v))); var n=v/e; var s=n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10; return s*e; }
+
+function chartStack(o){
+  // o: {series:[{nome,cor,vals}], line:{nome,vals}, labels, fmt}
+  var W=720,H=280,L=72,R=12,T=14,B=30, n=o.labels.length;
+  var tot=o.labels.map(function(_,i){return sum(o.series.map(function(s){return s.vals[i];}));});
+  var maxV=niceMax(Math.max.apply(null,tot.concat(o.line?o.line.vals:[]).concat(o.extra?o.extra.vals.filter(function(v){return v!=null;}):[]))*1.05);
+  var iw=W-L-R, ih=H-T-B, bw=iw/n, gw=Math.min(36,bw*0.62);
+  var y=function(v){return T+ih-(v/maxV)*ih;};
+  var s='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(o.aria||'')+'">';
+  for(var g=0;g<=4;g++){ var v=maxV*g/4, yy=y(v); s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'"/><text x="'+(L-8)+'" y="'+(yy+4)+'" text-anchor="end">'+(o.fmtAxis||k)(v)+'</text>'; }
+  o.labels.forEach(function(lb,i){
+    var x=L+bw*i+(bw-gw)/2, acc=0;
+    o.series.forEach(function(se,j){ var v=se.vals[i]; if(v<=0) return; var y1=y(acc+v), y0=y(acc); var hgt=Math.max(0,y0-y1-(acc>0?2:0)); s+='<rect x="'+x+'" y="'+y1+'" width="'+gw+'" height="'+hgt+'" rx="'+(acc+v===tot[i]?3:0)+'" fill="var('+se.cor+')"/>'; acc+=v; });
+    s+='<text x="'+(L+bw*i+bw/2)+'" y="'+(H-10)+'" text-anchor="middle">'+lb+'</text>';
+  });
+  if(o.line){ var pts=o.line.vals.map(function(v,i){return (L+bw*i+bw/2)+','+y(v);}).join(' '); s+='<polyline points="'+pts+'" fill="none" stroke="var(--ink)" stroke-width="2" stroke-dasharray="5 4"/>'; o.line.vals.forEach(function(v,i){ s+='<circle cx="'+(L+bw*i+bw/2)+'" cy="'+y(v)+'" r="3.5" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>'; }); }
+  if(o.extra){ o.extra.vals.forEach(function(v,i){ if(v==null) return; s+='<rect x="'+(L+bw*i+bw/2-5)+'" y="'+(y(v)-5)+'" width="10" height="10" transform="rotate(45 '+(L+bw*i+bw/2)+' '+y(v)+')" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>'; }); }
+  o.labels.forEach(function(lb,i){ s+='<rect data-i="'+i+'" x="'+(L+bw*i)+'" y="'+T+'" width="'+bw+'" height="'+ih+'" fill="transparent" class="hit"/>'; });
+  s+='</svg>';
+  return s;
+}
+function bindChart(box,o){
+  box.querySelectorAll('.hit').forEach(function(r){
+    r.addEventListener('mousemove',function(e){ var i=+r.getAttribute('data-i'); var h='<b>'+o.labels[i]+'</b>';
+      o.series.forEach(function(se){ h+='<div><span>'+se.nome+'</span><span>'+brl(se.vals[i])+'</span></div>'; });
+      if(o.series.length>1) h+='<div><span><b style="display:inline">Total</b></span><span>'+brl(sum(o.series.map(function(se){return se.vals[i];})))+'</span></div>';
+      if(o.line) h+='<div><span>'+o.line.nome+'</span><span>'+brl(o.line.vals[i])+'</span></div>';
+      if(o.extra&&o.extra.vals[i]!=null) h+='<div><span>'+o.extra.nome+'</span><span>'+brl(o.extra.vals[i])+'</span></div>';
+      showTip(e,h); });
+    r.addEventListener('mouseleave',hideTip);
+  });
+}
+function chartLine(o){
+  var W=720,H=240,L=64,R=16,T=14,B=30,n=o.labels.length;
+  var all=o.vals.concat(o.real.filter(function(v){return v!=null;}));
+  var minV=Math.floor(Math.min.apply(null,[o.base].concat(all))/100000)*100000, maxV=niceMax(Math.max.apply(null,all)*1.04);
+  var iw=W-L-R, ih=H-T-B, x=function(i){return L+iw*i/(n-1);}, y=function(v){return T+ih-((v-minV)/(maxV-minV))*ih;};
+  var s='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(o.aria)+'">';
+  for(var g=0;g<=4;g++){ var v=minV+(maxV-minV)*g/4; s+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'"/><text x="'+(L-8)+'" y="'+(y(v)+4)+'" text-anchor="end">'+k(v)+'</text>'; }
+  var pts=o.vals.map(function(v,i){return x(i)+','+y(v);});
+  s+='<polygon points="'+x(0)+','+y(minV)+' '+pts.join(' ')+' '+x(n-1)+','+y(minV)+'" fill="var(--accent)" opacity=".10"/>';
+  s+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="var(--accent)" stroke-width="2"/>';
+  s+='<circle cx="'+x(n-1)+'" cy="'+y(o.vals[n-1])+'" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>';
+  s+='<text x="'+(x(n-1)-8)+'" y="'+(y(o.vals[n-1])-10)+'" text-anchor="end" style="fill:var(--ink);font-weight:600">'+k(o.vals[n-1])+'</text>';
+  o.real.forEach(function(v,i){ if(v!=null) s+='<rect x="'+(x(i)-5)+'" y="'+(y(v)-5)+'" width="10" height="10" transform="rotate(45 '+x(i)+' '+y(v)+')" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"/>'; });
+  o.labels.forEach(function(lb,i){ if(i%2===0||i===n-1) s+='<text x="'+x(i)+'" y="'+(H-10)+'" text-anchor="middle">'+lb+'</text>'; s+='<rect data-i="'+i+'" class="hit" x="'+(x(i)-iw/(n-1)/2)+'" y="'+T+'" width="'+(iw/(n-1))+'" height="'+ih+'" fill="transparent"/>'; });
+  return s+'</svg>';
+}
+
+/* ---------- seções ---------- */
+var SECOES=[['resumo','Resumo'],['metas','Metas'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS indústria'],['base','Base de leads'],['metodo','Método e fontes']];
+
+function renderNav(){
+  el('nav').innerHTML=SECOES.map(function(s){return '<button class="chip" data-v="'+s[0]+'" aria-pressed="'+(s[0]===aba)+'">'+s[1]+'</button>';}).join('');
+}
+el('nav').addEventListener('click',function(e){ var b=e.target.closest('[data-v]'); if(!b) return; aba=b.getAttribute('data-v'); try{history.replaceState(null,'','#'+aba);}catch(_){}
+  renderNav(); render(); window.scrollTo(0,0); });
+
+function realNmrr(){ return MESES.map(function(m){ var r=S.realizado[m]; return r&&r.nmrr!=null&&r.nmrr!==''? +r.nmrr : null; }); }
+function realMrr(M){ var mrr=S.prem.mrrInicial, any=false; return MESES.map(function(m,i){ var r=S.realizado[m]; if(!r||r.nmrr==null||r.nmrr===''){ return null; } any=true; mrr=mrr-(+r.churn_mrr||0)+(+r.nmrr||0); return mrr; }); }
+
+function secResumo(M){
+  var t=M.tot, gapMeses=[]; M.meta.forEach(function(v,i){ if(M.cap[i]<v*0.95) gapMeses.push(ROT[i]); });
+  var pipeAb=S.pipeline.filter(function(d){return d.status==='aberto';}), pipeTot=sum(pipeAb.map(function(d){return +d.mrr||0;})), pipePond=sum(pipeAb.map(function(d){return (+d.mrr||0)*(+d.prob||0);}));
+  var h='<div class="sec-head"><span class="label">Resumo para diretoria, sócios e investidores</span><h2>Com 3 pessoas focais, o MRR vai de '+k(S.prem.mrrInicial)+' para '+k(M.mrr[11])+' em 12 meses ('+nf(M.mrr[11]/S.prem.mrrInicial,1)+'×)</h2>'+
+  '<p>O plano vende '+k(t.nmrr)+' em novas mensalidades no ano, com meta de '+brl(S.prem.metaM1)+' no primeiro mês e alta de '+pct(S.prem.crescimento,0)+' ao mês. O investimento em pessoas é de '+k(t.custo)+' no ano, e cada novo cliente custa '+k(t.cac)+' para ser conquistado.</p></div>';
+  h+='<div class="tiles">'+
+   '<div class="tile"><span class="label">NMRR vendido no ano</span><span class="num">'+k(t.nmrr)+'</span><span class="note">'+nf(t.deals,0)+' contratos com ticket de '+brl(S.prem.ticket)+'</span></div>'+
+   '<div class="tile"><span class="label">MRR em out/27</span><span class="num">'+k(M.mrr[11])+'</span><span class="note">'+nf(M.mrr[11]/S.prem.mrrInicial,2)+'× o atual, já com churn de '+pct(S.prem.churn)+' ao mês</span></div>'+
+   '<div class="tile"><span class="label">Investimento comercial</span><span class="num">'+k(t.custo)+'</span><span class="note">3 pessoas com encargos, variável e comissão de parceiros</span></div>'+
+   '<div class="tile"><span class="label">CAC · payback · LTV:CAC</span><span class="num">'+k(t.cac)+'</span><span class="note">payback de '+nf(t.payback,1)+' meses · LTV:CAC de '+nf(t.ltvcac,1)+'×</span></div></div>';
+  h+='<div class="card"><h3>Meta de NMRR × o que cada canal deve entregar<small>capacidade projetada por canal; a linha tracejada é a meta</small></h3>'+
+   '<div class="legend"><span><i style="background:var(--s1)"></i>Pipeline atual (ponderado)</span><span><i style="background:var(--s2)"></i>SDR (prospecção ativa)</span><span><i style="background:var(--s3)"></i>Parceiros</span><span><i style="background:var(--s4)"></i>Indicação de clientes</span><span><i class="dash"></i>Meta (5% ao mês)</span><span><i style="background:var(--accent);transform:rotate(45deg);width:8px;height:8px"></i>Realizado</span></div>'+
+   '<div class="scroll" id="chCap"></div></div>';
+  h+='<div class="insights">'+
+   '<div class="callout"><h4>O primeiro mês vem do pipeline</h4><p>São '+pipeAb.length+' negócios abertos, que somam '+k(pipeTot)+' de mensalidade ('+k(pipePond)+' ponderados pela chance de fechar). Com ciclo de 30 a 45 dias, nada que o SDR gerar em novembro fecha em novembro.</p></div>'+
+   (gapMeses.length?'<div class="callout warn"><h4>'+(gapMeses.length===1?'Há um vale em '+gapMeses[0]:'Há um vale entre '+gapMeses[0]+' e '+gapMeses[gapMeses.length-1])+'</h4><p>Quando o pipeline atual se esgota, SDR e parceiros ainda estão em rampa. Em '+gapMeses.length+(gapMeses.length===1?' mês':' dos 12 meses')+' a capacidade projetada fica abaixo da meta. A resposta está no Plano de ação: Onda 1, expansão na base e cobertura de pipeline de 3×.</p></div>'
+     :'<div class="callout"><h4>A capacidade cobre a meta</h4><p>Com as premissas atuais, os canais entregam a meta em todos os meses. O risco passa a ser a conversão real, medida no Acompanhamento.</p></div>')+
+   '<div class="callout"><h4>Setup financia a implantação</h4><p>Cada contrato traz '+brl(S.prem.setupMedio)+' de setup: '+pct(S.prem.pctImplantacao,0)+' pagam a implantação, '+pct(S.prem.pctBonusImplantacao,0)+' viram bônus de quem implanta e o resto ('+k(t.abate)+' no ano) abate o custo de venda.</p></div></div>';
+  h+='<div class="card"><h3>MRR projetado<small>cenário oficial, já descontado o churn; losangos laranja mostram o realizado</small></h3><div class="scroll" id="chMrr"></div></div>';
+  return h;
+}
+function afterResumo(M){
+  var o={labels:ROT,aria:'Meta de NMRR e capacidade por canal',series:[{nome:'Pipeline atual',cor:'--s1',vals:M.capPipe},{nome:'SDR',cor:'--s2',vals:M.capSdr},{nome:'Parceiros',cor:'--s3',vals:M.capParc},{nome:'Indicação de clientes',cor:'--s4',vals:M.capInd}],line:{nome:'Meta',vals:M.meta},extra:{nome:'Realizado',vals:realNmrr()}};
+  var b=el('chCap'); b.innerHTML=chartStack(o); bindChart(b,o);
+  var rm=realMrr(), lo={labels:ROT,vals:M.mrr,real:rm,base:S.prem.mrrInicial,aria:'MRR projetado'};
+  var c=el('chMrr'); c.innerHTML=chartLine(lo);
+  c.querySelectorAll('.hit').forEach(function(r){ r.addEventListener('mousemove',function(e){ var i=+r.getAttribute('data-i'); showTip(e,'<b>'+ROT[i]+'</b><div><span>MRR projetado</span><span>'+brl(M.mrr[i])+'</span></div><div><span>Clientes</span><span>'+nf(M.clientes[i],0)+'</span></div>'+(rm[i]!=null?'<div><span>MRR realizado</span><span>'+brl(rm[i])+'</span></div>':'')); }); r.addEventListener('mouseleave',hideTip); });
+}
+
+function secMetas(M){
+  var p=S.prem;
+  var h='<div class="sec-head"><span class="label">Cenário oficial</span><h2>Meta de '+brl(p.metaM1)+' em novembro, chegando a '+brl(M.meta[11])+' em outubro de 2027</h2><p>A meta é de NMRR bruto: o churn não desconta da meta comercial, mas entra na projeção do MRR. O setup é receita à parte e quase todo vai para a implantação.</p></div>';
+  h+='<div class="card"><h3>Mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Meta NMRR</th><th class="r">Contratos</th><th class="r">Setup</th><th class="r">Churn do MRR</th><th class="r">MRR final</th><th class="r">Clientes</th><th class="r">Capacidade dos canais</th><th class="r">Folga ou gap</th></tr></thead><tbody>';
+  M.meta.forEach(function(v,i){ var g=M.cap[i]-v; h+='<tr><td>'+ROT[i]+'</td><td class="r">'+brl(v)+'</td><td class="r">'+nf(M.deals[i],1)+'</td><td class="r">'+brl(M.setup[i])+'</td><td class="r">'+brl(M.churnR[i])+'</td><td class="r">'+brl(M.mrr[i])+'</td><td class="r">'+nf(M.clientes[i],0)+'</td><td class="r">'+brl(M.cap[i])+'</td><td class="r '+(g<0?'neg':'pos')+'">'+(g<0?'−':'+')+brl(Math.abs(g))+'</td></tr>'; });
+  h+='<tr class="tot"><td>Ano</td><td class="r">'+brl(M.tot.nmrr)+'</td><td class="r">'+nf(M.tot.deals,0)+'</td><td class="r">'+brl(M.tot.setup)+'</td><td class="r">'+brl(sum(M.churnR))+'</td><td class="r">'+brl(M.mrr[11])+'</td><td class="r">'+nf(M.clientes[11],0)+'</td><td class="r">'+brl(M.tot.cap)+'</td><td class="r '+(M.tot.cap<M.tot.nmrr?'neg':'pos')+'">'+(M.tot.cap<M.tot.nmrr?'−':'+')+brl(Math.abs(M.tot.cap-M.tot.nmrr))+'</td></tr>';
+  h+='</tbody></table></div><p class="small muted">Contratos = meta ÷ ticket médio. Capacidade = pipeline atual ponderado + SDR + parceiros + indicação de clientes, com as premissas abaixo, que serão trocadas pelas conversões medidas.</p></div>';
+  h+='<div class="card"><h3>Premissas do modelo<small>'+(S.canWrite?'mudanças recalculam o plano inteiro e ficam salvas para todos':'somente leitura para o seu nível de acesso')+'</small></h3>';
+  PREM_CAMPOS.forEach(function(gr){
+    h+='<div class="fgroup"><h4>'+gr[0]+'</h4><div class="form">';
+    gr[1].forEach(function(f){ var v=p[f[0]], show=f[2]==='p'?+(v*100).toFixed(2):v;
+      h+='<div class="field"><label for="pr-'+f[0]+'">'+f[1]+(f[2]==='p'?' (%)':'')+'</label><input id="pr-'+f[0]+'" data-prem="'+f[0]+'" data-t="'+f[2]+'" type="number" step="any" value="'+show+'"'+(S.canWrite?'':' disabled')+'>'+(f[3]?'<small>'+f[3]+'</small>':'')+'</div>'; });
+    h+='</div></div>';
+  });
+  h+='<div class="row"><button class="btn" id="premSalvar"'+(S.canWrite?'':' disabled')+'>Salvar premissas</button><button class="btn ghost" id="premPadrao"'+(S.canWrite?'':' disabled')+'>Voltar ao padrão</button><span class="status" id="premStatus"></span></div></div>';
+  return h;
+}
+
+function secInvest(M){
+  var p=S.prem, f=p.fatorEncargos;
+  var pessoas=[
+    {nome:'SDR sênior',papel:'Prospecção ativa na Onda 1 (157 Hot) e Onda 2 (614 com ERP conhecido)',base:p.sdrBase,varTxt:brl(p.sdrPorReuniao)+' por reunião qualificada realizada',varAlvo:p.sdrPorReuniao*p.reunioesSdrPlena,prep:'1–2 semanas',prim:'Reuniões no mês 1',plena:'Mês 3',ref:'SDR pleno: R$ 7 a 10 mil com variável (Jobrise, 2026); sênior acima'},
+    {nome:'Closer sênior',papel:'Diagnóstico, proposta e fechamento de todos os canais; expansão na base',base:p.closerBase,varTxt:pct(p.closerPctNmrr,0)+' do NMRR fechado (50% na assinatura, 50% no go-live)',varAlvo:p.closerPctNmrr*p.metaM1,prep:'2–3 semanas',prim:'Fecha o pipeline já no mês 1',plena:'Mês 3–4',ref:'Executivo de contas sênior: R$ 11,7 a 20,8 mil, mediana de R$ 17 mil em SP (Robert Half)'},
+    {nome:'Executivo de Negócios',papel:'Recruta, treina e ativa consultores logísticos, contadores e franquias de ERP',base:p.execBase,varTxt:pct(p.execPctNmrrParceiro,0)+' do NMRR via parceiros + '+brl(p.execPorParceiro)+' por parceiro ativado; garantia de '+brl(p.execGarantia)+' nos 3 primeiros meses',varAlvo:p.execPctNmrrParceiro*M.capParc[11]+p.execPorParceiro*2,prep:'4–6 semanas',prim:'Indicações no mês 2–3',plena:'Mês 6–9',ref:'Sem faixa pública para canais em SaaS; base alinhada ao executivo de contas sênior'}
+  ];
+  var t=M.tot;
+  var h='<div class="sec-head"><span class="label">Investimento em pessoas</span><h2>'+k(t.custo)+' no ano para 3 pessoas focais, ou '+k(t.custo/12)+' por mês em média</h2><p>Salários base de mercado para nível sênior, em regime CLT, com fator de encargos de '+nf(f,2)+'× (INSS patronal, RAT, terceiros, FGTS, 13º e férias). A parte variável cresce com o resultado, e o setup cobre a implantação.</p></div>';
+  h+='<div class="cols3">';
+  pessoas.forEach(function(x){
+    h+='<div class="card person"><h4>'+x.nome+'</h4><p class="small muted">'+x.papel+'</p><div class="kv">'+
+     '<div><span>Salário base</span><span>'+brl(x.base)+'</span></div>'+
+     '<div><span>Custo fixo com encargos</span><span>'+brl(x.base*f)+'</span></div>'+
+     '<div><span>Variável no mês 1 da meta</span><span>'+brl(x.varAlvo)+'</span></div>'+
+     '<div><span>Preparação</span><span>'+x.prep+'</span></div>'+
+     '<div><span>Primeiro resultado</span><span>'+x.prim+'</span></div>'+
+     '<div><span>Produtividade plena</span><span>'+x.plena+'</span></div></div>'+
+     '<p class="small"><b>Variável:</b> '+x.varTxt+'</p><p class="small muted">'+x.ref+'</p></div>';
+  });
+  h+='</div>';
+  // rampa
+  var rampCloser=[0.6,0.85,1,1,1,1,1,1,1,1,1,1];
+  var rampExec=PARCEIROS.map(function(v){return Math.min(1,v/20);});
+  h+='<div class="card"><h3>Tempo de preparo e rampa de produtividade<small>% da capacidade plena de cada função</small></h3><div class="scroll"><div class="ramp" style="min-width:560px"><span></span>'+ROT.map(function(r){return '<span class="h">'+r+'</span>';}).join('');
+  [['SDR',RAMP_SDR],['Closer',rampCloser],['Exec. Negócios',rampExec]].forEach(function(r){ h+='<span class="small">'+r[0]+'</span>'+r[1].map(function(v){ return '<span class="c" style="background:color-mix(in srgb,var(--accent) '+Math.round(v*80+8)+'%,var(--soft))'+(v>0.55?';color:var(--on-accent)':'')+'">'+Math.round(v*100)+'</span>'; }).join(''); });
+  h+='</div></div><p class="small muted">Mesmo com o time já preparado, cada pessoa precisa aprender produto, base e mercado da Weesu. O canal de parceiros é o mais lento para amadurecer (recrutar, treinar e só então receber indicações), mas é o que mais escala com menor CAC. Por isso o Executivo de Negócios tem garantia de variável nos 3 primeiros meses.</p></div>';
+  // tabela de custo
+  h+='<div class="card"><h3>Custo comercial × retorno, mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Fixo c/ encargos</th><th class="r">Variável c/ encargos</th><th class="r">Comissão parceiros</th><th class="r">Custo total</th><th class="r">NMRR (meta)</th><th class="r">Bônus implantação</th><th class="r">Abate do setup</th></tr></thead><tbody>';
+  M.custo.forEach(function(c,i){ h+='<tr><td>'+ROT[i]+'</td><td class="r">'+brl(M.custoFixo[i])+'</td><td class="r">'+brl(M.custoVar[i])+'</td><td class="r">'+brl(M.comParc[i])+'</td><td class="r">'+brl(c)+'</td><td class="r">'+brl(M.meta[i])+'</td><td class="r">'+brl(M.bonusImpl[i])+'</td><td class="r">'+brl(M.abate[i])+'</td></tr>'; });
+  h+='<tr class="tot"><td>Ano</td><td class="r">'+brl(sum(M.custoFixo))+'</td><td class="r">'+brl(sum(M.custoVar))+'</td><td class="r">'+brl(sum(M.comParc))+'</td><td class="r">'+brl(t.custo)+'</td><td class="r">'+brl(t.nmrr)+'</td><td class="r">'+brl(sum(M.bonusImpl))+'</td><td class="r">'+brl(t.abate)+'</td></tr></tbody></table></div></div>';
+  h+='<div class="tiles">'+
+   '<div class="tile"><span class="label">CAC (líquido do setup)</span><span class="num">'+brl(t.cac)+'</span><span class="note">bruto: '+brl(t.cacBruto)+' por contrato</span></div>'+
+   '<div class="tile"><span class="label">Payback do CAC</span><span class="num">'+nf(t.payback,1)+' meses</span><span class="note">referência SaaS: até 12 meses</span></div>'+
+   '<div class="tile"><span class="label">LTV por cliente</span><span class="num">'+k(t.ltv)+'</span><span class="note">margem de '+pct(p.margemBruta,0)+' ÷ churn de '+pct(p.churn)+'</span></div>'+
+   '<div class="tile"><span class="label">LTV:CAC</span><span class="num">'+nf(t.ltvcac,1)+'×</span><span class="note">referência SaaS: 3× ou mais</span></div></div>';
+  h+='<div class="callout"><h4>Como o setup paga a implantação e premia quem implanta</h4><p>Setup médio de '+brl(p.setupMedio)+' por contrato: '+brl(p.setupMedio*p.pctImplantacao)+' ('+pct(p.pctImplantacao,0)+') cobrem horas e deslocamento da implantação; '+brl(p.setupMedio*p.pctBonusImplantacao)+' ('+pct(p.pctBonusImplantacao,0)+') viram bônus de quem implanta, pago no go-live com a operação rodando; '+brl(p.setupMedio*Math.max(0,1-p.pctImplantacao-p.pctBonusImplantacao))+' abatem o custo de venda. Desconto no setup sai primeiro dessa última parcela, nunca do custo da implantação.</p></div>';
+  h+='<div class="callout warn"><h4>Comissão de parceiros é recorrente</h4><p>Os '+pct(p.comissaoParceiro,0)+' sobre a mensalidade de cada cliente indicado acumulam mês a mês: chegam a '+brl(M.comParc[11])+' por mês em out/27. Regra sugerida: paga enquanto o cliente estiver ativo e adimplente, por no máximo 24 meses, revisada a cada ano.</p></div>';
+  return h;
+}
+
+function secPlano(M){
+  var total=0,feitos=0; HORIZ.forEach(function(hz){ hz.acts.forEach(function(a){ total++; if(S.acoes[a[0]]&&S.acoes[a[0]].feito) feitos++; }); });
+  var h='<div class="sec-head"><span class="label">Plano de ação por horizonte</span><h2>'+feitos+' de '+total+' ações concluídas</h2><p>Cada horizonte tem um resultado esperado, as ações, quem responde por elas e como medir. Marque o que estiver concluído: fica salvo para todos que acessam o painel.</p></div><div class="horiz">';
+  HORIZ.forEach(function(hz){
+    var n=hz.acts.length, d=hz.acts.filter(function(a){return S.acoes[a[0]]&&S.acoes[a[0]].feito;}).length;
+    h+='<section class="hz"><header><span class="label">'+hz.per+'</span><h3>'+hz.nome+'</h3></header><p class="goal">'+hz.goal+'</p><div class="prog" aria-label="'+d+' de '+n+' concluídas"><i style="width:'+(d/n*100)+'%"></i></div><ul class="acts">';
+    hz.acts.forEach(function(a){ var ok=S.acoes[a[0]]&&S.acoes[a[0]].feito;
+      h+='<li class="act'+(ok?' done':'')+'"><input type="checkbox" id="ac-'+a[0]+'" data-acao="'+a[0]+'"'+(ok?' checked':'')+(S.canWrite?'':' disabled')+'><label for="ac-'+a[0]+'"><span class="txt">'+esc(a[1])+'</span><span class="who">'+esc(a[2])+' · '+esc(a[3])+'</span></label></li>'; });
+    h+='</ul></section>';
+  });
+  h+='</div>';
+  h+='<div class="card"><h3>Ritual de gestão</h3><div class="scroll"><table class="t"><thead><tr><th>Cadência</th><th>Quem</th><th>Pauta</th></tr></thead><tbody>'+
+   '<tr><td>Diária, 15 min</td><td>SDR, Closer, Exec. Negócios</td><td>Atividades do dia, reuniões agendadas, bloqueios</td></tr>'+
+   '<tr><td>Semanal, 1 h</td><td>Time + gestor</td><td>Indicadores de atividade (contatos, reuniões, indicações), pipeline por etapa, previsão do mês</td></tr>'+
+   '<tr><td>Mensal, 2 h</td><td>Gestor + diretoria</td><td>Previsto × realizado, conversões medidas, revisão das premissas (PDCA), decisões de produto do WMS</td></tr>'+
+   '<tr><td>Trimestral</td><td>Diretoria, sócios, investidores</td><td>Resultado do horizonte, CAC, payback, plano do próximo trimestre (OKRs)</td></tr></tbody></table></div></div>';
+  return h;
+}
+
+function secPipeline(M){
+  var d=S.pipeline.slice().sort(function(a,b){ return (a.status===b.status?0:a.status==='aberto'?-1:1) || (a.mes||'').localeCompare(b.mes||'') || (b.mrr*b.prob-a.mrr*a.prob); });
+  var ab=d.filter(function(x){return x.status==='aberto';});
+  var tot=sum(ab.map(function(x){return +x.mrr||0;})), pond=sum(ab.map(function(x){return (+x.mrr||0)*(+x.prob||0);})), setupP=sum(ab.map(function(x){return (+x.setup||0)*(+x.prob||0);}));
+  var nov=sum(ab.filter(function(x){return x.mes==='2026-11';}).map(function(x){return (+x.mrr||0)*(+x.prob||0);}));
+  var h='<div class="sec-head"><span class="label">Negócios em andamento · posição de 08/10/2026</span>';
+  if(!S.loaded.pipeline){ return h+'<h2>Pipeline</h2></div><div class="empty">Carregando os negócios em andamento…</div>'; }
+  if(!d.length){ return h+'<h2>Pipeline</h2></div><div class="empty">Nenhum negócio cadastrado ainda. Os negócios da Carteira Comercial aparecem aqui assim que forem importados.</div>'; }
+  h+='<h2>'+ab.length+' negócios abertos somam '+k(tot)+' de mensalidade; ponderados, '+k(pond)+'</h2><p>A chance de fechar e o mês previsto são premissas iniciais, a partir da etapa e do engajamento de cada caso na Carteira Comercial. Ajuste aqui: a previsão do Resumo e das Metas muda junto. Para novembro, o pipeline ponderado é de '+brl(nov)+' contra a meta de '+brl(S.prem.metaM1)+'.</p></div>';
+  h+='<div class="tiles"><div class="tile"><span class="label">Mensalidade em aberto</span><span class="num">'+k(tot)+'</span><span class="note">'+ab.length+' negócios</span></div><div class="tile"><span class="label">Ponderada</span><span class="num">'+k(pond)+'</span><span class="note">'+nf(sum(ab.map(function(x){return +x.prob||0;})),1)+' contratos esperados</span></div><div class="tile"><span class="label">Setup ponderado</span><span class="num">'+k(setupP)+'</span><span class="note">receita de implantação</span></div><div class="tile"><span class="label">Ticket médio do pipeline</span><span class="num">'+k(tot/Math.max(1,ab.length))+'</span><span class="note">contra '+brl(S.prem.ticket)+' do plano</span></div></div>';
+  h+='<div class="card"><div class="scroll"><table class="t"><thead><tr><th>Negócio</th><th>Etapa / situação</th><th class="r">Mensalidade</th><th class="r">Setup</th><th>Chance</th><th>Mês previsto</th><th>Status</th><th class="r">Ponderado</th></tr></thead><tbody>';
+  var opts=MESES.concat(['2027-11+']);
+  d.forEach(function(x){ var dis=S.canWrite?'':' disabled';
+    h+='<tr'+(x.status!=='aberto'?' class="dim"':'')+'><td><b>'+esc(x.nome)+'</b><small>'+esc(x.segmento)+' · '+esc(x.produto||'')+'</small></td><td>'+esc(x.etapa)+'<small><span class="pill '+(x.tom||'')+'">'+esc(x.situacao)+'</span></small><small>'+esc(x.pendencia||'')+'</small></td>'+
+     '<td class="r">'+brl(x.mrr)+'</td><td class="r">'+brl(x.setup)+'</td>'+
+     '<td><input class="inl" type="number" min="0" max="100" step="5" id="pp-'+x.id+'" data-pid="'+x.id+'" data-f="prob" value="'+Math.round((+x.prob||0)*100)+'" aria-label="Chance de fechar (%)"'+dis+'>%</td>'+
+     '<td><select class="inl" id="pm-'+x.id+'" data-pid="'+x.id+'" data-f="mes" aria-label="Mês previsto"'+dis+'>'+opts.map(function(m,i){return '<option value="'+m+'"'+(x.mes===m?' selected':'')+'>'+(ROT[i]||'depois')+'</option>';}).join('')+'</select></td>'+
+     '<td><select class="inl" id="ps-'+x.id+'" data-pid="'+x.id+'" data-f="status" aria-label="Status"'+dis+'>'+[['aberto','Aberto'],['ganho','Ganho'],['perdido','Perdido']].map(function(o){return '<option value="'+o[0]+'"'+(x.status===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></td>'+
+     '<td class="r">'+(x.status==='aberto'?brl((+x.mrr||0)*(+x.prob||0)):'—')+'</td></tr>'; });
+  h+='</tbody></table></div><p class="small muted">Mensalidade de casos com faixa ou "a definir" usa o meio da faixa ou a simulação da Carteira Comercial. Negócio marcado como Ganho entra no acompanhamento do mês em que fechar.</p></div>';
+  return h;
+}
+
+var ACOMP_CAMPOS=[
+ ['Atividade (indicadores de direção)',[['leads','Leads trabalhados'],['contatos','Contatos efetivos'],['agendadas','Reuniões agendadas'],['realizadas','Reuniões realizadas'],['parceiros_ativos','Parceiros ativos'],['indicacoes','Indicações de parceiros']]],
+ ['Funil',[['oportunidades','Oportunidades criadas'],['propostas','Propostas enviadas'],['v_sdr','Vendas via SDR'],['v_parc','Vendas via parceiros'],['v_ind','Vendas por indicação de clientes'],['v_pipe','Vendas do pipeline anterior']]],
+ ['Resultado (indicadores de resultado)',[['nmrr','NMRR vendido (R$)'],['setup','Setup vendido (R$)'],['churn_mrr','MRR cancelado (R$)'],['expansao','MRR de expansão na base (R$)']]]
+];
+var mesSel=MESES[0];
+function secAcomp(M){
+  var i=MESES.indexOf(mesSel), r=S.realizado[mesSel]||{};
+  var h='<div class="sec-head"><span class="label">Previsto × realizado</span><h2>Acompanhamento mensal de fechamentos e conversões</h2><p>Lance os números do mês a partir do CRM. As conversões são calculadas na hora e, depois de 2 ou 3 meses, substituem as premissas do funil.</p></div>';
+  h+='<div class="card"><div class="row"><div class="field" style="max-width:220px"><label for="mesSel">Mês</label><select id="mesSel">'+MESES.map(function(m,j){return '<option value="'+m+'"'+(m===mesSel?' selected':'')+'>'+ROT[j]+(S.realizado[m]?' · lançado':'')+'</option>';}).join('')+'</select></div>'+
+   '<div class="tile" style="padding:0 12px"><span class="label">Meta do mês</span><span class="num" style="font-size:20px">'+brl(M.meta[i])+'</span></div>'+
+   '<div class="tile" style="padding:0 12px"><span class="label">Contratos esperados</span><span class="num" style="font-size:20px">'+nf(M.deals[i],1)+'</span></div>'+
+   '<div class="tile" style="padding:0 12px"><span class="label">Reuniões esperadas (SDR)</span><span class="num" style="font-size:20px">'+nf(M.reunioes[i],0)+'</span></div></div>';
+  ACOMP_CAMPOS.forEach(function(g){ h+='<div class="fgroup"><h4>'+g[0]+'</h4><div class="form">'; g[1].forEach(function(f){ h+='<div class="field"><label for="rz-'+f[0]+'">'+f[1]+'</label><input id="rz-'+f[0]+'" data-rz="'+f[0]+'" type="number" min="0" step="any" value="'+(r[f[0]]!=null?r[f[0]]:'')+'"'+(S.canWrite?'':' disabled')+'></div>'; }); h+='</div></div>'; });
+  h+='<div class="field"><label for="rz-nota">Leitura do mês e ações corretivas</label><textarea id="rz-nota" rows="2"'+(S.canWrite?'':' disabled')+'>'+esc(r.nota||'')+'</textarea></div>';
+  h+='<div class="row"><button class="btn" id="rzSalvar"'+(S.canWrite?'':' disabled')+'>Salvar '+ROT[i]+'</button><span class="status" id="rzStatus">'+(S.db?'':'Os lançamentos ficam salvos quando o painel é aberto no claude.ai com acesso de edição.')+'</span></div></div>';
+  // conversões
+  var lanc=MESES.filter(function(m){return S.realizado[m];});
+  if(!lanc.length){ h+='<div class="empty">Nenhum mês lançado ainda. Assim que novembro for salvo, aparecem aqui a tabela de conversões, o previsto × realizado e o mix por canal.</div>'; return h; }
+  function cv(a,b){ return b>0? a/b : null; }
+  var linhas=[['Lead → contato','contatos','leads'],['Contato → reunião agendada','agendadas','contatos'],['Comparecimento (realizada ÷ agendada)','realizadas','agendadas'],['Reunião → oportunidade','oportunidades','realizadas'],['Oportunidade → proposta','propostas','oportunidades'],['Proposta → venda','_vendas','propostas'],['Indicação de parceiro → venda','v_parc','indicacoes']];
+  h+='<div class="card"><h3>Conversões medidas</h3><div class="scroll"><table class="t"><thead><tr><th>Etapa</th>'+lanc.map(function(m){return '<th class="r">'+ROT[MESES.indexOf(m)]+'</th>';}).join('')+'<th class="r">Acumulado</th></tr></thead><tbody>';
+  function val(r,f){ if(f==='_vendas') return (+r.v_sdr||0)+(+r.v_parc||0)+(+r.v_ind||0)+(+r.v_pipe||0); return +r[f]||0; }
+  linhas.forEach(function(l){ h+='<tr><td>'+l[0]+'</td>'; var A=0,B=0; lanc.forEach(function(m){ var r=S.realizado[m], a=val(r,l[1]), b=val(r,l[2]); A+=a;B+=b; h+='<td class="r">'+pct(cv(a,b),0)+'</td>'; }); h+='<td class="r"><b>'+pct(cv(A,B),0)+'</b></td></tr>'; });
+  h+='<tr><td>Ticket médio realizado</td>'; var NN=0,VV=0; lanc.forEach(function(m){ var r=S.realizado[m], v=val(r,'_vendas'); NN+=+r.nmrr||0; VV+=v; h+='<td class="r">'+(v?brl((+r.nmrr||0)/v):'—')+'</td>'; }); h+='<td class="r"><b>'+(VV?brl(NN/VV):'—')+'</b></td></tr>';
+  h+='<tr class="tot"><td>NMRR realizado ÷ meta</td>'; var MT=0; lanc.forEach(function(m){ var j=MESES.indexOf(m), r=S.realizado[m]; MT+=M.meta[j]; h+='<td class="r '+((+r.nmrr||0)>=M.meta[j]?'pos':'neg')+'">'+pct((+r.nmrr||0)/M.meta[j],0)+'</td>'; }); h+='<td class="r">'+pct(NN/MT,0)+'</td></tr>';
+  h+='</tbody></table></div></div>';
+  h+='<div class="card"><h3>NMRR realizado por canal × meta</h3><div class="legend"><span><i style="background:var(--s1)"></i>Pipeline anterior</span><span><i style="background:var(--s2)"></i>SDR</span><span><i style="background:var(--s3)"></i>Parceiros</span><span><i style="background:var(--s4)"></i>Indicação de clientes</span><span><i class="dash"></i>Meta</span></div><div class="scroll" id="chReal"></div><p class="small muted">O NMRR de cada mês é dividido entre os canais na proporção do número de vendas de cada um.</p></div>';
+  return h;
+}
+function afterAcomp(M){
+  var b=el('chReal'); if(!b) return;
+  function por(f){ return MESES.map(function(m){ var r=S.realizado[m]; if(!r) return 0; var v=(+r.v_sdr||0)+(+r.v_parc||0)+(+r.v_ind||0)+(+r.v_pipe||0); return v? (+r.nmrr||0)*(+r[f]||0)/v : 0; }); }
+  var o={labels:ROT,aria:'NMRR realizado por canal',series:[{nome:'Pipeline anterior',cor:'--s1',vals:por('v_pipe')},{nome:'SDR',cor:'--s2',vals:por('v_sdr')},{nome:'Parceiros',cor:'--s3',vals:por('v_parc')},{nome:'Indicação de clientes',cor:'--s4',vals:por('v_ind')}],line:{nome:'Meta',vals:M.meta}};
+  b.innerHTML=chartStack(o); bindChart(b,o);
+}
+
+function secWms(M){
+  var byId={}; S.pipeline.forEach(function(d){byId[d.id]=d;});
+  var dec={go:0,nogo:0,aval:0};
+  GAPS.forEach(function(g){ var w=S.wms[g.id]||{}; if(w.decisao==='Desenvolver') dec.go++; else if(w.decisao==='Não desenvolver') dec.nogo++; else dec.aval++; });
+  var h='<div class="sec-head"><span class="label">Análise de viabilidade · Seenc para indústria e distribuição</span><h2>81% das contas prioritárias dependem de um WMS que ainda não atende bem indústria e distribuição</h2><p>São 708 empresas no SAM e 127 das 157 contas Hot. Esta seção junta a demanda real (pipeline e base de leads) aos requisitos que faltam, para o time de produto estimar esforço e a diretoria decidir o que entra no roadmap.</p></div>';
+  h+='<div class="tiles"><div class="tile"><span class="label">SAM da frente</span><span class="num">708</span><span class="note">467 indústrias e 241 distribuidoras</span></div><div class="tile"><span class="label">Contas Hot na frente</span><span class="num">127</span><span class="note">de 157 (81%)</span></div><div class="tile"><span class="label">Abertas pelo Hub</span><span class="num">72</span><span class="note">contas com ERP conhecido e fit de Hub</span></div><div class="tile"><span class="label">Decisões</span><span class="num">'+dec.go+' · '+dec.nogo+' · '+dec.aval+'</span><span class="note">desenvolver · não desenvolver · a avaliar</span></div></div>';
+  var ganho=127*0.05*S.prem.ticket;
+  h+='<div class="cols"><div class="callout"><h4>O que está em jogo</h4><p>Se as 127 contas Hot de indústria e distribuição convertessem a 5%, seriam cerca de 6 contratos e '+brl(ganho)+' de NMRR, além do ticket maior do WMS avançado (contas Senior e TOTVS). Sem a evolução do produto, essa frente fica restrita ao Hub e a diagnósticos.</p></div>'+
+   '<div class="callout warn"><h4>Como decidir cada requisito</h4><p>Desenvolver quando a demanda é recorrente (3 ou mais casos ou um segmento inteiro da base), o esforço cabe em até 2 trimestres e o requisito destrava contratos já em negociação. Caso isolado vira customização orçada à parte. Requisito que exige reescrever o núcleo do produto fica para 2028.</p></div></div>';
+  h+='<div class="gaps">';
+  GAPS.forEach(function(g){ var w=S.wms[g.id]||{}, dis=S.canWrite?'':' disabled';
+    var afet=g.afeta.map(function(id){return byId[id];}).filter(Boolean), mrr=sum(afet.filter(function(d){return d.status!=='perdido';}).map(function(d){return +d.mrr||0;}));
+    h+='<div class="gap"><div class="ev"><h4>'+g.nome+'</h4><p><span class="pill '+(/Não existe|Impeditivo/.test(g.hoje)?'crit':/desenvolvimento|estudo|Fase 2/.test(g.hoje)?'warn':'')+'">Hoje: '+esc(g.hoje)+'</span></p><p>'+esc(g.ev)+'</p><p class="small muted">Segmentos: '+esc(g.seg)+'</p>'+
+     (afet.length?'<div class="tags">'+afet.map(function(d){return '<span class="tag">'+esc(d.nome)+'</span>';}).join('')+'</div><p class="small"><b>'+brl(mrr)+'</b> de mensalidade no pipeline depende deste requisito</p>':'<p class="small muted">Nenhum negócio do pipeline atual ligado a este requisito.</p>')+'</div>'+
+     '<div class="ctl">'+
+      '<div class="field"><label for="wm-st-'+g.id+'">Status no produto</label><select id="wm-st-'+g.id+'" data-wms="'+g.id+'" data-f="status"'+dis+'>'+['A avaliar','Atende','Atende em parte','Em desenvolvimento','Não atende'].map(function(o){return '<option'+((w.status||'A avaliar')===o?' selected':'')+'>'+o+'</option>';}).join('')+'</select></div>'+
+      '<div class="field"><label for="wm-es-'+g.id+'">Esforço</label><select id="wm-es-'+g.id+'" data-wms="'+g.id+'" data-f="esforco"'+dis+'>'+['A estimar','Pequeno (até 1 mês)','Médio (1 trimestre)','Grande (2+ trimestres)'].map(function(o){return '<option'+((w.esforco||'A estimar')===o?' selected':'')+'>'+o+'</option>';}).join('')+'</select></div>'+
+      '<div class="field"><label for="wm-pz-'+g.id+'">Previsão de entrega</label><select id="wm-pz-'+g.id+'" data-wms="'+g.id+'" data-f="prazo"'+dis+'>'+['A definir'].concat(ROT).concat(['Depois de out/27']).map(function(o){return '<option'+((w.prazo||'A definir')===o?' selected':'')+'>'+o+'</option>';}).join('')+'</select></div>'+
+      '<div class="field"><label for="wm-dc-'+g.id+'">Decisão</label><select id="wm-dc-'+g.id+'" data-wms="'+g.id+'" data-f="decisao"'+dis+'>'+['A avaliar','Desenvolver','Customização paga','Não desenvolver'].map(function(o){return '<option'+((w.decisao||'A avaliar')===o?' selected':'')+'>'+o+'</option>';}).join('')+'</select></div>'+
+      '<div class="field"><label for="wm-nt-'+g.id+'">Observações do produto</label><textarea id="wm-nt-'+g.id+'" rows="2" data-wms="'+g.id+'" data-f="nota"'+dis+'>'+esc(w.nota||'')+'</textarea></div>'+
+     '</div></div>';
+  });
+  h+='</div><p class="small muted">Evidências tiradas dos diagnósticos da Carteira Comercial (posição de 08/10/2026) e da base de leads. As escolhas de status, esforço, prazo e decisão ficam salvas para todos.</p>';
+  return h;
+}
+
+function secBase(){
+  var h='<div class="sec-head"><span class="label">Base de leads planejada</span><h2>Onda 1 com as 157 contas Hot; depois, as 614 com ERP conhecido</h2><p>A base veio de carteiras ativas de Omie (Ribeirão Preto e MG), Senior (Noroeste Paulista) e TOTVS, filtradas para comércio e indústria. O peso do ramo no score continua igual para todos os segmentos.</p></div>';
+  var fn=[['Linhas nas planilhas',4397],['Registros ativos',2500],['TAM (empresas únicas)',2032],['SAM (comércio e indústria)',949],['SAM com ERP conhecido (Onda 2)',614],['SOM: contas Hot (Onda 1)',157]];
+  h+='<div class="cols"><div class="card"><h3>Do total à prioridade</h3><div class="funnel">'+fn.map(function(f){return '<div class="fn"><span>'+f[0]+'</span><div class="trk"><i style="width:'+(f[1]/4397*100)+'%"></i></div><span class="num">'+nf(f[1],0)+'</span></div>';}).join('')+'</div></div>';
+  h+='<div class="card"><h3>Ondas de prospecção</h3><div class="scroll"><table class="t"><thead><tr><th>Onda</th><th class="r">Contas</th><th>Quando</th><th>Abordagem</th></tr></thead><tbody>'+
+   '<tr><td><b>1 · Hot</b><small>30 varejo/e-commerce, 127 indústria/distribuição</small></td><td class="r">157</td><td>nov/26 a jan/27</td><td>Varejo e e-commerce: oferta completa. Indústria e distribuição: Hub ou reunião de diagnóstico</td></tr>'+
+   '<tr><td><b>2 · ERP conhecido</b><small>Warm restantes</small></td><td class="r">457</td><td>fev/27 em diante</td><td>Cadência por ERP: Omie (Hub + WMS leve), Senior (WMS avançado), TOTVS (omnichannel)</td></tr>'+
+   '<tr><td><b>Qualificação</b><small>ERP a confirmar</small></td><td class="r">335</td><td>em paralelo</td><td>Ligação curta só para saber ERP, armazém e canais digitais</td></tr></tbody></table></div></div></div>';
+  h+='<div class="cols"><div class="card"><h3>A base cobre a meta?</h3><p>A meta pede cerca de 80 contratos no ano. Trabalhar as 949 empresas do SAM com 5% de conversão rende perto de 47. A base sozinha não fecha o ano: o restante vem de parceiros, indicações de clientes e expansão na base atual. Por isso o Executivo de Negócios é parte central do plano.</p></div>'+
+   '<div class="card"><h3>SOM por ERP e ramo</h3><div class="scroll"><table class="t"><tbody><tr><td>Omie</td><td class="r">123</td><td>Atacado/distribuição</td><td class="r">64</td></tr><tr><td>Senior</td><td class="r">27</td><td>Indústria</td><td class="r">63</td></tr><tr><td>TOTVS</td><td class="r">7</td><td>Varejo</td><td class="r">24</td></tr><tr><td></td><td></td><td>E-commerce</td><td class="r">6</td></tr></tbody></table></div><p class="small muted">Os contatos ficam no CRM e na base consolidada; este painel mostra só os totais.</p></div></div>';
+  return h;
+}
+
+function secMetodo(){
+  var refs=[
+   ['Receita Previsível','Aaron Ross e Marylou Tyler','Funções separadas (SDR prospecta, closer fecha, implantação retém) e prospecção ativa estruturada. Base do desenho do time.'],
+   ['The Sales Acceleration Formula','Mark Roberge','Vendas como processo medido: contratação por perfil, treinamento padronizado e coaching por indicadores. Base da rampa e do ritual.'],
+   ['Bowtie e Blueprints for a SaaS Sales Organization','Jacco van der Kooij (Winning by Design)','A receita recorrente nasce depois da venda: implantação, retenção e expansão. Base do bônus de implantação e da meta de NRR.'],
+   ['SaaS Metrics 2.0','David Skok','LTV:CAC de 3× ou mais e payback do CAC em até 12 meses. Base dos indicadores de investimento.'],
+   ['Land and expand','Prática de mercado SaaS','Entrar pelo Hub e expandir para o Seenc na mesma conta. Base da abordagem na frente de indústria.'],
+   ['Crossing the Chasm','Geoffrey Moore','Conquistar um nicho antes de ampliar: varejo e e-commerce primeiro, indústria quando o produto estiver pronto.'],
+   ['SPIN Selling e MEDDIC','Neil Rackham; Jack Napoli (PTC)','SPIN para quantificar a dor no armazém; MEDDIC para vendas com vários decisores (WMS avançado).'],
+   ['As 4 Disciplinas da Execução e OKRs','McChesney, Covey e Huling; John Doerr','Indicadores de atividade × indicadores de resultado, placar visível e cadência de cobrança. Base do acompanhamento.']
+  ];
+  var h='<div class="sec-head"><span class="label">Método, premissas e fontes</span><h2>Como o plano foi montado</h2><p>Meta de cima para baixo (5% ao mês sobre R$ 15 mil) cruzada com a capacidade de baixo para cima (pipeline, SDR, parceiros e indicações). A diferença entre as duas é o que o plano de ação precisa cobrir.</p></div>';
+  h+='<div class="card"><h3>Referências usadas</h3><div class="refs">'+refs.map(function(r){return '<div class="ref"><b>'+r[0]+'</b><span class="small muted">'+r[1]+'</span><span>'+r[2]+'</span></div>';}).join('')+'</div></div>';
+  h+='<div class="card"><h3>Fontes dos custos de pessoal</h3><ul class="small" style="padding-left:18px;display:flex;flex-direction:column;gap:6px">'+
+   '<li>Executivo de contas sênior em São Paulo: R$ 11,7 a 20,8 mil, mediana de R$ 17 mil (<a href="https://www.roberthalf.com/br/pt/vagas-detalhes/executivoa-de-contas-g/sao-paulo" target="_blank" rel="noopener">Robert Half</a>). Em Belo Horizonte, mediana de R$ 15,45 mil (<a href="https://www.roberthalf.com/br/pt/vagas-detalhes/executivoa-de-contas-g/belo-horizonte" target="_blank" rel="noopener">Robert Half</a>).</li>'+
+   '<li>SDR pleno: R$ 7 a 10 mil com variável; AE de R$ 12 a 25 mil com comissão (<a href="https://jobrise.io/pt/blog/tech-sales-brasil-sdr-ae-vagas/" target="_blank" rel="noopener">Jobrise, 2026</a>).</li>'+
+   '<li>Encargos CLT fora do Simples: 1,56× a 1,9× o salário, conforme RAT, terceiros e benefícios (<a href="https://valorfinal.com.br/guia/custo-funcionario" target="_blank" rel="noopener">ValorFinal</a>, <a href="https://www.contabilidadezen.com.br/blog/quanto-custa-funcionario-encargos-2026/" target="_blank" rel="noopener">Contabilidade Zen</a>). O plano usa 1,7×; confirmar com o contador pelo CNAE da Weesu.</li>'+
+   '<li>Gerente de canais e parcerias: sem faixa pública confiável para SaaS no Brasil; a base foi alinhada à do executivo de contas sênior.</li></ul></div>';
+  h+='<div class="card"><h3>Premissas a validar com dados reais</h3><ul class="small" style="padding-left:18px;display:flex;flex-direction:column;gap:6px">'+
+   '<li>Conversões do funil: os 50 clientes atuais vieram de forma orgânica (parceiros e indicação). A prospecção ativa é um canal novo, e as taxas de reunião → venda ('+pct(S.prem.convReuniaoVenda,0)+') e de indicação → venda ('+pct(S.prem.convIndicacao,0)+') são estimativas até o CRM medir.</li>'+
+   '<li>Chance de fechar e mês previsto de cada negócio do pipeline: estimados pela etapa e pelo engajamento registrados na Carteira Comercial.</li>'+
+   '<li>Margem bruta de '+pct(S.prem.margemBruta,0)+' sobre a mensalidade, usada no payback e no LTV.</li>'+
+   '<li>Rampa de parceiros ativos: 2 em novembro, 6 em janeiro, 12 em abril e 20 em outubro de 2027.</li></ul></div>';
+  return h;
+}
+
+/* ---------- render ---------- */
+function render(){
+  var M=modelo(), h='';
+  if(aba==='resumo') h=secResumo(M); else if(aba==='metas') h=secMetas(M); else if(aba==='investimento') h=secInvest(M);
+  else if(aba==='plano') h=secPlano(M); else if(aba==='pipeline') h=secPipeline(M); else if(aba==='acompanhamento') h=secAcomp(M);
+  else if(aba==='wms') h=secWms(M); else if(aba==='base') h=secBase(); else { aba=aba==='metodo'?aba:'resumo'; h=aba==='metodo'?secMetodo():secResumo(M); }
+  el('main').innerHTML='<div class="wrap">'+h+'<footer>Plano Comercial Weesu · base de leads de 12/10/2026 · pipeline de 08/10/2026 · premissas revisadas mensalmente</footer></div>';
+  if(aba==='resumo') afterResumo(M); if(aba==='acompanhamento') afterAcomp(M);
+}
+
+/* ---------- interações e gravação ---------- */
+function setStatus(id,txt){ var s=el(id); if(s) s.textContent=txt; }
+async function salvar(path,data,stId,okTxt){
+  if(!S.db){ setStatus(stId,'Sem conexão com o banco do painel: a alteração vale só nesta visita.'); return false; }
+  try{ await S.db.doc(path).set(data); if(stId) setStatus(stId,okTxt||'Salvo.'); return true; }
+  catch(e){ if(e&&e.code==='invalid_argument'){ S.canWrite=false; setStatus(stId,'Seu acesso a este painel é somente leitura.'); } else setStatus(stId,'Não foi possível salvar agora. Tente de novo em instantes.'); return false; }
+}
+el('main').addEventListener('change',function(e){
+  var t=e.target;
+  if(t.id==='mesSel'){ mesSel=t.value; render(); return; }
+  if(t.hasAttribute('data-acao')){ var id=t.getAttribute('data-acao'); S.acoes[id]={feito:t.checked}; render(); salvar('acoes/'+id,{feito:t.checked}); return; }
+  if(t.hasAttribute('data-pid')){ var pid=t.getAttribute('data-pid'), f=t.getAttribute('data-f'), d=S.pipeline.find(function(x){return x.id===pid;}); if(!d) return;
+    var nd=Object.assign({},d); nd[f]= f==='prob'? Math.max(0,Math.min(100,+t.value||0))/100 : t.value; S.pipeline=S.pipeline.map(function(x){return x.id===pid?nd:x;}); render(); var c=Object.assign({},nd); delete c.id; salvar('pipeline/'+pid,c); return; }
+  if(t.hasAttribute('data-wms')&&t.tagName==='SELECT'){ wmsSave(t); return; }
+});
+el('main').addEventListener('focusout',function(e){ var t=e.target; if(t.hasAttribute&&t.hasAttribute('data-wms')&&t.tagName==='TEXTAREA') wmsSave(t); });
+function wmsSave(t){ var id=t.getAttribute('data-wms'), f=t.getAttribute('data-f'), w=Object.assign({},S.wms[id]||{}); if(w[f]===t.value) return; w[f]=t.value; S.wms[id]=w; if(t.tagName==='SELECT') render(); salvar('wms/'+id,w); }
+el('main').addEventListener('click',function(e){
+  var t=e.target;
+  if(t.id==='premSalvar'){ var np=Object.assign({},S.prem); document.querySelectorAll('[data-prem]').forEach(function(i){ var v=parseFloat(i.value); if(isNaN(v)) return; np[i.getAttribute('data-prem')]= i.getAttribute('data-t')==='p'? v/100 : v; }); S.prem=np; render(); setStatus('premStatus','Salvando…'); salvar('config/premissas',np,'premStatus','Premissas salvas. O plano foi recalculado.'); }
+  if(t.id==='premPadrao'){ S.prem=Object.assign({},DEF); render(); salvar('config/premissas',S.prem,'premStatus','Premissas de volta ao padrão.'); }
+  if(t.id==='rzSalvar'){ var r={}; document.querySelectorAll('[data-rz]').forEach(function(i){ if(i.value!=='') r[i.getAttribute('data-rz')]=parseFloat(i.value); }); var nt=el('rz-nota').value; if(nt) r.nota=nt; S.realizado[mesSel]=r; var m=mesSel; render(); setStatus('rzStatus','Salvando…'); salvar('realizado/'+m,r,'rzStatus',ROT[MESES.indexOf(m)]+' salvo.'); }
+});
+
+/* ---------- carga ---------- */
+renderNav(); render();
+(async function(){
+  var cl=window.claude; if(!cl||!cl.use){ S.loaded.pipeline=true; render(); return; }
+  var db=null,user=null;
+  try{ db=await cl.use('db'); }catch(e){}
+  try{ user=await cl.use('user'); }catch(e){}
+  if(!db){ S.loaded.pipeline=true; render(); return; }
+  S.db=db;
+  var cw=null; try{ cw=user? await user.can('data.write') : null; }catch(e){}
+  S.canWrite = cw!==false;
+  var pend=5, first=true;
+  function done(){ if(pend>0){ pend--; } render(); }
+  db.doc('config/premissas').onSnapshot(function(s){ S.prem=Object.assign({},DEF,s.exists?s.data():{}); done(); },function(){ done(); });
+  db.collection('pipeline').onSnapshot(function(s){ S.pipeline=s.docs.map(function(d){ return Object.assign({id:d.id},d.data()); }); S.loaded.pipeline=true; done(); },function(){ S.loaded.pipeline=true; done(); });
+  db.collection('realizado').onSnapshot(function(s){ var r={}; s.docs.forEach(function(d){ r[d.id]=d.data(); }); S.realizado=r; done(); },function(){ done(); });
+  db.collection('acoes').onSnapshot(function(s){ var r={}; s.docs.forEach(function(d){ r[d.id]=d.data(); }); S.acoes=r; done(); },function(){ done(); });
+  db.collection('wms').onSnapshot(function(s){ var r={}; s.docs.forEach(function(d){ r[d.id]=d.data(); }); S.wms=r; done(); },function(){ done(); });
+})();
+})();
+</script>
