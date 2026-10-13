@@ -225,7 +225,7 @@ var DEF = {
 var RAMP_SDR=[0.5,0.8,1,1,1,1,1,1,1,1,1,1];
 var FRANQ=[0,1,2,3,4,5,6,6,7,7,8,8];            // franqueados Omie ativos (1 indicação/mês cada)
 var CONTAB=[2,4,6,8,10,12,14,16,18,20,22,24];   // contabilidades ativas (0,3 indicação/mês cada)
-var ECOM=[2,2,3,3,4,4,4,5,5,5,6,6];             // indicações/mês do e-commerce Puro (parceiro já formalizado)
+var ECOM=[0,0,1,2,3,3,4,4,5,5,6,6];             // novas indicações/mês do e-commerce Puro, além dos leads MeliXP já no pipeline
 var ERPS=[0,0,1,1,2,2,3,3,3,4,4,4];             // ERPs corporativos parceiros (0,5 indicação/mês cada)
 var MESES=['2026-11','2026-12','2027-01','2027-02','2027-03','2027-04','2027-05','2027-06','2027-07','2027-08','2027-09','2027-10'];
 var ROT=['nov/26','dez/26','jan/27','fev/27','mar/27','abr/27','mai/27','jun/27','jul/27','ago/27','set/27','out/27'];
@@ -258,7 +258,7 @@ var HORIZ=[
   ['n1d','Subir a Onda 1 da nossa base (157 contas Hot de TOTVS, Omie e Senior) com cadência por ERP','SDR','157 contas em cadência'],
   ['n1e','Apresentar o programa de indicação a 10 franqueados Omie de outras praças','Executivo de Negócios','1 franqueado ativo'],
   ['n1f','Reativar as contabilidades parceiras que já conhecemos pela Omie, com kit de indicação','Executivo de Negócios','2 contabilidades ativas'],
-  ['n1g','Ativar o e-commerce Puro, primeiro parceiro formalizado: rotina semanal de indicações, materiais e regra de 10% recorrente','Executivo de Negócios','2 indicações no mês'],
+  ['n1g','Trabalhar os leads MeliXP indicados pelo e-commerce Puro: tier A em até 24 h, tier B qualificado no mês, e rotina semanal de novas indicações','SDR + Closer','19 leads A contatados'],
   ['n1h','Abrir conversa com os canais de Sankhya, Senior e TOTVS para a frente high ticket','Comercial + sócios','2 conversas abertas']]},
  {id:'m3',nome:'Próximos 3 meses',per:'nov/2026 a jan/2027',goal:'R$ 47.300 de NMRR acumulado, funil real medido e o primeiro ERP corporativo parceiro',acts:[
   ['n3a','Cadência em 100% da Onda 1 e início da Onda 2 (614 contas com ERP conhecido)','SDR','20 reuniões realizadas/mês'],
@@ -317,13 +317,13 @@ function modelo(){
   // ano 1: capacidade por canal
   var cap={pipe:[],base:[],franq:[],contab:[],ecom:[],erp:[]}, reun=[];
   for(var m=0;m<12;m++){
-    var pipe=0; S.pipeline.forEach(function(d){ if(d.status==='aberto'&&d.mes===MESES[m]) pipe+=(+d.mrr||0)*(+d.prob||0); });
+    var pipe=0, puro=0; S.pipeline.forEach(function(d){ if(d.status==='aberto'&&d.mes===MESES[m]){ var w=(+d.mrr||0)*(+d.prob||0); if(d.origem==='puro') puro+=w; else pipe+=w; } });
     cap.pipe.push(pipe);
     reun.push(p.reunioesSdrPlena*RAMP_SDR[m]*hcS[0]);
     cap.base.push(m>0? reun[m-1]*p.convReuniaoVenda*p.ticketLow : 0);
     cap.franq.push(m>0? FRANQ[m-1]*1*p.convIndicacao*p.ticketLow : 0);
     cap.contab.push(m>0? CONTAB[m-1]*0.3*p.convIndicacao*p.ticketLow : 0);
-    cap.ecom.push(m>0? ECOM[m-1]*p.convEcom*p.ticketLow : 0);
+    cap.ecom.push(puro+(m>0? ECOM[m-1]*p.convEcom*p.ticketLow : 0));
     cap.erp.push(m>1? ERPS[m-2]*0.5*p.convErp*p.ticketHigh : 0);
   }
   M.cap=cap; M.capTot=MESES.map(function(_,i){ return cap.pipe[i]+cap.base[i]+cap.franq[i]+cap.contab[i]+cap.ecom[i]+cap.erp[i]; });
@@ -451,6 +451,8 @@ function secAbertura(M){
    '<div class="tile"><span class="label">MRR no fim do ano 5</span><span class="num">'+k(a5.mrr)+'</span><span class="note">ARR de '+k(a5.arr)+' · '+nf(a5.cli,0)+' clientes</span></div>'+
    '<div class="tile"><span class="label">Valuation projetado no ano 5</span><span class="num">'+k(a5.val)+'</span><span class="note">hoje '+k(S.prem.valuation)+', mantido o múltiplo de '+nf(M.mult,1)+'× ARR</span></div>'+
    '<div class="tile"><span class="label">Investimento da Dixx</span><span class="num">'+k(-M.pico)+'</span><span class="note">maior necessidade de caixa do time comercial, em '+mesLabel(M.picoMes)+'</span></div></div>';
+  var PUx=S.pipeline.filter(function(d){return d.origem==='puro';});
+  if(PUx.length) h+='<div class="callout" style="border:2px solid var(--accent)"><h4>O primeiro parceiro já está entregando</h4><p>O e-commerce Puro, primeiro parceiro formalizado da Dixx, indicou '+PUx.length+' empresas reais no Mercado Livre Experience 2026. Todas já estão no pipeline, com '+PUx.filter(function(d){return d.tier==="A";}).length+' prioritárias para contato em 24 horas.</p></div>';
   h+='<div class="card"><h3>A proposta em três pontos</h3><div class="cols3" style="gap:12px">'+
    '<div class="callout"><h4>A Dixx assume o comercial</h4><p>A Dixx monta e paga 100% do time (SDR, Closer e Executivo de Negócios), o processo, o CRM e os canais. A Weesu fica responsável pelo marketing.</p></div>'+
    '<div class="callout"><h4>A Dixx ganha com o resultado</h4><p>'+pct(S.prem.revDireta,0)+' da mensalidade, por 5 anos, dos clientes captados diretamente; '+pct(S.prem.revIndicacao,0)+' quando vierem por indicação, e os outros '+pct(S.prem.comissaoParceiro,0)+' vão ao parceiro.</p></div>'+
@@ -467,11 +469,14 @@ function secCanais(M){
   var c=M.cap, t=function(id){ return sum(c[id]); };
   var h='<div class="sec-head"><span class="label">Pontos focais</span><h2>Cinco frentes de captação, com o e-commerce Puro à frente</h2><p>A Weesu já cresce por parceiros e indicações, e o e-commerce Puro é o primeiro parceiro formalizado da Dixx. A estratégia organiza esses canais, soma a prospecção ativa sobre a nossa base e abre a frente high ticket com os ERPs corporativos.</p></div>';
   h+='<div class="focos">';
+  var PU=S.pipeline.filter(function(d){return d.origem==='puro';}), PUa=PU.filter(function(d){return d.status==='aberto';});
+  var tierN=function(t){return PU.filter(function(d){return d.tier===t;}).length;};
+  var puroTxt=PU.length? ' Já indicou '+PU.length+' empresas reais captadas no estande do Mercado Livre Experience (MeliXP, 23 a 25/09/2026), todas no pipeline: '+tierN('A')+' prioritárias (A), '+tierN('B')+' para qualificar (B), '+tierN('C')+' para enriquecer (C) e '+tierN('D')+' para nutrir (D). Somam '+k(sum(PUa.map(function(d){return +d.mrr||0;})))+' de mensalidade estimada, '+k(sum(PUa.map(function(d){return (+d.mrr||0)*(+d.prob||0);})))+' ponderados.' : '';
   var F=[
    {c:'--s2',n:'Nossa base',d:'Carteiras ativas de TOTVS, Omie e Senior já analisadas: 949 empresas com aderência, 157 prioritárias (Onda 1) e 614 com ERP conhecido (Onda 2).',tipo:'Captação direta · SDR',rem:pct(S.prem.revDireta,0)+' para a Dixx',a1:t('base')},
    {c:'--s3',n:'Base de outros franqueados Omie',d:'Franqueados de outras praças indicam clientes com estoque e marketplace. Mesma oferta e mesmo playbook da base Omie que já conhecemos.',tipo:'Indicação · Executivo de Negócios',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' ao franqueado',a1:t('franq')},
    {c:'--s4',n:'Contabilidades parceiras',d:'Contabilidades a que já tínhamos acesso pela Omie. Conhecem o porte e a operação dos clientes e indicam quem tem dor de estoque.',tipo:'Indicação · Executivo de Negócios',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' à contabilidade',a1:t('contab')},
-   {c:'--s5',star:true,n:'E-commerce Puro',d:'Nosso primeiro parceiro formalizado e o mais forte. Indica operações de e-commerce que já chegam com a necessidade identificada, por isso convertem mais. Gera indicações desde o primeiro mês.',tipo:'Indicação · Closer',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' ao parceiro',a1:t('ecom')},
+   {c:'--s5',star:true,n:'E-commerce Puro',d:'Nosso primeiro parceiro formalizado e o mais forte. Indica operações de e-commerce que já chegam com a necessidade identificada, por isso convertem mais. Gera indicações desde o primeiro mês.'+puroTxt,tipo:'Indicação · Closer',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' ao parceiro',a1:t('ecom')},
    {c:'--s6',n:'ERPs corporativos (high ticket)',d:'Parcerias com TOTVS, Sankhya, Senior, Oracle e SAP Business One para chegar a operações maiores, com ticket a partir de '+brl(S.prem.ticketHigh)+'.',tipo:'Indicação · Executivo de Negócios',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' ao canal do ERP',a1:t('erp')}
   ];
   F.sort(function(a,b){return (b.star?1:0)-(a.star?1:0);});
@@ -615,27 +620,30 @@ function secPlano(){
   return h;
 }
 
+var pipeFiltro='todos';
 function secPipeline(){
-  var d=S.pipeline.slice().sort(function(a,b){ return (a.status===b.status?0:a.status==='aberto'?-1:1) || (a.mes||'').localeCompare(b.mes||'') || (b.mrr*b.prob-a.mrr*a.prob); });
+  var d=S.pipeline.filter(function(x){ return pipeFiltro==='todos'||(pipeFiltro==='puro'?x.origem==='puro':x.origem!=='puro'); }).sort(function(a,b){ return (a.status===b.status?0:a.status==='aberto'?-1:1) || (a.mes||'').localeCompare(b.mes||'') || (b.mrr*b.prob-a.mrr*a.prob); });
   var ab=d.filter(function(x){return x.status==='aberto';});
   var tot=sum(ab.map(function(x){return +x.mrr||0;})), pond=sum(ab.map(function(x){return (+x.mrr||0)*(+x.prob||0);})), setupP=sum(ab.map(function(x){return (+x.setup||0)*(+x.prob||0);}));
   var nov=sum(ab.filter(function(x){return x.mes==='2026-11';}).map(function(x){return (+x.mrr||0)*(+x.prob||0);}));
   var hi=ab.filter(function(x){return (+x.mrr||0)>=S.prem.ticketHigh;});
-  var h='<div class="sec-head"><span class="label">Negócios em andamento · posição de 08/10/2026</span>';
+  var h='<div class="sec-head"><span class="label">Negócios em andamento · Carteira Comercial (08/10/2026) e leads MeliXP do e-commerce Puro</span>';
   if(!S.loaded.pipeline) return h+'<h2>Pipeline</h2></div><div class="empty">Carregando os negócios em andamento…</div>';
   if(!d.length) return h+'<h2>Pipeline</h2></div><div class="empty">Nenhum negócio cadastrado ainda.</div>';
-  h+='<h2>'+ab.length+' negócios abertos somam '+k(tot)+' de mensalidade; ponderados, '+k(pond)+'</h2><p>'+hi.length+' deles já são high ticket ('+hi.map(function(x){return esc(x.nome);}).join(', ')+'). Para novembro, o pipeline ponderado é de '+brl(nov)+' contra a meta de '+brl(S.prem.metaM1)+'. Chance e mês previsto são estimativas iniciais: ajuste aqui e a previsão muda junto.</p></div>';
+  h+='<h2>'+ab.length+' negócios abertos somam '+k(tot)+' de mensalidade; ponderados, '+k(pond)+'</h2><p>'+(hi.length?hi.length+' deles já são high ticket ('+hi.map(function(x){return esc(x.nome);}).join(', ')+'). ':'')+'Para novembro, o pipeline ponderado é de '+brl(nov)+' contra a meta de '+brl(S.prem.metaM1)+'. Chance e mês previsto são estimativas iniciais: ajuste aqui e a previsão muda junto.</p></div>';
   h+='<div class="tiles"><div class="tile"><span class="label">Mensalidade em aberto</span><span class="num">'+k(tot)+'</span><span class="note">'+ab.length+' negócios</span></div><div class="tile"><span class="label">Ponderada</span><span class="num">'+k(pond)+'</span><span class="note">'+nf(sum(ab.map(function(x){return +x.prob||0;})),1)+' contratos esperados</span></div><div class="tile"><span class="label">Setup ponderado</span><span class="num">'+k(setupP)+'</span><span class="note">receita de implantação</span></div><div class="tile"><span class="label">Ticket médio do pipeline</span><span class="num">'+k(tot/Math.max(1,ab.length))+'</span><span class="note">contra '+brl(S.prem.ticketLow)+' de hoje</span></div></div>';
+  var nP=S.pipeline.filter(function(x){return x.origem==='puro';}).length;
+  h+='<div class="row" role="group" aria-label="Filtrar origem">'+[['todos','Todos ('+S.pipeline.length+')'],['puro','E-commerce Puro · MeliXP ('+nP+')'],['direta','Captação direta ('+(S.pipeline.length-nP)+')']].map(function(o){return '<button class="chip" data-pf="'+o[0]+'" aria-pressed="'+(pipeFiltro===o[0])+'">'+o[1]+'</button>';}).join('')+'</div>';
   h+='<div class="card"><div class="scroll"><table class="t"><thead><tr><th>Negócio</th><th>Etapa / situação</th><th class="r">Mensalidade</th><th class="r">Setup</th><th>Chance</th><th>Mês previsto</th><th>Status</th><th class="r">Ponderado</th></tr></thead><tbody>';
   var opts=MESES.concat(['2027-11+']);
   d.forEach(function(x){ var dis=S.canWrite?'':' disabled';
-    h+='<tr'+(x.status!=='aberto'?' class="dim"':'')+'><td><b>'+esc(x.nome)+'</b>'+((+x.mrr||0)>=S.prem.ticketHigh?' <span class="pill acc">high ticket</span>':'')+'<small>'+esc(x.segmento)+' · '+esc(x.produto||'')+'</small></td><td>'+esc(x.etapa)+'<small><span class="pill '+(x.tom||'')+'">'+esc(x.situacao)+'</span></small><small>'+esc(x.pendencia||'')+'</small></td>'+
-     '<td class="r">'+brl(x.mrr)+'</td><td class="r">'+brl(x.setup)+'</td>'+
+    h+='<tr'+(x.status!=='aberto'?' class="dim"':'')+'><td><b>'+esc(x.nome)+'</b>'+((+x.mrr||0)>=S.prem.ticketHigh?' <span class="pill acc">high ticket</span>':'')+(x.origem==='puro'?' <span class="pill" style="background:color-mix(in srgb,var(--s5) 22%,transparent);color:var(--ink)">e-commerce Puro'+(x.tier?' · '+esc(x.tier):'')+'</span>':'')+'<small>'+esc(x.segmento)+' · '+esc(x.produto||'')+'</small></td><td>'+esc(x.etapa)+'<small><span class="pill '+(x.tom||'')+'">'+esc(x.situacao)+'</span></small><small>'+esc(x.pendencia||'')+'</small></td>'+
+     '<td class="r">'+brl(x.mrr)+(x.mrrEstimado?'<small>estimada pelo tier</small>':(x.pedDia?'<small>'+nf(x.pedDia,0)+' ped/dia</small>':''))+'</td><td class="r">'+brl(x.setup)+'</td>'+
      '<td><input class="inl" type="number" min="0" max="100" step="5" id="pp-'+x.id+'" data-pid="'+x.id+'" data-f="prob" value="'+Math.round((+x.prob||0)*100)+'" aria-label="Chance de fechar (%)"'+dis+'>%</td>'+
      '<td><select class="inl" id="pm-'+x.id+'" data-pid="'+x.id+'" data-f="mes" aria-label="Mês previsto"'+dis+'>'+opts.map(function(m,i){return '<option value="'+m+'"'+(x.mes===m?' selected':'')+'>'+(ROT[i]||'depois')+'</option>';}).join('')+'</select></td>'+
      '<td><select class="inl" id="ps-'+x.id+'" data-pid="'+x.id+'" data-f="status" aria-label="Status"'+dis+'>'+[['aberto','Aberto'],['ganho','Ganho'],['perdido','Perdido']].map(function(o){return '<option value="'+o[0]+'"'+(x.status===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></td>'+
      '<td class="r">'+(x.status==='aberto'?brl((+x.mrr||0)*(+x.prob||0)):'—')+'</td></tr>'; });
-  h+='</tbody></table></div><p class="small muted">Mensalidade de casos com faixa ou "a definir" usa o meio da faixa ou a simulação da Carteira Comercial.</p></div>';
+  h+='</tbody></table></div><p class="small muted">Mensalidade de casos com faixa ou "a definir" usa o meio da faixa ou a simulação da Carteira Comercial. Nos leads MeliXP, a mensalidade sai da Tabela A pelo volume declarado (pedidos/dia × 26); sem volume, é estimada pelo tier (A R$ 3.000, B R$ 2.000, C R$ 1.500, D R$ 1.000). Chance inicial por tier: A 20%, B 10%, C 5%, D 2%. Dados de contato ficam no CRM, fora deste painel.</p></div>';
   return h;
 }
 
@@ -755,6 +763,7 @@ el('main').addEventListener('focusout',function(e){ var t=e.target; if(t.hasAttr
 function wmsSave(t){ var id=t.getAttribute('data-wms'), f=t.getAttribute('data-f'), w=Object.assign({},S.wms[id]||{}); if(w[f]===t.value) return; w[f]=t.value; S.wms[id]=w; if(t.tagName==='SELECT') render(); salvar('wms/'+id,w); }
 el('main').addEventListener('click',function(e){
   var t=e.target;
+  var pf=t.closest&&t.closest('[data-pf]'); if(pf){ pipeFiltro=pf.getAttribute('data-pf'); render(); return; }
   if(t.id==='premSalvar'){ var np=Object.assign({},S.prem); document.querySelectorAll('[data-prem]').forEach(function(i){ var ty=i.getAttribute('data-t'), key=i.getAttribute('data-prem'); if(ty==='t'){ np[key]=arr5(i.value).join(','); return; } var v=parseFloat(i.value); if(isNaN(v)) return; np[key]= ty==='p'? v/100 : v; }); S.prem=np; render(); setStatus('premStatus','Salvando…'); salvar('config/premissas',np,'premStatus','Premissas salvas. A proposta foi recalculada.'); }
   if(t.id==='premPadrao'){ S.prem=Object.assign({},DEF); render(); salvar('config/premissas',S.prem,'premStatus','Premissas de volta ao padrão.'); }
   if(t.id==='rzSalvar'){ var r={}; document.querySelectorAll('[data-rz]').forEach(function(i){ if(i.value!=='') r[i.getAttribute('data-rz')]=parseFloat(i.value); }); var nt=el('rz-nota').value; if(nt) r.nota=nt; S.realizado[mesSel]=r; var m=mesSel; render(); setStatus('rzStatus','Salvando…'); salvar('realizado/'+m,r,'rzStatus',ROT[MESES.indexOf(m)]+' salvo.'); }
