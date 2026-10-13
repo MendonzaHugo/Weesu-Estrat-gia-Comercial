@@ -226,7 +226,7 @@ var RAMP_SDR=[0.5,0.8,1,1,1,1,1,1,1,1,1,1];
 var FRANQ=[0,1,2,3,4,5,6,6,7,7,8,8];            // franqueados Omie ativos (1 indicação/mês cada)
 var CONTAB=[2,4,6,8,10,12,14,16,18,20,22,24];   // contabilidades ativas (0,3 indicação/mês cada)
 var ECOM=[0,0,1,2,3,3,4,4,5,5,6,6];             // novas indicações/mês do e-commerce Puro, além dos leads MeliXP já no pipeline
-var ERPS=[0,0,1,1,2,2,3,3,3,4,4,4];             // ERPs corporativos parceiros (0,5 indicação/mês cada)
+var ERPS=[0,0,1,1,2,2,3,3,3,4,4,4];             // ERPs corporativos parceiros de integração (0,5 oportunidade/mês cada, prospectada pela Dixx)
 var MESES=['2026-11','2026-12','2027-01','2027-02','2027-03','2027-04','2027-05','2027-06','2027-07','2027-08','2027-09','2027-10'];
 var ROT=['nov/26','dez/26','jan/27','fev/27','mar/27','abr/27','mai/27','jun/27','jul/27','ago/27','set/27','out/27'];
 var ANOS=['Ano 1','Ano 2','Ano 3','Ano 4','Ano 5'], ANOS_P=['nov/26–out/27','nov/27–out/28','nov/28–out/29','nov/29–out/30','nov/30–out/31'];
@@ -237,7 +237,7 @@ var CANAIS=[
  {id:'franq',nome:'Franqueados Omie',cor:'--s3',tipo:'Indicação'},
  {id:'contab',nome:'Contabilidades parceiras',cor:'--s4',tipo:'Indicação'},
  {id:'ecom',nome:'E-commerce Puro (parceiro)',cor:'--s5',tipo:'Indicação'},
- {id:'erp',nome:'ERPs corporativos (high ticket)',cor:'--s6',tipo:'Indicação'}
+ {id:'erp',nome:'ERPs corporativos (high ticket)',cor:'--s6',tipo:'Direta'}
 ];
 
 var PREM_CAMPOS=[
@@ -246,7 +246,7 @@ var PREM_CAMPOS=[
  ['Ticket e mix',[['ticketLow','Ticket low (ERPs de entrada) (R$)','r'],['ticketHigh','Ticket high (ERPs corporativos) (R$)','r'],['shareHigh','NMRR high ticket a partir do ano 2','p'],['shareInd','NMRR via indicações a partir do ano 2','p'],['setupMedio','Setup médio (R$)','r'],['margemBruta','Margem bruta da mensalidade','p']]],
  ['Remuneração da Dixx',[['revDireta','Recorrente sobre captação direta','p'],['revIndicacao','Recorrente sobre indicação (parte da Dixx)','p'],['comissaoParceiro','Recorrente do parceiro na indicação','p'],['vigenciaMeses','Meses em que a recorrente é paga','n','padrão: 60, igual ao vesting']]],
  ['Time e custos',[['sdrBase','Salário base SDR sênior (R$)','r'],['closerBase','Salário base Closer sênior (R$)','r'],['execBase','Salário base Executivo de Negócios (R$)','r'],['fatorEncargos','Fator de encargos','x','custo total ÷ salário'],['reajuste','Reajuste salarial ao ano','p'],['hcSdr','SDRs por ano (anos 1 a 5)','t'],['hcCloser','Closers por ano','t'],['hcExec','Executivos de Negócios por ano','t']]],
- ['Funil do ano 1 (até medir o real)',[['reunioesSdrPlena','Reuniões realizadas por SDR ao mês','n'],['convReuniaoVenda','Reunião → venda (nossa base)','p'],['convIndicacao','Indicação → venda (franqueados e contabilidades)','p'],['convEcom','Indicação → venda (e-commerce Puro)','p'],['convErp','Indicação → venda (ERPs corporativos)','p']]]
+ ['Funil do ano 1 (até medir o real)',[['reunioesSdrPlena','Reuniões realizadas por SDR ao mês','n'],['convReuniaoVenda','Reunião → venda (nossa base)','p'],['convIndicacao','Indicação → venda (franqueados e contabilidades)','p'],['convEcom','Indicação → venda (e-commerce Puro)','p'],['convErp','Oportunidade → venda (ERPs corporativos, direta)','p']]]
 ];
 
 /* ---------- Ações por horizonte ---------- */
@@ -263,19 +263,19 @@ var HORIZ=[
  {id:'m3',nome:'Próximos 3 meses',per:'nov/2026 a jan/2027',goal:'R$ 47.300 de NMRR acumulado, funil real medido e o primeiro ERP corporativo parceiro',acts:[
   ['n3a','Cadência em 100% da Onda 1 e início da Onda 2 (614 contas com ERP conhecido)','SDR','20 reuniões realizadas/mês'],
   ['n3b','2 franqueados Omie e 6 contabilidades ativas, com reunião mensal de pipeline','Executivo de Negócios','Indicações recorrentes'],
-  ['n3c','Primeiro acordo com ERP corporativo (Sankhya, Senior ou TOTVS) e treinamento do canal','Comercial + sócios','1 ERP parceiro'],
+  ['n3c','Primeiro acordo de integração com ERP corporativo (Sankhya, Senior ou TOTVS) e lista de clientes-alvo para a Dixx prospectar','Comercial + sócios','1 ERP parceiro'],
   ['n3d','Trocar as premissas do funil pelas conversões medidas no CRM','Comercial','Premissas revisadas'],
   ['n3e','Definir com o produto os requisitos do Seenc para high ticket (lote, vários CDs, LPN, integrações)','Comercial + produto','Roadmap decidido'],
   ['n3f','Manter pipeline de 3× a meta do mês seguinte para atravessar o vale de jan a mar','Closer','Cobertura ≥ 3×']]},
  {id:'m6',nome:'Próximos 6 meses',per:'nov/2026 a abr/2027',goal:'R$ 102.000 de NMRR acumulado e os primeiros contratos high ticket',acts:[
-  ['n6a','2 ERPs corporativos com indicações ativas e 3 propostas high ticket na mesa','Executivo de Negócios + Closer','3 propostas ≥ R$ 10 mil'],
+  ['n6a','2 ERPs corporativos parceiros e 3 propostas high ticket na mesa, prospectadas pela Dixx','Executivo de Negócios + Closer','3 propostas ≥ R$ 10 mil'],
   ['n6b','5 franqueados Omie e 12 contabilidades ativas','Executivo de Negócios','≥ 35% do NMRR via indicações'],
   ['n6c','Publicar 3 casos com ROI (erros de expedição, produtividade, acuracidade)','Closer + implantação','3 casos'],
   ['n6d','Revisar o comissionamento do time com 5 meses de dados reais','Comercial','Plano v2'],
   ['n6e','Estudo de América Latina: Argentina a partir do caso Grupoucza (moeda, fiscal, integrações)','Comercial + produto','Estudo concluído']]},
  {id:'m12',nome:'Próximo ano',per:'nov/2026 a out/2027',goal:'R$ 238.800 de NMRR no ano, MRR perto de R$ 390 mil e o primeiro marco de vesting',acts:[
   ['n12a','NMRR de R$ 25.650 no mês 12','Time comercial','Meta do mês 12'],
-  ['n12b','4 ERPs corporativos parceiros (TOTVS, Sankhya, Senior, Oracle ou SAP Business One)','Executivo de Negócios','4 parceiros'],
+  ['n12b','4 ERPs corporativos parceiros de integração (TOTVS, Sankhya, Senior, Oracle ou SAP Business One), sem comissão','Executivo de Negócios','4 parceiros'],
   ['n12c','Ticket médio dos novos contratos acima de R$ 4 mil','Closer','Ticket ≥ R$ 4 mil'],
   ['n12d','Primeiro marco de vesting (1%) e revisão do acordo com os números do ano','Sócios','Marco 1 cumprido'],
   ['n12e','Plano do ano 2: segundo SDR e decisão sobre América Latina','Comercial + sócios','Plano do ano 2']]}
@@ -335,7 +335,7 @@ function modelo(){
     var y=Math.floor(t/12);
     if(t>0) meta=meta*(1+cres[y]);
     var ind,hi;
-    if(t<12){ var ct=M.capTot[t]; ind= ct>0? (cap.franq[t]+cap.contab[t]+cap.ecom[t]+cap.erp[t])/ct : 0; hi= ct>0? cap.erp[t]/ct : 0; }
+    if(t<12){ var ct=M.capTot[t]; ind= ct>0? (cap.franq[t]+cap.contab[t]+cap.ecom[t])/ct : 0; hi= ct>0? cap.erp[t]/ct : 0; }
     else { ind=p.shareInd; hi=p.shareHigh; }
     var deals=meta*(1-hi)/p.ticketLow+meta*hi/p.ticketHigh;
     var ch=mrr*p.churn; mrr=mrr-ch+meta; cli=cli*(1-p.churn)+deals;
@@ -478,7 +478,7 @@ function secCanais(M){
    {c:'--s3',n:'Base de outros franqueados Omie',d:'Franqueados de outras praças indicam clientes com estoque e marketplace. Mesma oferta e mesmo playbook da base Omie que já conhecemos.',tipo:'Indicação · Executivo de Negócios',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' ao franqueado',a1:t('franq')},
    {c:'--s4',n:'Contabilidades parceiras',d:'Contabilidades a que já tínhamos acesso pela Omie. Conhecem o porte e a operação dos clientes e indicam quem tem dor de estoque.',tipo:'Indicação · Executivo de Negócios',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' à contabilidade',a1:t('contab')},
    {c:'--s5',star:true,n:'E-commerce Puro',d:'Nosso primeiro parceiro formalizado e o mais forte. Indica operações de e-commerce que já chegam com a necessidade identificada, por isso convertem mais. Gera indicações desde o primeiro mês.'+puroTxt,tipo:'Indicação · Closer',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' ao parceiro',a1:t('ecom')},
-   {c:'--s6',n:'ERPs corporativos (high ticket)',d:'Parcerias com TOTVS, Sankhya, Senior, Oracle e SAP Business One para chegar a operações maiores, com ticket a partir de '+brl(S.prem.ticketHigh)+'.',tipo:'Indicação · Executivo de Negócios',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' ao canal do ERP',a1:t('erp')}
+   {c:'--s6',n:'ERPs corporativos (high ticket)',d:'A Dixx vai atrás, diretamente, das operações que rodam TOTVS, Sankhya, Senior, Oracle e SAP Business One, com ticket a partir de '+brl(S.prem.ticketHigh)+'. Os ERPs entram como parceiros de integração e abrem portas, sem receber comissão.',tipo:'Captação direta · Dixx',rem:pct(S.prem.revDireta,0)+' para a Dixx · sem comissão ao ERP',a1:t('erp')}
   ];
   F.sort(function(a,b){return (b.star?1:0)-(a.star?1:0);});
   F.forEach(function(f){ h+='<div class="foco'+(f.star?' star':'')+'">'+(f.star?'<span class="pill acc" style="align-self:flex-start">Primeiro parceiro formalizado</span>':'')+'<h4><i style="background:var('+f.c+')"></i>'+f.n+'</h4><p>'+f.d+'</p><div class="kv"><div><span>Tipo</span><span>'+f.tipo+'</span></div><div><span>Remuneração</span><span>'+f.rem+'</span></div><div><span>NMRR previsto no ano 1</span><span>'+brl(f.a1)+'</span></div></div></div>'; });
@@ -486,7 +486,7 @@ function secCanais(M){
   h+='</div>';
   h+='<div class="card"><h3>De low ticket para high ticket</h3><div class="vs">'+
    '<div><span class="label">Hoje</span><h4>Low ticket · '+brl(S.prem.ticketLow)+' de mensalidade</h4><p class="small">Clientes de ERPs de entrada: Omie, Bling, Olist e Athon. Bom volume, ticket baixo para o ramo de WMS.</p><p class="small muted">Continua sendo a base de volume pela nossa base, franqueados e contabilidades.</p></div>'+
-   '<div class="hi"><span class="label">Para onde vamos</span><h4>High ticket · a partir de '+brl(S.prem.ticketHigh)+'</h4><p class="small">Operações que rodam em TOTVS, Sankhya, Senior, Oracle e SAP Business One, com parceria de canal com esses ERPs. Nessa frente, o foco deixa de ser Omie, Bling, Olist e Athon.</p><p class="small muted">Já há prova no pipeline: Pink Urban (R$ 18.000), All Filmes (R$ 12.550) e DBN (R$ 12.000).</p></div></div>'+
+   '<div class="hi"><span class="label">Para onde vamos</span><h4>High ticket · a partir de '+brl(S.prem.ticketHigh)+'</h4><p class="small">Operações que rodam em TOTVS, Sankhya, Senior, Oracle e SAP Business One, prospectadas diretamente pela Dixx, com os ERPs como parceiros de integração, sem comissão. Nessa frente, o foco deixa de ser Omie, Bling, Olist e Athon.</p><p class="small muted">Já há prova no pipeline: Pink Urban (R$ 18.000), All Filmes (R$ 12.550) e DBN (R$ 12.000).</p></div></div>'+
    '<p class="small">Com '+pct(S.prem.shareHigh,0)+' do NMRR em high ticket a partir do ano 2, o ticket médio dos novos contratos sobe de '+brl(M.anos[0].ticket)+' no ano 1 para '+brl(M.anos[1].ticket)+' no ano 2. A mesma meta passa a exigir menos contratos, menos implantações e menos esforço por real vendido. A condição é o Seenc atender os requisitos dessas operações (ver a seção WMS e high ticket).</p></div>';
   // base de leads
   var fn=[['Linhas nas planilhas',4397],['Registros ativos',2500],['TAM (empresas únicas)',2032],['SAM (comércio e indústria)',949],['SAM com ERP conhecido (Onda 2)',614],['SOM: contas Hot (Onda 1)',157]];
@@ -521,8 +521,8 @@ function secSociedade(M){
   var h='<div class="sec-head"><span class="label">Proposta de sociedade · Dixx e Weesu</span><h2>A Dixx investe até '+k(-M.pico)+' para criar a área comercial e comprar '+pct(p.equityPct,0)+' da Weesu em '+p.anosVesting+' anos</h2><p>Durante a criação e a estruturação do time, a Dixx é remunerada pela mensalidade dos clientes que trouxer, por 5 anos. A Weesu cresce sem custo fixo comercial, cuida do marketing e fica com '+pct(1-p.revDireta,0)+' de toda mensalidade nova.</p></div>';
   h+='<div class="steps">'+A.map(function(a,y){ return '<div><span class="label">'+ANOS[y]+'</span><span class="num">'+pct(a.eqPct,0)+'</span><span class="note">'+k(a.eqHoje)+' ao valuation de hoje</span><span class="note">'+k(a.eqVal)+' ao valuation projetado</span></div>'; }).join('')+'</div>';
   h+='<div class="cols"><div class="card"><h3>Como a Dixx é remunerada</h3><div class="scroll"><table class="t"><thead><tr><th>Origem do cliente</th><th class="r">Dixx</th><th class="r">Parceiro</th><th class="r">Weesu</th></tr></thead><tbody>'+
-   '<tr><td>Captação direta<small>nossa base e pipeline</small></td><td class="r">'+pct(p.revDireta,0)+'</td><td class="r">—</td><td class="r">'+pct(1-p.revDireta,0)+'</td></tr>'+
-   '<tr><td>Indicação<small>franqueados, contabilidades, e-commerce Puro, ERPs</small></td><td class="r">'+pct(p.revIndicacao,0)+'</td><td class="r">'+pct(p.comissaoParceiro,0)+'</td><td class="r">'+pct(1-p.revIndicacao-p.comissaoParceiro,0)+'</td></tr>'+
+   '<tr><td>Captação direta<small>nossa base, pipeline e high ticket (ERPs corporativos)</small></td><td class="r">'+pct(p.revDireta,0)+'</td><td class="r">—</td><td class="r">'+pct(1-p.revDireta,0)+'</td></tr>'+
+   '<tr><td>Indicação<small>e-commerce Puro, franqueados e contabilidades</small></td><td class="r">'+pct(p.revIndicacao,0)+'</td><td class="r">'+pct(p.comissaoParceiro,0)+'</td><td class="r">'+pct(1-p.revIndicacao-p.comissaoParceiro,0)+'</td></tr>'+
    '<tr><td>Clientes atuais (50)</td><td class="r">—</td><td class="r">—</td><td class="r">100%</td></tr></tbody></table></div><p class="small muted">Percentuais sobre a mensalidade paga pelo cliente, todo mês, enquanto ele estiver ativo e dentro da vigência de '+p.vigenciaMeses+' meses. O setup segue com a Weesu e cobre a implantação.</p></div>'+
    '<div class="card"><h3>Participação</h3><div class="kv">'+
    '<div><span>Valuation de hoje</span><span>'+brl(p.valuation)+'</span></div>'+
@@ -575,7 +575,7 @@ function secInvest(M){
   var pessoas=[
     {nome:'SDR sênior',papel:'Prospecção ativa na nossa base: Onda 1 (157 Hot) e Onda 2 (614)',base:p.sdrBase,varTxt:brl(p.sdrPorReuniao)+' por reunião qualificada realizada',varAlvo:p.sdrPorReuniao*p.reunioesSdrPlena,prep:'1–2 semanas',prim:'Reuniões no mês 1',plena:'Mês 3',ref:'SDR pleno: R$ 7 a 10 mil com variável (Jobrise, 2026); sênior acima'},
     {nome:'Closer sênior',papel:'Diagnóstico, proposta e fechamento de todos os canais, incluindo high ticket',base:p.closerBase,varTxt:pct(p.closerPctNmrr,0)+' do NMRR fechado (50% na assinatura, 50% no go-live)',varAlvo:p.closerPctNmrr*p.metaM1,prep:'2–3 semanas',prim:'Fecha o pipeline já no mês 1',plena:'Mês 3–4',ref:'Executivo de contas sênior: R$ 11,7 a 20,8 mil, mediana de R$ 17 mil em SP (Robert Half)'},
-    {nome:'Executivo de Negócios',papel:'Franqueados Omie, contabilidades, e-commerce Puro e canais dos ERPs corporativos',base:p.execBase,varTxt:pct(p.execPctNmrrInd,0)+' do NMRR via indicação; garantia de '+brl(p.execGarantia)+' nos 3 primeiros meses',varAlvo:p.execGarantia,prep:'4–6 semanas',prim:'Indicações no mês 2–3',plena:'Mês 6–9',ref:'Sem faixa pública para canais em SaaS; base alinhada ao executivo de contas sênior'}
+    {nome:'Executivo de Negócios',papel:'E-commerce Puro, franqueados Omie, contabilidades e prospecção high ticket junto aos ERPs corporativos',base:p.execBase,varTxt:pct(p.execPctNmrrInd,0)+' do NMRR via indicação; garantia de '+brl(p.execGarantia)+' nos 3 primeiros meses',varAlvo:p.execGarantia,prep:'4–6 semanas',prim:'Indicações no mês 2–3',plena:'Mês 6–9',ref:'Sem faixa pública para canais em SaaS; base alinhada ao executivo de contas sênior'}
   ];
   var A=M.anos;
   var h='<div class="sec-head"><span class="label">Investimento da Dixx em pessoas</span><h2>'+k(A[0].custo)+' no ano 1 com 3 pessoas focais; '+k(sum(A.map(function(a){return a.custo;})))+' em 5 anos com o time crescendo</h2><p>Salários base definidos pela Dixx, com fator de encargos de '+nf(f,2)+'× e reajuste de '+pct(p.reajuste,0)+' ao ano. O custo é 100% da Dixx; a Weesu responde pelo marketing.</p></div>';
@@ -671,7 +671,7 @@ function secAcomp(M){
   var lanc=MESES.filter(function(m){return S.realizado[m];});
   if(!lanc.length) return h+'<div class="empty">Nenhum mês lançado ainda. Assim que novembro for salvo, aparecem aqui as conversões, a recorrente apurada e o NMRR por canal.</div>';
   function cv(a,b){ return b>0? a/b : null; }
-  function val(r,f){ if(f==='_vendas') return sum(VEND.map(function(v){return +r[v]||0;})); if(f==='_ind') return (+r.v_franq||0)+(+r.v_contab||0)+(+r.v_ecom||0)+(+r.v_erp||0); return +r[f]||0; }
+  function val(r,f){ if(f==='_vendas') return sum(VEND.map(function(v){return +r[v]||0;})); if(f==='_ind') return (+r.v_franq||0)+(+r.v_contab||0)+(+r.v_ecom||0); return +r[f]||0; }
   var linhas=[['Lead → contato','contatos','leads'],['Contato → reunião agendada','agendadas','contatos'],['Comparecimento','realizadas','agendadas'],['Reunião → oportunidade','oportunidades','realizadas'],['Oportunidade → proposta','propostas','oportunidades'],['Proposta → venda','_vendas','propostas'],['Indicação → venda','_ind','indicacoes']];
   h+='<div class="card"><h3>Conversões e recorrente apurada</h3><div class="scroll"><table class="t"><thead><tr><th>Indicador</th>'+lanc.map(function(m){return '<th class="r">'+ROT[MESES.indexOf(m)]+'</th>';}).join('')+'<th class="r">Acumulado</th></tr></thead><tbody>';
   linhas.forEach(function(l){ h+='<tr><td>'+l[0]+'</td>'; var A=0,B=0; lanc.forEach(function(m){ var rr=S.realizado[m], a=val(rr,l[1]), b=val(rr,l[2]); A+=a;B+=b; h+='<td class="r">'+pct(cv(a,b),0)+'</td>'; }); h+='<td class="r"><b>'+pct(cv(A,B),0)+'</b></td></tr>'; });
@@ -734,7 +734,7 @@ function secMetodo(){
    '<li>A recorrente da Dixx é paga por '+p.vigenciaMeses+' meses (5 anos, como acordado), enquanto o cliente estiver ativo.</li>'+
    '<li>A partir do ano 2: '+pct(p.shareInd,0)+' do NMRR via indicação e '+pct(p.shareHigh,0)+' em high ticket, com ticket de '+brl(p.ticketHigh)+'.</li>'+
    '<li>Conversões do ano 1: '+pct(p.convReuniaoVenda,0)+' de reunião em venda; '+pct(p.convIndicacao,0)+' de indicação em venda (franqueados e contabilidades); '+pct(p.convEcom,0)+' no e-commerce Puro; '+pct(p.convErp,0)+' nos ERPs corporativos, com ciclo de 2 meses.</li>'+
-   '<li>Rampa de parceiros no ano 1: 8 franqueados Omie, 24 contabilidades (0,3 indicação/mês cada), 5 indicações/mês do e-commerce Puro e 4 ERPs corporativos (0,5 indicação/mês cada) em out/27.</li>'+
+   '<li>Rampa de parceiros no ano 1: 8 franqueados Omie, 24 contabilidades (0,3 indicação/mês cada), 6 novas indicações/mês do e-commerce Puro além dos leads MeliXP, e 4 ERPs corporativos parceiros de integração (0,5 oportunidade/mês cada, prospectada e fechada pela Dixx, sem comissão) em out/27.</li>'+
    '<li>Chance de fechar e mês previsto de cada negócio do pipeline: estimados pela etapa e pelo engajamento na Carteira Comercial.</li></ul></div>';
   return h;
 }
