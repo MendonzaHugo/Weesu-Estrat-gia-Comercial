@@ -217,7 +217,7 @@ var DEF = {
   ticketLow:3000, ticketHigh:12000, shareHigh:0.30, shareInd:0.60,
   setupMedio:12500, margemBruta:0.80,
   revDireta:0.20, revIndicacao:0.10, comissaoParceiro:0.10, vigenciaMeses:60,
-  fatorEncargos:1.70, reajuste:0.05, sdrBase:3000, closerBase:6000, execBase:6000,
+  fatorEncargos:1.70, reajuste:0.05, sdrBase:3000, closerBase:6000, execBase:6000, mktSdr:6000, mktCloser:11000, mktExec:12000,
   hcSdr:'1,2,2,2,3', hcCloser:'1,1,2,2,2', hcExec:'1,1,1,2,2',
   sdrPorReuniao:150, closerPctNmrr:0.40, execPctNmrrInd:0.25, execGarantia:2500,
   reunioesSdrPlena:20, convReuniaoVenda:0.15, convIndicacao:0.25, convEcom:0.30, convErp:0.20
@@ -245,7 +245,7 @@ var PREM_CAMPOS=[
  ['Metas e retenção',[['metaM1','Meta de NMRR do mês 1 (R$)','r'],['cresc1','Crescimento da meta ao mês · ano 1','p','cenário oficial: 5%'],['cresc2','· ano 2','p'],['cresc3','· ano 3','p'],['cresc4','· ano 4','p'],['cresc5','· ano 5','p'],['churn','Churn mensal do MRR','p','faixa de 1% a 2%']]],
  ['Ticket e mix',[['ticketLow','Ticket low (ERPs de entrada) (R$)','r'],['ticketHigh','Ticket high (ERPs corporativos) (R$)','r'],['shareHigh','NMRR high ticket a partir do ano 2','p'],['shareInd','NMRR via indicações a partir do ano 2','p'],['setupMedio','Setup médio (R$)','r'],['margemBruta','Margem bruta da mensalidade','p']]],
  ['Remuneração da Dixx',[['revDireta','Recorrente sobre captação direta','p'],['revIndicacao','Recorrente sobre indicação (parte da Dixx)','p'],['comissaoParceiro','Recorrente do parceiro na indicação','p'],['vigenciaMeses','Meses em que a recorrente é paga','n','padrão: 60, igual ao vesting']]],
- ['Time e custos',[['sdrBase','Salário base SDR sênior (R$)','r'],['closerBase','Salário base Closer sênior (R$)','r'],['execBase','Salário base Executivo de Negócios (R$)','r'],['fatorEncargos','Fator de encargos','x','custo total ÷ salário'],['reajuste','Reajuste salarial ao ano','p'],['hcSdr','SDRs por ano (anos 1 a 5)','t'],['hcCloser','Closers por ano','t'],['hcExec','Executivos de Negócios por ano','t']]],
+ ['Time e custos',[['sdrBase','Salário base SDR sênior (R$)','r'],['closerBase','Salário base Closer sênior (R$)','r'],['execBase','Salário base Executivo de Negócios (R$)','r'],['mktSdr','Mercado · SDR sênior (R$)','r','referência para comparação'],['mktCloser','Mercado · Closer sênior (R$)','r'],['mktExec','Mercado · Executivo de Negócios (R$)','r'],['fatorEncargos','Fator de encargos','x','custo total ÷ salário'],['reajuste','Reajuste salarial ao ano','p'],['hcSdr','SDRs por ano (anos 1 a 5)','t'],['hcCloser','Closers por ano','t'],['hcExec','Executivos de Negócios por ano','t']]],
  ['Funil do ano 1 (até medir o real)',[['reunioesSdrPlena','Reuniões realizadas por SDR ao mês','n'],['convReuniaoVenda','Reunião → venda (nossa base)','p'],['convIndicacao','Indicação → venda (franqueados e contabilidades)','p'],['convEcom','Indicação → venda (e-commerce Puro)','p'],['convErp','Oportunidade → venda (ERPs corporativos, direta)','p']]]
 ];
 
@@ -311,8 +311,8 @@ var aba='abertura';
 try{ var h=(location.hash||'').slice(1); if(h) aba=h; }catch(e){}
 
 /* ---------- modelo ---------- */
-function modelo(){
-  var p=S.prem, M={}, N=60;
+function modelo(pp){
+  var p=pp||S.prem, M={}, N=60;
   var hcS=arr5(p.hcSdr), hcC=arr5(p.hcCloser), hcE=arr5(p.hcExec), cres=[p.cresc1,p.cresc2,p.cresc3,p.cresc4,p.cresc5];
   // ano 1: capacidade por canal
   var cap={pipe:[],base:[],franq:[],contab:[],ecom:[],erp:[]}, reun=[];
@@ -451,7 +451,7 @@ function secAbertura(M){
    '<div class="tile"><span class="label">MRR no fim do ano 1</span><span class="num">'+k(a1.mrr)+'</span><span class="note">'+nf(a1.mrr/S.prem.mrrInicial,1)+'× o atual · '+nf(a1.deals,0)+' novos contratos</span></div>'+
    '<div class="tile"><span class="label">MRR no fim do ano 5</span><span class="num">'+k(a5.mrr)+'</span><span class="note">ARR de '+k(a5.arr)+' · '+nf(a5.cli,0)+' clientes</span></div>'+
    '<div class="tile"><span class="label">Valuation projetado no ano 5</span><span class="num">'+k(a5.val)+'</span><span class="note">hoje '+k(S.prem.valuation)+', mantido o múltiplo de '+nf(M.mult,1)+'× ARR</span></div>'+
-   '<div class="tile"><span class="label">Investimento da Dixx</span><span class="num">'+k(-M.pico)+'</span><span class="note">pico de caixa com o time e a compra das cotas, em '+mesLabel(M.picoMes)+'</span></div></div>';
+   '<div class="tile"><span class="label">Investimento da Dixx</span><span class="num">'+k(-M.pico)+'</span><span class="note">pico de caixa com o time e a compra das cotas, em '+mesLabel(M.picoMes)+'; com salário de mercado, '+k(-modeloMercado().pico)+'</span></div></div>';
   var PUx=S.pipeline.filter(function(d){return d.origem==='puro';});
   if(PUx.length) h+='<div class="callout" style="border:2px solid var(--accent)"><h4>O primeiro parceiro já está entregando</h4><p>O e-commerce Puro, primeiro parceiro formalizado da Dixx, indicou '+PUx.length+' empresas reais no Mercado Livre Experience 2026. Todas já estão no pipeline, com '+PUx.filter(function(d){return d.tier==="A";}).length+' prioritárias para contato em 24 horas.</p></div>';
   h+='<div class="card"><h3>A proposta em três pontos</h3><div class="cols3" style="gap:12px">'+
@@ -535,6 +535,7 @@ function secSociedade(M){
    '<p class="small muted">Sugestão: atrelar cada marco anual a metas de NMRR do ano (por exemplo, 80% da meta). Isso protege a Weesu e dá clareza ao acordo.</p></div></div>';
   h+='<div class="card"><h3>Quem faz o quê</h3><div class="vs"><div class="hi"><span class="label">Dixx</span><h4>Área comercial, 100% custeada pela Dixx</h4><ul class="small" style="padding-left:18px;display:flex;flex-direction:column;gap:4px"><li>Time: SDR, Closer e Executivo de Negócios</li><li>Processo comercial, CRM, metas e acompanhamento</li><li>Parcerias: e-commerce Puro, franqueados Omie, contabilidades e ERPs corporativos</li><li>Prospecção na base TOTVS, Omie e Senior</li></ul></div><div><span class="label">Weesu</span><h4>Marketing, produto e entrega</h4><ul class="small" style="padding-left:18px;display:flex;flex-direction:column;gap:4px"><li>Marketing: marca, conteúdo, materiais de venda e eventos</li><li>Produto: Seenc e Hub, incluindo o roadmap para high ticket</li><li>Implantação e suporte, custeados pelo setup</li><li>Pagamento da recorrente à Dixx e aos parceiros</li></ul></div></div></div>';
   h+='<div class="card"><h3>Investimento da Dixx ao longo do tempo<small>recorrente recebida × saídas da Dixx (time e compra das cotas), por mês</small></h3>'+legend([{nome:'Recorrente recebida',cor:'--s3'},{nome:'Custo do time',cor:'--s2'},{nome:'Time + compra das cotas',cls:'dash'}])+'<div class="scroll" id="chFluxo"></div></div>';
+  h+=disclaimerSalarios(M,modeloMercado(),false);
   h+='<div class="card"><h3>Caixa acumulado da Dixx<small>abaixo de zero é o que a Dixx investe na Weesu</small></h3><div class="scroll" id="chAcum"></div>'+
    '<p class="small">O investimento chega a <b>'+k(-M.pico)+'</b> em '+mesLabel(M.picoMes)+'. '+(M.breakEven>=0?'A operação passa a se pagar mês a mês em '+mesLabel(M.breakEven)+'.':'Com estas premissas, a operação ainda não se paga mês a mês em 5 anos.')+' '+(M.acum[59]>=0?'O investimento é recuperado em caixa dentro dos 5 anos.':'No fim do ano 5 o saldo acumulado ainda é de '+k(M.acum[59])+': o retorno da Dixx vem da participação.')+'</p></div>';
   h+='<div class="card"><h3>Ano a ano</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">Time</th><th class="r">Custo do time</th><th class="r">Compra das cotas</th><th class="r">Recorrente recebida</th><th class="r">Caixa do ano</th><th class="r">Caixa acumulado</th><th class="r">Participação</th><th class="r">Valor da participação</th></tr></thead><tbody>';
@@ -561,6 +562,35 @@ function secSociedade(M){
    '</tbody></table></div><p class="small muted">Empresas SaaS costumam ser avaliadas entre 4× e 10× o ARR, conforme crescimento, margem e churn.</p></div></div>';
   return h;
 }
+function modeloMercado(){ var p=S.prem; return modelo(Object.assign({},p,{sdrBase:p.mktSdr,closerBase:p.mktCloser,execBase:p.mktExec})); }
+function gapPct(a,b){ return b>0? (a-b)/b : 0; }
+function disclaimerSalarios(M,Mk,full){
+  var p=S.prem, A=M.anos, B=Mk.anos;
+  var cs=function(m){ return sum(m.anos.map(function(a){return a.custo;})); };
+  var linhas=[['SDR sênior',p.sdrBase,p.mktSdr],['Closer sênior',p.closerBase,p.mktCloser],['Executivo de Negócios',p.execBase,p.mktExec]];
+  var h='<div class="callout warn" id="disclaimer-salarios"><h4>Atenção: salários abaixo do mercado</h4><p>Os salários usados neste plano foram definidos pela Dixx e estão abaixo das referências de mercado para nível sênior.'+(full?' Abaixo, a mesma operação nos dois cenários.':'')+' Com salário de mercado, o investimento máximo da Dixx sobe de <b>'+k(-M.pico)+'</b> para <b>'+k(-Mk.pico)+'</b>'+(Mk.acum[59]<0?' e o caixa não se recupera em 5 anos':'')+'.</p>';
+  if(!full) return h+'<p class="small">Comparação completa na seção Investimento.</p></div>';
+  h+='</div><div class="cols"><div class="card"><h3>Salário base informado × mercado</h3><div class="scroll"><table class="t"><thead><tr><th>Função</th><th class="r">Informado</th><th class="r">Mercado</th><th class="r">Defasagem</th></tr></thead><tbody>'+
+    linhas.map(function(l){ return '<tr><td>'+l[0]+'</td><td class="r">'+brl(l[1])+'</td><td class="r">'+brl(l[2])+'</td><td class="r neg">'+pct(gapPct(l[1],l[2]),0)+'</td></tr>'; }).join('')+
+    '<tr class="tot"><td>Folha base do time inicial</td><td class="r">'+brl(p.sdrBase+p.closerBase+p.execBase)+'</td><td class="r">'+brl(p.mktSdr+p.mktCloser+p.mktExec)+'</td><td class="r neg">'+pct(gapPct(p.sdrBase+p.closerBase+p.execBase,p.mktSdr+p.mktCloser+p.mktExec),0)+'</td></tr></tbody></table></div>'+
+    '<p class="small muted">Mercado: executivo de contas sênior com mediana de R$ 17 mil e faixa de R$ 11,7 a 20,8 mil em SP (Robert Half); SDR pleno de R$ 7 a 10 mil com variável (Jobrise, 2026). Valores de mercado editáveis em Metas.</p></div>'+
+    '<div class="card"><h3>A operação nos dois cenários</h3><div class="scroll"><table class="t"><thead><tr><th></th><th class="r">Salário informado</th><th class="r">Salário de mercado</th></tr></thead><tbody>'+
+    '<tr><td>Custo do time no ano 1</td><td class="r">'+brl(A[0].custo)+'</td><td class="r">'+brl(B[0].custo)+'</td></tr>'+
+    '<tr><td>Custo do time em 5 anos</td><td class="r">'+brl(cs(M))+'</td><td class="r">'+brl(cs(Mk))+'</td></tr>'+
+    '<tr><td>CAC no ano 1</td><td class="r">'+brl(M.cac)+'</td><td class="r">'+brl(Mk.cac)+'</td></tr>'+
+    '<tr><td>Investimento máximo da Dixx</td><td class="r">'+brl(-M.pico)+'<small>'+mesLabel(M.picoMes)+'</small></td><td class="r">'+brl(-Mk.pico)+'<small>'+mesLabel(Mk.picoMes)+'</small></td></tr>'+
+    '<tr><td>Passa a se pagar mês a mês</td><td class="r">'+(M.breakEven>=0?mesLabel(M.breakEven):'não ocorre em 5 anos')+'</td><td class="r">'+(Mk.breakEven>=0?mesLabel(Mk.breakEven):'não ocorre em 5 anos')+'</td></tr>'+
+    '<tr class="tot"><td>Caixa acumulado no fim do ano 5</td><td class="r '+(M.acum[59]<0?'neg':'pos')+'">'+brl(M.acum[59])+'</td><td class="r '+(Mk.acum[59]<0?'neg':'pos')+'">'+brl(Mk.acum[59])+'</td></tr></tbody></table></div>'+
+    '<p class="small muted">Mesmas metas, canais, recorrente e compra das cotas; muda só o salário base (com encargos e reajuste). A remuneração variável é igual nos dois cenários.</p></div></div>'+
+    '<div class="card"><h3>Caixa acumulado da Dixx: salário informado × mercado</h3>'+legend([{nome:'Salário informado',cor:'--accent'},{nome:'Salário de mercado',cor:'--s2'}])+'<div class="scroll" id="chMk"></div></div>';
+  return h;
+}
+function afterInvest(M){
+  var b=el('chMk'); if(!b) return; var Mk=modeloMercado(), L=[]; for(var t=0;t<60;t++) L.push(mesLabel(t));
+  var o={labels:L,aria:'Caixa acumulado com salário informado e de mercado',series:[{nome:'Salário informado',cor:'--accent',vals:M.acum},{nome:'Salário de mercado',cor:'--s2',vals:Mk.acum}],tick:function(i){ return i%12===0? 'ano '+(i/12+1) : (i===59?mesLabel(59):null); }};
+  b.innerHTML=chartLines(o); bindLines(b,o);
+}
+
 function afterSociedade(M){
   var L=[]; for(var t=0;t<60;t++) L.push(mesLabel(t));
   var tick=function(i){ return i%12===0? 'ano '+(i/12+1) : (i===59?mesLabel(59):null); };
@@ -579,6 +609,7 @@ function secInvest(M){
   ];
   var A=M.anos;
   var h='<div class="sec-head"><span class="label">Investimento da Dixx em pessoas</span><h2>'+k(A[0].custo)+' no ano 1 com 3 pessoas focais; '+k(sum(A.map(function(a){return a.custo;})))+' em 5 anos com o time crescendo</h2><p>Salários base definidos pela Dixx, com fator de encargos de '+nf(f,2)+'× e reajuste de '+pct(p.reajuste,0)+' ao ano. O custo é 100% da Dixx; a Weesu responde pelo marketing.</p></div>';
+  h+=disclaimerSalarios(M,modeloMercado(),true);
   h+='<div class="cols3">';
   pessoas.forEach(function(x){
     h+='<div class="card person"><h4>'+x.nome+'</h4><p class="small muted">'+x.papel+'</p><div class="kv">'+
@@ -746,7 +777,7 @@ function render(){
   else if(aba==='sociedade') h=secSociedade(M); else if(aba==='investimento') h=secInvest(M); else if(aba==='plano') h=secPlano();
   else if(aba==='pipeline') h=secPipeline(); else if(aba==='acompanhamento') h=secAcomp(M); else if(aba==='wms') h=secWms(); else h=secMetodo();
   el('main').innerHTML='<div class="wrap">'+h+'<footer>Plano Comercial Weesu · base de leads de 12/10/2026 · pipeline de 08/10/2026 · valores em reais, premissas revisadas mensalmente</footer></div>';
-  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='acompanhamento') afterAcomp(M);
+  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='acompanhamento') afterAcomp(M);
 }
 
 /* ---------- interações e gravação ---------- */
