@@ -456,8 +456,6 @@ function secAbertura(M){
    '<div class="tile"><span class="label">MRR no fim do ano 5</span><span class="num">'+k(a5.mrr)+'</span><span class="note">ARR de '+k(a5.arr)+' · '+nf(a5.cli,0)+' clientes</span></div>'+
    '<div class="tile"><span class="label">Valuation projetado no ano 5</span><span class="num">'+k(a5.val)+'</span><span class="note">hoje '+k(S.prem.valuation)+', mantido o múltiplo de '+nf(M.mult,1)+'× ARR</span></div>'+
    '<div class="tile"><span class="label">Investimento da Dixx</span><span class="num">'+k(-M.pico)+'</span><span class="note">pico de caixa com o time e a compra das cotas, em '+mesLabel(M.picoMes)+'; com salário de mercado, '+k(-modeloMercado().pico)+'</span></div></div>';
-  var PUx=S.pipeline.filter(function(d){return d.origem==='puro';});
-  if(PUx.length) h+='<div class="callout" style="border:2px solid var(--accent)"><h4>O primeiro parceiro já está entregando</h4><p>O e-commerce Puro, primeiro parceiro formalizado da Dixx, gerou '+MX.leads+' leads no Mercado Livre Experience 2026. Em 12 dias: '+MX.contatados+' contatados, '+MX.responderam+' responderam, '+MX.apresentacoes+' apresentações agendadas e a Stoky com reunião de fechamento marcada.</p></div>';
   h+='<div class="card"><h3>A proposta em três pontos</h3><div class="cols3" style="gap:12px">'+
    '<div class="callout"><h4>A Dixx assume o comercial</h4><p>A Dixx monta e paga 100% do time (SDR, Closer e Executivo de Negócios), o processo, o CRM e os canais. A Weesu fica responsável pelo marketing.</p></div>'+
    '<div class="callout"><h4>A Dixx ganha com o resultado</h4><p>'+pct(S.prem.revDireta,0)+' da mensalidade, por 5 anos, dos clientes captados diretamente; '+pct(S.prem.revIndicacao,0)+' quando vierem por indicação, e os outros '+pct(S.prem.comissaoParceiro,0)+' vão ao parceiro.</p></div>'+
@@ -472,7 +470,7 @@ function afterAbertura(M){
 
 function secCanais(M){
   var c=M.cap, t=function(id){ return sum(c[id]); };
-  var h='<div class="sec-head"><span class="label">Pontos focais</span><h2>Cinco frentes de captação, com o e-commerce Puro à frente</h2><p>A Weesu já cresce por parceiros e indicações, e o e-commerce Puro é o primeiro parceiro formalizado da Dixx. A estratégia organiza esses canais, soma a prospecção ativa sobre a nossa base e abre a frente high ticket com os ERPs corporativos.</p></div>';
+  var h='<div class="sec-head"><span class="label">Pontos focais</span><h2>Cinco frentes de captação</h2><p>A Weesu já cresce por parceiros e indicações. A estratégia organiza esses canais, soma a prospecção ativa sobre a nossa base e abre a frente high ticket com os ERPs corporativos.</p></div>';
   h+='<div class="focos">';
   var PU=S.pipeline.filter(function(d){return d.origem==='puro';}), PUa=PU.filter(function(d){return d.status==='aberto';});
   var tierN=function(t){return PU.filter(function(d){return d.tier===t;}).length;};
@@ -481,10 +479,9 @@ function secCanais(M){
    {c:'--s2',n:'Nossa base',d:'Carteiras ativas de TOTVS, Omie e Senior já analisadas: 949 empresas com aderência, 157 prioritárias (Onda 1) e 614 com ERP conhecido (Onda 2).',tipo:'Captação direta · SDR',rem:pct(S.prem.revDireta,0)+' para a Dixx',a1:t('base')},
    {c:'--s3',n:'Base de outros franqueados Omie',d:'Franqueados de outras praças indicam clientes com estoque e marketplace. Mesma oferta e mesmo playbook da base Omie que já conhecemos.',tipo:'Indicação · Executivo de Negócios',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' ao franqueado',a1:t('franq')},
    {c:'--s4',n:'Contabilidades parceiras',d:'Contabilidades a que já tínhamos acesso pela Omie. Conhecem o porte e a operação dos clientes e indicam quem tem dor de estoque.',tipo:'Indicação · Executivo de Negócios',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' à contabilidade',a1:t('contab')},
-   {c:'--s5',star:true,n:'E-commerce Puro',d:'Nosso primeiro parceiro formalizado e o mais forte. Indica operações de e-commerce que já chegam com a necessidade identificada, por isso convertem mais. Gera indicações desde o primeiro mês.'+puroTxt,tipo:'Indicação · Closer',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' ao parceiro',a1:t('ecom')},
+   {c:'--s5',n:'E-commerce Puro',d:'Parceiro que indica operações de e-commerce que já chegam com a necessidade identificada, o que tende a aumentar a conversão.',tipo:'Indicação · Closer',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' ao parceiro',a1:t('ecom')},
    {c:'--s6',n:'ERPs corporativos (high ticket)',d:'A Dixx vai atrás, diretamente, das operações que rodam TOTVS, Sankhya, Senior, Oracle e SAP Business One, com ticket a partir de '+brl(S.prem.ticketHigh)+'. Os ERPs entram como parceiros de integração e abrem portas, sem receber comissão.',tipo:'Captação direta · Dixx',rem:pct(S.prem.revDireta,0)+' para a Dixx · sem comissão ao ERP',a1:t('erp')}
   ];
-  F.sort(function(a,b){return (b.star?1:0)-(a.star?1:0);});
   F.forEach(function(f){ h+='<div class="foco'+(f.star?' star':'')+'">'+(f.star?'<span class="pill acc" style="align-self:flex-start">Primeiro parceiro formalizado</span>':'')+'<h4><i style="background:var('+f.c+')"></i>'+f.n+'</h4><p>'+f.d+'</p><div class="kv"><div><span>Tipo</span><span>'+f.tipo+'</span></div><div><span>Remuneração</span><span>'+f.rem+'</span></div><div><span>NMRR previsto no ano 1</span><span>'+brl(f.a1)+'</span></div></div></div>'; });
   h+='<div class="foco opt"><h4>América Latina <span class="pill">possibilidade</span></h4><p>Não é ponto focal nem entra nos números. Há sinal de demanda: Grupoucza (Infinitcell) vende no Mercado Livre da Argentina e a Weesu já decidiu fazer a integração. Antes de abrir a frente: moeda, fiscal local e integrações com os ERPs da região.</p><p class="small muted">Estudo previsto para o 6º mês; decisão no plano do ano 2.</p></div>';
   h+='</div>';
