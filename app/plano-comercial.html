@@ -343,7 +343,8 @@ function modelo(pp){
     var deals=meta*(1-hi)/p.ticketLow+meta*hi/p.ticketHigh;
     var ch=mrr*p.churn; mrr=mrr-ch+meta; cli=cli*(1-p.churn)+deals;
     mD=mD*(1-p.churn)+meta*(1-ind); mI=mI*(1-p.churn)+meta*ind;
-    var rev= t<p.vigenciaMeses ? p.revDireta*mD+p.revIndicacao*mI : 0;
+    var dr=p.revDireta, ir=p.revIndicacao; if(p.sched){ var sc=p.sched(t); dr=sc[0]; ir=sc[1]; }
+    var rev= (t<p.vigenciaMeses ? dr*mD+ir*mI : 0) + (p.bonusPrimeira||0)*meta + (p.setupDixx||0)*deals*p.setupMedio;
     var comP=p.comissaoParceiro*mI;
     var inf=Math.pow(1+p.reajuste,y);
     var fixo=(hcS[y]*p.sdrBase+hcC[y]*p.closerBase+hcE[y]*p.execBase)*inf*p.fatorEncargos;
@@ -437,7 +438,7 @@ function bindLines(box,o){
 function legend(items){ return '<div class="legend">'+items.map(function(it){ return '<span><i class="'+(it.cls||'')+'" style="'+(it.cor?'background:var('+it.cor+')':'')+'"></i>'+it.nome+'</span>'; }).join('')+'</div>'; }
 
 /* ---------- seções ---------- */
-var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['sociedade','Sociedade'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
+var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['sociedade','Sociedade'],['repasse','Repasse justo'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
 function renderNav(){ el('nav').innerHTML=SECOES.map(function(s){return '<button class="chip" data-v="'+s[0]+'" aria-pressed="'+(s[0]===aba)+'">'+s[1]+'</button>';}).join(''); }
 el('nav').addEventListener('click',function(e){ var b=e.target.closest('[data-v]'); if(!b) return; aba=b.getAttribute('data-v'); try{history.replaceState(null,'','#'+aba);}catch(_){}
   renderNav(); render(); window.scrollTo(0,0); });
@@ -591,6 +592,58 @@ function disclaimerSalarios(M,Mk,full){
 function afterInvest(M){
   var b=el('chMk'); if(!b) return; var Mk=modeloMercado(), L=[]; for(var t=0;t<60;t++) L.push(mesLabel(t));
   var o={labels:L,aria:'Caixa acumulado com salário informado e de mercado',series:[{nome:'Salário informado',cor:'--accent',vals:M.acum},{nome:'Salário de mercado',cor:'--s2',vals:Mk.acum}],tick:function(i){ return i%12===0? 'ano '+(i/12+1) : (i===59?mesLabel(59):null); }};
+  b.innerHTML=chartLines(o); bindLines(b,o);
+}
+
+/* ---------- Repasse justo ---------- */
+var REF_MERCADO=[
+ ['Omie · franquias','33% recorrente + 100% da primeira mensalidade + 50% do setup','Canal por franquias que assume a venda na região','Informação de mercado trazida pela Dixx'],
+ ['Conta Azul · canais','cerca de 30% recorrente','Modelo próximo ao da Omie','Informação de mercado trazida pela Dixx'],
+ ['Sólides · representantes','30% a 40% recorrente, vitalício','Parceiro representante que vende e acompanha a conta','Informação de mercado trazida pela Dixx'],
+ ['HubSpot · Solutions Partners','20% por 3 anos','Parceiro que só origina a venda, sem time dedicado','<a href="https://www.hubspot.com/partners/sales/program-policies" target="_blank" rel="noopener">HubSpot</a>'],
+ ['Parceiros e revendas SaaS (média)','20% a 30% recorrente','Programas maduros entre 15% e 25%','<a href="https://prospeo.io/s/b2b-partner-programs" target="_blank" rel="noopener">Prospeo</a>, <a href="https://cello.so/?p=18295" target="_blank" rel="noopener">Cello</a>'],
+ ['Gasto de SaaS só com vendas','cerca de 15% da receita total','18% nos que crescem mais rápido','<a href="https://www.saastr.com/b2b-startups-spend-15-of-revenue-on-sales-and-10-on-marketing-per-saas-capital" target="_blank" rel="noopener">SaaS Capital via SaaStr</a>'],
+ ['Gasto de SaaS com vendas e marketing','mediana de 37% da receita total','33% a 47% conforme o investidor','<a href="https://www.saashero.net/strategy/enterprise-saas-marketing-budget-benchmarks/" target="_blank" rel="noopener">Benchmarkit via SaaS Hero</a>']
+];
+function cenariosRepasse(){
+  var p=S.prem, cp=p.comissaoParceiro;
+  return [
+   {id:'atual',nome:'Acordo atual',desc:'20% direta · 10% indicação (+10% ao parceiro)',o:{}},
+   {id:'omie',nome:'Padrão Omie (franquias)',desc:'33% recorrente + 1ª mensalidade + 50% do setup',o:{revDireta:0.33,revIndicacao:Math.max(0,0.33-cp),bonusPrimeira:1,setupDixx:0.5}},
+   {id:'contaazul',nome:'Padrão Conta Azul',desc:'30% recorrente',o:{revDireta:0.30,revIndicacao:Math.max(0,0.30-cp)}},
+   {id:'solides',nome:'Padrão Sólides (meio da faixa)',desc:'35% recorrente',o:{revDireta:0.35,revIndicacao:Math.max(0,0.35-cp)}},
+   {id:'proposta',nome:'Proposta Dixx',desc:'33% recorrente, sem setup e sem 1ª mensalidade',o:{revDireta:0.33,revIndicacao:Math.max(0,0.33-cp)},rec:true}
+  ];
+}
+function avaliaCenario(c,mercado){
+  var p=S.prem, base=Object.assign({},p,c.o); if(mercado) Object.assign(base,{sdrBase:p.mktSdr,closerBase:p.mktCloser,execBase:p.mktExec});
+  var M=modelo(base), rec=-1; for(var t=1;t<60;t++){ if(M.acum[t]>=0&&M.acum[t-1]<0) rec=t; }
+  var receitaW1=sum(M.mrr.slice(0,12))+sum(M.setup.slice(0,12)), custoW1=sum(M.rev.slice(0,12))+sum(M.comParc.slice(0,12));
+  var gasto=sum(M.custo)+M.cotasTot, rec5=sum(M.rev);
+  return {M:M,pico:-M.pico,picoMes:M.picoMes,rec:rec,acum5:M.acum[59],rec5:rec5,margem:(rec5-gasto)/gasto,pctW1:custoW1/receitaW1};
+}
+function secRepasse(M){
+  var p=S.prem, C=cenariosRepasse(), R=C.map(function(c){ return {c:c,inf:avaliaCenario(c,false),mkt:avaliaCenario(c,true)}; });
+  var at=R[0], pr=R[R.length-1];
+  var h='<div class="sec-head"><span class="label">Repasse justo · comparação com o mercado</span><h2>No acordo atual, a Dixx recebe menos do que o mercado brasileiro paga aos seus canais de venda</h2><p>Omie, Conta Azul e Sólides pagam de 30% a 40% da mensalidade, de forma recorrente, a franquias e representantes. A Dixx recebe 20% e, ao contrário desses canais, monta e paga um time exclusivo, assume 100% do risco e ainda compra '+pct(p.equityPct,0)+' da Weesu.</p></div>';
+  h+='<div class="card"><h3>Quanto o mercado paga aos canais</h3><div class="scroll"><table class="t"><thead><tr><th>Empresa ou referência</th><th>Remuneração do canal</th><th>Observação</th><th>Fonte</th></tr></thead><tbody>'+
+    REF_MERCADO.map(function(r,i){ return '<tr'+(i<3?' style="font-weight:600"':'')+'><td>'+r[0]+'</td><td>'+r[1]+'</td><td class="muted">'+r[2]+'</td><td class="small">'+r[3]+'</td></tr>'; }).join('')+
+    '<tr class="tot"><td>Dixx · acordo atual</td><td>'+pct(p.revDireta,0)+' direta; '+pct(p.revIndicacao,0)+' + '+pct(p.comissaoParceiro,0)+' ao parceiro na indicação; sem setup, sem bônus</td><td class="muted">Time próprio, risco integral e compra de cotas</td><td class="small">Proposta atual</td></tr></tbody></table></div>'+
+    '<p class="small muted">Os números de Omie, Conta Azul e Sólides são informação de mercado trazida pela Dixx e não estão publicados nos sites das empresas. As demais referências são internacionais e servem como direção.</p></div>';
+  h+='<div class="card"><h3>O que cada modelo significa para a Dixx e para a Weesu<small>mesmas metas, canais e compra das cotas; na indicação, o parceiro sai do mesmo percentual</small></h3><div class="scroll"><table class="t"><thead><tr><th>Modelo</th><th class="r">Custo comercial da Weesu no ano 1<small>% da receita total</small></th><th class="r">Dixx recebe em 5 anos</th><th class="r">Investimento máximo<small>salário informado</small></th><th class="r">Resultado em 5 anos<small>salário informado</small></th><th class="r">Investimento máximo<small>salário de mercado</small></th><th class="r">Resultado em 5 anos<small>salário de mercado</small></th></tr></thead><tbody>';
+  R.forEach(function(r){ var c=r.c;
+    var cel=function(x){ return '<td class="r">'+brl(x.pico)+'<small>caixa volta ao zero: '+(x.rec>=0?mesLabel(x.rec):'não volta')+'</small></td><td class="r '+(x.acum5<0?'neg':'pos')+'">'+brl(x.acum5)+'<small>margem de '+pct(x.margem,0)+'</small></td>'; };
+    h+='<tr'+(c.rec?' class="tot"':'')+'><td><b>'+c.nome+'</b>'+(c.rec?' <span class="pill acc">recomendado</span>':'')+'<small>'+c.desc+'</small></td><td class="r">'+pct(r.inf.pctW1,1)+'</td><td class="r">'+brl(r.inf.rec5)+'</td>'+cel(r.inf)+cel(r.mkt)+'</tr>'; });
+  h+='</tbody></table></div><p class="small muted">Custo comercial da Weesu = recorrente paga à Dixx e aos parceiros (e, no padrão Omie, a primeira mensalidade e metade do setup) ÷ receita total da Weesu no ano 1 (mensalidades e setup). Margem = resultado ÷ tudo o que a Dixx gasta (time e cotas), sem contar o valor da participação.</p></div>';
+  h+='<div class="card"><h3>Caixa acumulado da Dixx por modelo<small>salário de mercado, para mostrar a operação sem depender de salário abaixo do mercado</small></h3>'+legend([{nome:'Acordo atual',cor:'--s2'},{nome:'Padrão Omie',cor:'--s1'},{nome:'Proposta Dixx (33%)',cor:'--accent'}])+'<div class="scroll" id="chRep"></div></div>';
+  h+='<div class="cols"><div class="callout"><h4>Proposta: 33% recorrente, o mesmo das franquias Omie, sem setup e sem bônus</h4><p>A Dixx receberia '+pct(0.33,0)+' da mensalidade na captação direta e '+pct(Math.max(0,0.33-p.comissaoParceiro),0)+' na indicação, com o parceiro ficando com '+pct(p.comissaoParceiro,0)+'. O setup continua 100% da Weesu e não há bônus de primeira mensalidade. O custo comercial da Weesu no ano 1 fica em '+pct(pr.inf.pctW1,1)+' da receita, abaixo dos 15% que um SaaS gasta em média só com vendas, e abaixo do que a própria Omie paga às franquias.</p></div>'+
+    '<div class="callout warn"><h4>Por que o acordo atual não fecha para a Dixx</h4><p>Com 20%, a Dixx precisa pagar salários cerca de 50% abaixo do mercado para não ter prejuízo, e mesmo assim só recupera o caixa no mês '+(at.inf.rec>=0?at.inf.rec+1:'—')+', com margem de '+pct(at.inf.margem,0)+'. Com salário de mercado, termina os 5 anos com '+brl(at.mkt.acum5)+'. Com 33%, a operação se paga mesmo pagando salário de mercado.</p></div></div>';
+  return h;
+}
+function afterRepasse(M){
+  var b=el('chRep'); if(!b) return; var C=cenariosRepasse(), L=[]; for(var t=0;t<60;t++) L.push(mesLabel(t));
+  var g=function(id){ return avaliaCenario(C.filter(function(c){return c.id===id;})[0],true).M.acum; };
+  var o={labels:L,aria:'Caixa acumulado da Dixx por modelo',series:[{nome:'Acordo atual',cor:'--s2',vals:g('atual')},{nome:'Padrão Omie',cor:'--s1',vals:g('omie')},{nome:'Proposta Dixx (33%)',cor:'--accent',vals:g('proposta')}],tick:function(i){ return i%12===0? 'ano '+(i/12+1) : (i===59?mesLabel(59):null); }};
   b.innerHTML=chartLines(o); bindLines(b,o);
 }
 
@@ -785,10 +838,10 @@ function secMetodo(){
 function render(){
   var M=modelo(), h='', ok=SECOES.some(function(s){return s[0]===aba;}); if(!ok) aba='abertura';
   if(aba==='abertura') h=secAbertura(M); else if(aba==='canais') h=secCanais(M); else if(aba==='metas') h=secMetas(M);
-  else if(aba==='sociedade') h=secSociedade(M); else if(aba==='investimento') h=secInvest(M); else if(aba==='plano') h=secPlano();
+  else if(aba==='sociedade') h=secSociedade(M); else if(aba==='repasse') h=secRepasse(M); else if(aba==='investimento') h=secInvest(M); else if(aba==='plano') h=secPlano();
   else if(aba==='pipeline') h=secPipeline(); else if(aba==='acompanhamento') h=secAcomp(M); else if(aba==='wms') h=secWms(); else h=secMetodo();
   el('main').innerHTML='<div class="wrap">'+h+'<footer>Plano Comercial Weesu · base de leads de 12/10/2026 · pipeline de 08/10/2026 · valores em reais, premissas revisadas mensalmente</footer></div>';
-  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='acompanhamento') afterAcomp(M);
+  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='repasse') afterRepasse(M); if(aba==='acompanhamento') afterAcomp(M);
 }
 
 /* ---------- interações e gravação ---------- */
