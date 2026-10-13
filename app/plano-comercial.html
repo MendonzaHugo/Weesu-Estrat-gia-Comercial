@@ -212,7 +212,7 @@ footer{font-size:12.5px;color:var(--muted)}
 
 /* ---------- Premissas padrão (editáveis em Metas; ajustes ficam salvos) ---------- */
 var DEF = {
-  mrrInicial:202000, clientesIniciais:50, valuation:19000000, equityPct:0.05, anosVesting:5,
+  mrrInicial:202000, clientesIniciais:50, valuation:19000000, equityPct:0.05, anosVesting:5, pagaCotas:1, prazoCotasMeses:60,
   metaM1:15000, cresc1:0.05, cresc2:0.03, cresc3:0.02, cresc4:0.01, cresc5:0.01, churn:0.015,
   ticketLow:3000, ticketHigh:12000, shareHigh:0.30, shareInd:0.60,
   setupMedio:12500, pctImplantacao:0.80, pctBonusImplantacao:0.10, margemBruta:0.80,
@@ -241,7 +241,7 @@ var CANAIS=[
 ];
 
 var PREM_CAMPOS=[
- ['Empresa hoje e sociedade',[['mrrInicial','MRR atual (R$)','r'],['clientesIniciais','Clientes ativos','n'],['valuation','Valuation atual (R$)','r'],['equityPct','Participação ao fim do vesting','p'],['anosVesting','Anos de vesting','n']]],
+ ['Empresa hoje e sociedade',[['mrrInicial','MRR atual (R$)','r'],['clientesIniciais','Clientes ativos','n'],['valuation','Valuation atual (R$)','r'],['equityPct','Participação ao fim do vesting','p'],['anosVesting','Anos de vesting','n'],['pagaCotas','Parte do valor das cotas paga pela Dixx','p','100% = compra ao valuation de hoje'],['prazoCotasMeses','Meses para pagar as cotas','n','diluído mês a mês; padrão 60']]],
  ['Metas e retenção',[['metaM1','Meta de NMRR do mês 1 (R$)','r'],['cresc1','Crescimento da meta ao mês · ano 1','p','cenário oficial: 5%'],['cresc2','· ano 2','p'],['cresc3','· ano 3','p'],['cresc4','· ano 4','p'],['cresc5','· ano 5','p'],['churn','Churn mensal do MRR','p','faixa de 1% a 2%']]],
  ['Ticket e mix',[['ticketLow','Ticket low (ERPs de entrada) (R$)','r'],['ticketHigh','Ticket high (ERPs corporativos) (R$)','r'],['shareHigh','NMRR high ticket a partir do ano 2','p'],['shareInd','NMRR via indicações a partir do ano 2','p'],['setupMedio','Setup médio (R$)','r'],['margemBruta','Margem bruta da mensalidade','p']]],
  ['Remuneração da Dixx',[['revDireta','Recorrente sobre captação direta','p'],['revIndicacao','Recorrente sobre indicação (parte da Dixx)','p'],['comissaoParceiro','Recorrente do parceiro na indicação','p'],['vigenciaMeses','Meses em que a recorrente é paga','n','padrão: 60, igual ao vesting']]],
@@ -328,7 +328,7 @@ function modelo(){
   }
   M.cap=cap; M.capTot=MESES.map(function(_,i){ return cap.pipe[i]+cap.base[i]+cap.franq[i]+cap.contab[i]+cap.ecom[i]+cap.erp[i]; });
   // 60 meses
-  var K=['meta','ind','hi','deals','mrr','cli','churnR','mrrD','mrrI','rev','comParc','custoFixo','custoVar','custo','caixa','acum','weesuLiq','setup','reun'];
+  var K=['meta','ind','hi','deals','mrr','cli','churnR','mrrD','mrrI','rev','comParc','custoFixo','custoVar','custo','cotas','caixa','acum','weesuLiq','setup','reun'];
   K.forEach(function(x){M[x]=[];});
   var meta=p.metaM1, mrr=p.mrrInicial, cli=p.clientesIniciais, mD=0, mI=0, acum=0;
   for(var t=0;t<N;t++){
@@ -347,7 +347,8 @@ function modelo(){
     var rn= t<12? reun[t] : p.reunioesSdrPlena*hcS[y];
     var execV=p.execPctNmrrInd*meta*ind; if(t<3) execV=Math.max(execV,p.execGarantia);
     var vari=(p.sdrPorReuniao*rn+p.closerPctNmrr*meta+execV)*p.fatorEncargos;
-    var custo=fixo+vari, caixa=rev-custo; acum+=caixa;
+    var cot= t<p.prazoCotasMeses ? p.valuation*p.equityPct*p.pagaCotas/p.prazoCotasMeses : 0;
+    var custo=fixo+vari, caixa=rev-custo-cot; acum+=caixa; M.cotas.push(cot);
     M.meta.push(meta); M.ind.push(ind); M.hi.push(hi); M.deals.push(deals); M.mrr.push(mrr); M.cli.push(cli); M.churnR.push(ch);
     M.mrrD.push(mD); M.mrrI.push(mI); M.rev.push(rev); M.comParc.push(comP); M.custoFixo.push(fixo); M.custoVar.push(vari); M.custo.push(custo);
     M.caixa.push(caixa); M.acum.push(acum); M.weesuLiq.push(mD+mI-rev-comP); M.setup.push(deals*p.setupMedio); M.reun.push(rn);
@@ -357,14 +358,14 @@ function modelo(){
     var a=y*12,b=a+12, sl=function(x){return M[x].slice(a,b);};
     var mrrF=M.mrr[b-1], val=mrrF*12*M.mult, eq=p.equityPct*Math.min(1,(y+1)/p.anosVesting);
     return {nmrr:sum(sl('meta')),deals:sum(sl('deals')),mrr:mrrF,cli:M.cli[b-1],arr:mrrF*12,val:val,eqPct:eq,eqVal:eq*val,eqHoje:eq*p.valuation,
-      rev:sum(sl('rev')),custo:sum(sl('custo')),caixa:sum(sl('caixa')),acum:M.acum[b-1],comParc:sum(sl('comParc')),setup:sum(sl('setup')),
+      rev:sum(sl('rev')),custo:sum(sl('custo')),cotas:sum(sl('cotas')),caixa:sum(sl('caixa')),acum:M.acum[b-1],comParc:sum(sl('comParc')),setup:sum(sl('setup')),
       ind:sum(M.meta.slice(a,b).map(function(v,i){return v*M.ind[a+i];}))/sum(sl('meta')),
       ticket:sum(sl('meta'))/sum(sl('deals')),hc:hcS[y]+hcC[y]+hcE[y],weesu:sum(sl('weesuLiq')),novoMrr:M.mrrD[b-1]+M.mrrI[b-1]};
   });
   var pico=Math.min.apply(null,M.acum), be=-1; for(var i=0;i<N;i++){ if(M.caixa[i]>=0){ be=i; break; } }
   var beAc=-1; for(var j=0;j<N;j++){ if(M.acum[j]>=0&&j>0&&M.acum[j-1]<0){ beAc=j; } }
   M.pico=pico; M.picoMes=M.acum.indexOf(pico); M.breakEven=be; M.payBackAcum=beAc;
-  M.custoTot=sum(M.custo); M.revTot=sum(M.rev);
+  M.cotasTot=sum(M.cotas); M.custoTot=sum(M.custo); M.revTot=sum(M.rev);
   // ano 1 resumo (compatível com as seções anteriores)
   var d1=sum(M.deals.slice(0,12)), c1=sum(M.custo.slice(0,12)), abate=sum(M.setup.slice(0,12))*Math.max(0,1-p.pctImplantacao-p.pctBonusImplantacao);
   M.cac=(c1-abate)/d1; M.cacBruto=c1/d1; M.abate1=abate;
@@ -450,13 +451,13 @@ function secAbertura(M){
    '<div class="tile"><span class="label">MRR no fim do ano 1</span><span class="num">'+k(a1.mrr)+'</span><span class="note">'+nf(a1.mrr/S.prem.mrrInicial,1)+'× o atual · '+nf(a1.deals,0)+' novos contratos</span></div>'+
    '<div class="tile"><span class="label">MRR no fim do ano 5</span><span class="num">'+k(a5.mrr)+'</span><span class="note">ARR de '+k(a5.arr)+' · '+nf(a5.cli,0)+' clientes</span></div>'+
    '<div class="tile"><span class="label">Valuation projetado no ano 5</span><span class="num">'+k(a5.val)+'</span><span class="note">hoje '+k(S.prem.valuation)+', mantido o múltiplo de '+nf(M.mult,1)+'× ARR</span></div>'+
-   '<div class="tile"><span class="label">Investimento da Dixx</span><span class="num">'+k(-M.pico)+'</span><span class="note">maior necessidade de caixa do time comercial, em '+mesLabel(M.picoMes)+'</span></div></div>';
+   '<div class="tile"><span class="label">Investimento da Dixx</span><span class="num">'+k(-M.pico)+'</span><span class="note">pico de caixa com o time e a compra das cotas, em '+mesLabel(M.picoMes)+'</span></div></div>';
   var PUx=S.pipeline.filter(function(d){return d.origem==='puro';});
   if(PUx.length) h+='<div class="callout" style="border:2px solid var(--accent)"><h4>O primeiro parceiro já está entregando</h4><p>O e-commerce Puro, primeiro parceiro formalizado da Dixx, indicou '+PUx.length+' empresas reais no Mercado Livre Experience 2026. Todas já estão no pipeline, com '+PUx.filter(function(d){return d.tier==="A";}).length+' prioritárias para contato em 24 horas.</p></div>';
   h+='<div class="card"><h3>A proposta em três pontos</h3><div class="cols3" style="gap:12px">'+
    '<div class="callout"><h4>A Dixx assume o comercial</h4><p>A Dixx monta e paga 100% do time (SDR, Closer e Executivo de Negócios), o processo, o CRM e os canais. A Weesu fica responsável pelo marketing.</p></div>'+
    '<div class="callout"><h4>A Dixx ganha com o resultado</h4><p>'+pct(S.prem.revDireta,0)+' da mensalidade, por 5 anos, dos clientes captados diretamente; '+pct(S.prem.revIndicacao,0)+' quando vierem por indicação, e os outros '+pct(S.prem.comissaoParceiro,0)+' vão ao parceiro.</p></div>'+
-   '<div class="callout"><h4>A Dixx vira sócia</h4><p>Aquisição de '+pct(S.prem.equityPct,0)+' da Weesu ao longo de '+S.prem.anosVesting+' anos, sobre o valuation de '+k(S.prem.valuation)+' de hoje ('+k(S.prem.valuation*S.prem.equityPct)+').</p></div></div></div>';
+   '<div class="callout"><h4>A Dixx compra e vira sócia</h4><p>A Dixx compra '+pct(S.prem.equityPct,0)+' da Weesu ao longo de '+S.prem.anosVesting+' anos, a preço fixo sobre o valuation de '+k(S.prem.valuation)+' de hoje: '+k(S.prem.valuation*S.prem.equityPct*S.prem.pagaCotas)+', pagos ao longo de '+S.prem.prazoCotasMeses+' meses.</p></div></div></div>';
   h+='<div class="card"><h3>Os pontos focais da captação<small>ano 1, capacidade projetada por canal; a linha tracejada é a meta</small></h3>'+legend(CANAIS.map(function(c){return {nome:c.nome,cor:c.cor};}).concat([{nome:'Meta (5% ao mês)',cls:'dash'}]))+'<div class="scroll" id="chCap"></div></div>';
   return h;
 }
@@ -517,7 +518,7 @@ function secMetas(M){
 function secSociedade(M){
   var p=S.prem, A=M.anos, a5=A[4];
   var receb5=sum(A.map(function(a){return a.rev;})), custo5=sum(A.map(function(a){return a.custo;}));
-  var h='<div class="sec-head"><span class="label">Proposta de sociedade · Dixx e Weesu</span><h2>A Dixx investe '+k(-M.pico)+' para criar a área comercial e recebe '+pct(p.equityPct,0)+' da Weesu em '+p.anosVesting+' anos</h2><p>Durante a criação e a estruturação do time, a Dixx é remunerada pela mensalidade dos clientes que trouxer, por 5 anos. A Weesu cresce sem custo fixo comercial, cuida do marketing e fica com '+pct(1-p.revDireta,0)+' de toda mensalidade nova.</p></div>';
+  var h='<div class="sec-head"><span class="label">Proposta de sociedade · Dixx e Weesu</span><h2>A Dixx investe até '+k(-M.pico)+' para criar a área comercial e comprar '+pct(p.equityPct,0)+' da Weesu em '+p.anosVesting+' anos</h2><p>Durante a criação e a estruturação do time, a Dixx é remunerada pela mensalidade dos clientes que trouxer, por 5 anos. A Weesu cresce sem custo fixo comercial, cuida do marketing e fica com '+pct(1-p.revDireta,0)+' de toda mensalidade nova.</p></div>';
   h+='<div class="steps">'+A.map(function(a,y){ return '<div><span class="label">'+ANOS[y]+'</span><span class="num">'+pct(a.eqPct,0)+'</span><span class="note">'+k(a.eqHoje)+' ao valuation de hoje</span><span class="note">'+k(a.eqVal)+' ao valuation projetado</span></div>'; }).join('')+'</div>';
   h+='<div class="cols"><div class="card"><h3>Como a Dixx é remunerada</h3><div class="scroll"><table class="t"><thead><tr><th>Origem do cliente</th><th class="r">Dixx</th><th class="r">Parceiro</th><th class="r">Weesu</th></tr></thead><tbody>'+
    '<tr><td>Captação direta<small>nossa base e pipeline</small></td><td class="r">'+pct(p.revDireta,0)+'</td><td class="r">—</td><td class="r">'+pct(1-p.revDireta,0)+'</td></tr>'+
@@ -526,17 +527,19 @@ function secSociedade(M){
    '<div class="card"><h3>Participação</h3><div class="kv">'+
    '<div><span>Valuation de hoje</span><span>'+brl(p.valuation)+'</span></div>'+
    '<div><span>Participação ao fim do vesting</span><span>'+pct(p.equityPct,0)+' ('+brl(p.valuation*p.equityPct)+')</span></div>'+
+   '<div><span>Preço das cotas</span><span>'+brl(p.valuation*p.equityPct*p.pagaCotas)+', fixo no valuation de hoje</span></div>'+
+   '<div><span>Pagamento</span><span>'+p.prazoCotasMeses+' meses, cerca de '+brl(p.valuation*p.equityPct*p.pagaCotas/p.prazoCotasMeses)+'/mês</span></div>'+
    '<div><span>Ritmo</span><span>'+pct(p.equityPct/p.anosVesting,0)+' ao ano, por '+p.anosVesting+' anos</span></div>'+
    '<div><span>Múltiplo implícito de hoje</span><span>'+nf(M.mult,1)+'× o ARR</span></div>'+
    '<div><span>Valuation projetado no ano 5</span><span>'+brl(a5.val)+'</span></div></div>'+
    '<p class="small muted">Sugestão: atrelar cada marco anual a metas de NMRR do ano (por exemplo, 80% da meta). Isso protege a Weesu e dá clareza ao acordo.</p></div></div>';
   h+='<div class="card"><h3>Quem faz o quê</h3><div class="vs"><div class="hi"><span class="label">Dixx</span><h4>Área comercial, 100% custeada pela Dixx</h4><ul class="small" style="padding-left:18px;display:flex;flex-direction:column;gap:4px"><li>Time: SDR, Closer e Executivo de Negócios</li><li>Processo comercial, CRM, metas e acompanhamento</li><li>Parcerias: e-commerce Puro, franqueados Omie, contabilidades e ERPs corporativos</li><li>Prospecção na base TOTVS, Omie e Senior</li></ul></div><div><span class="label">Weesu</span><h4>Marketing, produto e entrega</h4><ul class="small" style="padding-left:18px;display:flex;flex-direction:column;gap:4px"><li>Marketing: marca, conteúdo, materiais de venda e eventos</li><li>Produto: Seenc e Hub, incluindo o roadmap para high ticket</li><li>Implantação e suporte, custeados pelo setup</li><li>Pagamento da recorrente à Dixx e aos parceiros</li></ul></div></div></div>';
-  h+='<div class="card"><h3>Investimento da Dixx ao longo do tempo<small>recorrente recebida × custo do time comercial, por mês</small></h3>'+legend([{nome:'Recorrente recebida',cor:'--s3'},{nome:'Custo do time',cor:'--s2'}])+'<div class="scroll" id="chFluxo"></div></div>';
+  h+='<div class="card"><h3>Investimento da Dixx ao longo do tempo<small>recorrente recebida × saídas da Dixx (time e compra das cotas), por mês</small></h3>'+legend([{nome:'Recorrente recebida',cor:'--s3'},{nome:'Custo do time',cor:'--s2'},{nome:'Time + compra das cotas',cls:'dash'}])+'<div class="scroll" id="chFluxo"></div></div>';
   h+='<div class="card"><h3>Caixa acumulado da Dixx<small>abaixo de zero é o que a Dixx investe na Weesu</small></h3><div class="scroll" id="chAcum"></div>'+
    '<p class="small">O investimento chega a <b>'+k(-M.pico)+'</b> em '+mesLabel(M.picoMes)+'. '+(M.breakEven>=0?'A operação passa a se pagar mês a mês em '+mesLabel(M.breakEven)+'.':'Com estas premissas, a operação ainda não se paga mês a mês em 5 anos.')+' '+(M.acum[59]>=0?'O investimento é recuperado em caixa dentro dos 5 anos.':'No fim do ano 5 o saldo acumulado ainda é de '+k(M.acum[59])+': o retorno da Dixx vem da participação.')+'</p></div>';
-  h+='<div class="card"><h3>Ano a ano</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">Time</th><th class="r">Custo do time</th><th class="r">Recorrente recebida</th><th class="r">Caixa do ano</th><th class="r">Caixa acumulado</th><th class="r">Participação</th><th class="r">Valor da participação</th></tr></thead><tbody>';
-  A.forEach(function(a,y){ h+='<tr><td>'+ANOS[y]+'</td><td class="r">'+a.hc+' pessoas</td><td class="r">'+brl(a.custo)+'</td><td class="r">'+brl(a.rev)+'</td><td class="r '+(a.caixa<0?'neg':'pos')+'">'+brl(a.caixa)+'</td><td class="r '+(a.acum<0?'neg':'pos')+'">'+brl(a.acum)+'</td><td class="r">'+pct(a.eqPct,0)+'</td><td class="r">'+brl(a.eqVal)+'</td></tr>'; });
-  h+='<tr class="tot"><td>5 anos</td><td></td><td class="r">'+brl(custo5)+'</td><td class="r">'+brl(receb5)+'</td><td class="r '+(receb5-custo5<0?'neg':'pos')+'">'+brl(receb5-custo5)+'</td><td></td><td class="r">'+pct(a5.eqPct,0)+'</td><td class="r">'+brl(a5.eqVal)+'</td></tr></tbody></table></div><p class="small muted">Valor da participação = participação adquirida × valuation projetado (ARR × '+nf(M.mult,1)+'). Com múltiplo menor, o valor cai na mesma proporção; veja a sensibilidade abaixo.</p></div>';
+  h+='<div class="card"><h3>Ano a ano</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">Time</th><th class="r">Custo do time</th><th class="r">Compra das cotas</th><th class="r">Recorrente recebida</th><th class="r">Caixa do ano</th><th class="r">Caixa acumulado</th><th class="r">Participação</th><th class="r">Valor da participação</th></tr></thead><tbody>';
+  A.forEach(function(a,y){ h+='<tr><td>'+ANOS[y]+'</td><td class="r">'+a.hc+' pessoas</td><td class="r">'+brl(a.custo)+'</td><td class="r">'+brl(a.cotas)+'</td><td class="r">'+brl(a.rev)+'</td><td class="r '+(a.caixa<0?'neg':'pos')+'">'+brl(a.caixa)+'</td><td class="r '+(a.acum<0?'neg':'pos')+'">'+brl(a.acum)+'</td><td class="r">'+pct(a.eqPct,0)+'</td><td class="r">'+brl(a.eqVal)+'</td></tr>'; });
+  h+='<tr class="tot"><td>5 anos</td><td></td><td class="r">'+brl(custo5)+'</td><td class="r">'+brl(M.cotasTot)+'</td><td class="r">'+brl(receb5)+'</td><td class="r '+(receb5-custo5-M.cotasTot<0?'neg':'pos')+'">'+brl(receb5-custo5-M.cotasTot)+'</td><td></td><td class="r">'+pct(a5.eqPct,0)+'</td><td class="r">'+brl(a5.eqVal)+'</td></tr></tbody></table></div><p class="small muted">Valor da participação = participação adquirida × valuation projetado (ARR × '+nf(M.mult,1)+'). Com múltiplo menor, o valor cai na mesma proporção; veja a sensibilidade abaixo.</p></div>';
   // valor criado
   var semCom=0; // custo de a Weesu montar o time sozinha = mesmo custo do time
   var revPago=receb5, comP=sum(A.map(function(a){return a.comParc;}));
@@ -550,17 +553,18 @@ function secSociedade(M){
    '<tr><td>Custo do time em 5 anos</td><td class="r">'+brl(custo5)+'</td><td class="r">R$ 0</td></tr>'+
    '<tr><td>Recorrente paga à Dixx</td><td class="r">R$ 0</td><td class="r">'+brl(revPago)+'</td></tr>'+
    '<tr><td>Comissão de parceiros</td><td class="r">'+brl(comP)+'</td><td class="r">'+brl(comP)+'</td></tr>'+
-   '<tr><td>Participação cedida</td><td class="r">0%</td><td class="r">'+pct(p.equityPct,0)+'</td></tr>'+
+   '<tr><td>Participação vendida</td><td class="r">0%</td><td class="r">'+pct(p.equityPct,0)+'</td></tr>'+
+   '<tr><td>Recebe pela venda das cotas</td><td class="r">R$ 0</td><td class="r">'+brl(M.cotasTot)+'</td></tr>'+
    '<tr class="tot"><td>Desembolso no ano 1</td><td class="r">'+brl(A[0].custo)+'</td><td class="r">'+brl(A[0].rev)+'</td></tr></tbody></table></div><p class="small muted">Montando sozinha, a Weesu banca o time antes da receita chegar e corre o risco de execução. Com a Dixx, só paga sobre mensalidade que entrou. Nos dois casos o marketing fica com a Weesu.</p></div>'+
-   '<div class="card"><h3>Sensibilidade ao múltiplo</h3><div class="scroll"><table class="t"><thead><tr><th>Múltiplo do ARR</th><th class="r">Valuation no ano 5</th><th class="r">'+pct(p.equityPct,0)+' da Weesu</th></tr></thead><tbody>'+
-   [4,6,M.mult].map(function(mu){ var v=a5.arr*mu; return '<tr'+(mu===M.mult?' class="tot"':'')+'><td>'+nf(mu,1)+'×'+(mu===M.mult?' (o de hoje)':'')+'</td><td class="r">'+brl(v)+'</td><td class="r">'+brl(v*p.equityPct)+'</td></tr>'; }).join('')+
+   '<div class="card"><h3>Sensibilidade ao múltiplo</h3><div class="scroll"><table class="t"><thead><tr><th>Múltiplo do ARR</th><th class="r">Valuation no ano 5</th><th class="r">'+pct(p.equityPct,0)+' da Weesu</th><th class="r">Menos o preço pago</th></tr></thead><tbody>'+
+   [4,6,M.mult].map(function(mu){ var v=a5.arr*mu; return '<tr'+(mu===M.mult?' class="tot"':'')+'><td>'+nf(mu,1)+'×'+(mu===M.mult?' (o de hoje)':'')+'</td><td class="r">'+brl(v)+'</td><td class="r">'+brl(v*p.equityPct)+'</td><td class="r">'+brl(v*p.equityPct-M.cotasTot)+'</td></tr>'; }).join('')+
    '</tbody></table></div><p class="small muted">Empresas SaaS costumam ser avaliadas entre 4× e 10× o ARR, conforme crescimento, margem e churn.</p></div></div>';
   return h;
 }
 function afterSociedade(M){
   var L=[]; for(var t=0;t<60;t++) L.push(mesLabel(t));
   var tick=function(i){ return i%12===0? 'ano '+(i/12+1) : (i===59?mesLabel(59):null); };
-  var o1={labels:L,aria:'Recorrente recebida e custo do time',series:[{nome:'Recorrente recebida',cor:'--s3',vals:M.rev},{nome:'Custo do time',cor:'--s2',vals:M.custo}],tick:tick};
+  var o1={labels:L,aria:'Recorrente recebida e custo do time',series:[{nome:'Recorrente recebida',cor:'--s3',vals:M.rev},{nome:'Custo do time',cor:'--s2',vals:M.custo},{nome:'Time + compra das cotas',cor:'--ink',dash:true,vals:M.custo.map(function(c,i){return c+M.cotas[i];})}],tick:tick};
   var b1=el('chFluxo'); b1.innerHTML=chartLines(o1); bindLines(b1,o1);
   var o2={labels:L,aria:'Caixa acumulado da operação comercial',series:[{nome:'Caixa acumulado',cor:'--accent',vals:M.acum,area:true}],tick:tick,mark:M.picoMes,markTxt:'pico: '+k(M.pico)};
   var b2=el('chAcum'); b2.innerHTML=chartLines(o2); bindLines(b2,o2);
@@ -591,8 +595,8 @@ function secInvest(M){
   h+='<div class="card"><h3>Time por ano</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">SDR</th><th class="r">Closer</th><th class="r">Exec. Negócios</th><th class="r">Custo do time</th><th class="r">NMRR vendido</th><th class="r">Custo por R$ de NMRR</th></tr></thead><tbody>';
   A.forEach(function(a,y){ h+='<tr><td>'+ANOS[y]+'</td><td class="r">'+hcS[y]+'</td><td class="r">'+hcC[y]+'</td><td class="r">'+hcE[y]+'</td><td class="r">'+brl(a.custo)+'</td><td class="r">'+brl(a.nmrr)+'</td><td class="r">'+nf(a.custo/a.nmrr,2)+'</td></tr>'; });
   h+='</tbody></table></div></div>';
-  h+='<div class="card"><h3>Ano 1, mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Fixo c/ encargos</th><th class="r">Variável c/ encargos</th><th class="r">Custo do time</th><th class="r">Recorrente recebida</th><th class="r">Caixa do mês</th><th class="r">Acumulado</th></tr></thead><tbody>';
-  for(var i=0;i<12;i++){ h+='<tr><td>'+ROT[i]+'</td><td class="r">'+brl(M.custoFixo[i])+'</td><td class="r">'+brl(M.custoVar[i])+'</td><td class="r">'+brl(M.custo[i])+'</td><td class="r">'+brl(M.rev[i])+'</td><td class="r '+(M.caixa[i]<0?'neg':'pos')+'">'+brl(M.caixa[i])+'</td><td class="r '+(M.acum[i]<0?'neg':'pos')+'">'+brl(M.acum[i])+'</td></tr>'; }
+  h+='<div class="card"><h3>Ano 1, mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Fixo c/ encargos</th><th class="r">Variável c/ encargos</th><th class="r">Custo do time</th><th class="r">Compra das cotas</th><th class="r">Recorrente recebida</th><th class="r">Caixa do mês</th><th class="r">Acumulado</th></tr></thead><tbody>';
+  for(var i=0;i<12;i++){ h+='<tr><td>'+ROT[i]+'</td><td class="r">'+brl(M.custoFixo[i])+'</td><td class="r">'+brl(M.custoVar[i])+'</td><td class="r">'+brl(M.custo[i])+'</td><td class="r">'+brl(M.cotas[i])+'</td><td class="r">'+brl(M.rev[i])+'</td><td class="r '+(M.caixa[i]<0?'neg':'pos')+'">'+brl(M.caixa[i])+'</td><td class="r '+(M.acum[i]<0?'neg':'pos')+'">'+brl(M.acum[i])+'</td></tr>'; }
   h+='</tbody></table></div></div>';
   h+='<div class="tiles"><div class="tile"><span class="label">CAC no ano 1</span><span class="num">'+brl(M.cac)+'</span><span class="note">líquido da parte do setup que abate a venda</span></div>'+
    '<div class="tile"><span class="label">Payback do CAC (Weesu)</span><span class="num">'+nf(M.cac/(p.ticketLow*p.margemBruta),1)+' meses</span><span class="note">sobre ticket de '+brl(p.ticketLow)+'</span></div>'+
@@ -726,6 +730,7 @@ function secMetodo(){
    '<li>Encargos CLT fora do Simples: 1,56× a 1,9× o salário (<a href="https://valorfinal.com.br/guia/custo-funcionario" target="_blank" rel="noopener">ValorFinal</a>, <a href="https://www.contabilidadezen.com.br/blog/quanto-custa-funcionario-encargos-2026/" target="_blank" rel="noopener">Contabilidade Zen</a>). O plano usa 1,7×.</li></ul></div>';
   h+='<div class="card"><h3>Premissas a validar</h3><ul class="small" style="padding-left:18px;display:flex;flex-direction:column;gap:6px">'+
    '<li>Valuation projetado mantém o múltiplo de hoje ('+nf(p.valuation/(p.mrrInicial*12),1)+'× o ARR). A tabela de sensibilidade mostra o efeito de múltiplos menores.</li>'+
+   '<li>A Dixx compra os '+pct(p.equityPct,0)+' a preço fixo de '+brl(p.valuation*p.equityPct*p.pagaCotas)+' (valuation de hoje), em parcelas mensais iguais ao longo de '+p.prazoCotasMeses+' meses. O calendário exato ainda não está definido.</li>'+
    '<li>A recorrente da Dixx é paga por '+p.vigenciaMeses+' meses (5 anos, como acordado), enquanto o cliente estiver ativo.</li>'+
    '<li>A partir do ano 2: '+pct(p.shareInd,0)+' do NMRR via indicação e '+pct(p.shareHigh,0)+' em high ticket, com ticket de '+brl(p.ticketHigh)+'.</li>'+
    '<li>Conversões do ano 1: '+pct(p.convReuniaoVenda,0)+' de reunião em venda; '+pct(p.convIndicacao,0)+' de indicação em venda (franqueados e contabilidades); '+pct(p.convEcom,0)+' no e-commerce Puro; '+pct(p.convErp,0)+' nos ERPs corporativos, com ciclo de 2 meses.</li>'+
