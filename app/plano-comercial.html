@@ -215,7 +215,7 @@ var DEF = {
   mrrInicial:202000, clientesIniciais:50, valuation:19000000, equityPct:0.05, anosVesting:5, pagaCotas:1, prazoCotasMeses:60,
   metaM1:15000, cresc1:0.05, cresc2:0.03, cresc3:0.02, cresc4:0.01, cresc5:0.01, churn:0.015,
   ticketLow:3000, ticketHigh:12000, shareHigh:0.30, shareInd:0.60,
-  setupMedio:12500, pctImplantacao:0.80, pctBonusImplantacao:0.10, margemBruta:0.80,
+  setupMedio:12500, margemBruta:0.80,
   revDireta:0.20, revIndicacao:0.10, comissaoParceiro:0.10, vigenciaMeses:60,
   fatorEncargos:1.70, reajuste:0.05, sdrBase:5000, closerBase:9000, execBase:9000,
   hcSdr:'1,2,2,2,3', hcCloser:'1,1,2,2,2', hcExec:'1,1,1,2,2',
@@ -367,8 +367,8 @@ function modelo(){
   M.pico=pico; M.picoMes=M.acum.indexOf(pico); M.breakEven=be; M.payBackAcum=beAc;
   M.cotasTot=sum(M.cotas); M.custoTot=sum(M.custo); M.revTot=sum(M.rev);
   // ano 1 resumo (compatível com as seções anteriores)
-  var d1=sum(M.deals.slice(0,12)), c1=sum(M.custo.slice(0,12)), abate=sum(M.setup.slice(0,12))*Math.max(0,1-p.pctImplantacao-p.pctBonusImplantacao);
-  M.cac=(c1-abate)/d1; M.cacBruto=c1/d1; M.abate1=abate;
+  var d1=sum(M.deals.slice(0,12)), c1=sum(M.custo.slice(0,12));
+  M.cac=c1/d1; M.cacBruto=M.cac;
   return M;
 }
 function mesLabel(t){ var y=2026, mo=11+t; y+=Math.floor((mo-1)/12); mo=((mo-1)%12)+1; return ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][mo-1]+'/'+String(y).slice(2); }
@@ -523,7 +523,7 @@ function secSociedade(M){
   h+='<div class="cols"><div class="card"><h3>Como a Dixx é remunerada</h3><div class="scroll"><table class="t"><thead><tr><th>Origem do cliente</th><th class="r">Dixx</th><th class="r">Parceiro</th><th class="r">Weesu</th></tr></thead><tbody>'+
    '<tr><td>Captação direta<small>nossa base, pipeline e high ticket (ERPs corporativos)</small></td><td class="r">'+pct(p.revDireta,0)+'</td><td class="r">—</td><td class="r">'+pct(1-p.revDireta,0)+'</td></tr>'+
    '<tr><td>Indicação<small>e-commerce Puro, franqueados e contabilidades</small></td><td class="r">'+pct(p.revIndicacao,0)+'</td><td class="r">'+pct(p.comissaoParceiro,0)+'</td><td class="r">'+pct(1-p.revIndicacao-p.comissaoParceiro,0)+'</td></tr>'+
-   '<tr><td>Clientes atuais (50)</td><td class="r">—</td><td class="r">—</td><td class="r">100%</td></tr></tbody></table></div><p class="small muted">Percentuais sobre a mensalidade paga pelo cliente, todo mês, enquanto ele estiver ativo e dentro da vigência de '+p.vigenciaMeses+' meses. O setup segue com a Weesu e cobre a implantação.</p></div>'+
+   '<tr><td>Clientes atuais (50)</td><td class="r">—</td><td class="r">—</td><td class="r">100%</td></tr></tbody></table></div><p class="small muted">Percentuais sobre a mensalidade paga pelo cliente, todo mês, enquanto ele estiver ativo e dentro da vigência de '+p.vigenciaMeses+' meses. O setup é 100% da Weesu e cobre a implantação: a Dixx não recebe nenhuma parte dele.</p></div>'+
    '<div class="card"><h3>Participação</h3><div class="kv">'+
    '<div><span>Valuation de hoje</span><span>'+brl(p.valuation)+'</span></div>'+
    '<div><span>Participação ao fim do vesting</span><span>'+pct(p.equityPct,0)+' ('+brl(p.valuation*p.equityPct)+')</span></div>'+
@@ -598,11 +598,11 @@ function secInvest(M){
   h+='<div class="card"><h3>Ano 1, mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Fixo c/ encargos</th><th class="r">Variável c/ encargos</th><th class="r">Custo do time</th><th class="r">Compra das cotas</th><th class="r">Recorrente recebida</th><th class="r">Caixa do mês</th><th class="r">Acumulado</th></tr></thead><tbody>';
   for(var i=0;i<12;i++){ h+='<tr><td>'+ROT[i]+'</td><td class="r">'+brl(M.custoFixo[i])+'</td><td class="r">'+brl(M.custoVar[i])+'</td><td class="r">'+brl(M.custo[i])+'</td><td class="r">'+brl(M.cotas[i])+'</td><td class="r">'+brl(M.rev[i])+'</td><td class="r '+(M.caixa[i]<0?'neg':'pos')+'">'+brl(M.caixa[i])+'</td><td class="r '+(M.acum[i]<0?'neg':'pos')+'">'+brl(M.acum[i])+'</td></tr>'; }
   h+='</tbody></table></div></div>';
-  h+='<div class="tiles"><div class="tile"><span class="label">CAC no ano 1</span><span class="num">'+brl(M.cac)+'</span><span class="note">líquido da parte do setup que abate a venda</span></div>'+
+  h+='<div class="tiles"><div class="tile"><span class="label">CAC no ano 1</span><span class="num">'+brl(M.cac)+'</span><span class="note">custo do time comercial ÷ contratos; o setup não abate</span></div>'+
    '<div class="tile"><span class="label">Payback do CAC (Weesu)</span><span class="num">'+nf(M.cac/(p.ticketLow*p.margemBruta),1)+' meses</span><span class="note">sobre ticket de '+brl(p.ticketLow)+'</span></div>'+
    '<div class="tile"><span class="label">LTV por cliente</span><span class="num">'+k(p.ticketLow*p.margemBruta/p.churn)+'</span><span class="note">margem de '+pct(p.margemBruta,0)+' ÷ churn de '+pct(p.churn)+'</span></div>'+
    '<div class="tile"><span class="label">LTV:CAC</span><span class="num">'+nf(p.ticketLow*p.margemBruta/p.churn/M.cac,1)+'×</span><span class="note">referência SaaS: 3× ou mais</span></div></div>';
-  h+='<div class="callout"><h4>O setup paga a implantação e premia quem implanta</h4><p>Setup médio de '+brl(p.setupMedio)+' por contrato, recebido pela Weesu: '+brl(p.setupMedio*p.pctImplantacao)+' ('+pct(p.pctImplantacao,0)+') cobrem a implantação; '+brl(p.setupMedio*p.pctBonusImplantacao)+' ('+pct(p.pctBonusImplantacao,0)+') viram bônus de quem implanta, pago no go-live; '+brl(p.setupMedio*Math.max(0,1-p.pctImplantacao-p.pctBonusImplantacao))+' abatem o custo de venda. Desconto no setup sai primeiro dessa última parcela.</p></div>';
+  h+='<div class="callout"><h4>O setup é 100% da Weesu</h4><p>Setup médio de '+brl(p.setupMedio)+' por contrato, recebido integralmente pela Weesu para custear a implantação. A Dixx não recebe nenhuma parte do setup, e ele não abate o custo comercial: a Dixx é remunerada só pela recorrente.</p></div>';
   return h;
 }
 
