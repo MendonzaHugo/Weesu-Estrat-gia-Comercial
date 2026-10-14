@@ -440,7 +440,7 @@ function bindLines(box,o){
 function legend(items){ return '<div class="legend">'+items.map(function(it){ return '<span><i class="'+(it.cls||'')+'" style="'+(it.cor?'background:var('+it.cor+')':'')+'"></i>'+it.nome+'</span>'; }).join('')+'</div>'; }
 
 /* ---------- seções ---------- */
-var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['receitas','Receitas da Dixx'],['sociedade','Sociedade'],['repasse','Repasse viável'],['semaporte','Sem aporte'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
+var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['receitas','Receitas da Dixx'],['sociedade','Sociedade'],['repasse','Repasse viável'],['semaporte','Sem aporte'],['dezanos','10 anos'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
 function renderNav(){ el('nav').innerHTML=SECOES.map(function(s){return '<button class="chip" data-v="'+s[0]+'" aria-pressed="'+(s[0]===aba)+'">'+s[1]+'</button>';}).join(''); }
 el('nav').addEventListener('click',function(e){ var b=e.target.closest('[data-v]'); if(!b) return; aba=b.getAttribute('data-v'); try{history.replaceState(null,'','#'+aba);}catch(_){}
   renderNav(); render(); window.scrollTo(0,0); });
@@ -720,6 +720,36 @@ function afterReceitas(M){
     c.innerHTML=chartLines(o2); bindLines(c,o2); }
 }
 
+/* ---------- Projeção de 10 anos: ARR e valuation ---------- */
+function projDez(){
+  var p=S.prem, M=modelo(Object.assign({},p,{__N:120})), mult=p.valuation/(p.mrrInicial*12);
+  var Y=[]; for(var y=0;y<10;y++){ var a=y*12,b=a+12; Y.push({ano:y+1,nmrr:sum(M.meta.slice(a,b)),mrr:M.mrr[b-1],arr:M.mrr[b-1]*12,cli:M.cli[b-1],deals:sum(M.deals.slice(a,b))}); }
+  return {M:M,Y:Y,mult:mult};
+}
+function secDezAnos(){
+  var p=S.prem, D=projDez(), Y=D.Y, y5=Y[4], y10=Y[9], mult=D.mult, arr0=p.mrrInicial*12;
+  var mults=[4,6,mult];
+  var h='<div class="sec-head"><span class="label">Projeção de 10 anos · ARR e valuation</span><h2>Mantido o ritmo, a Weesu chega a '+k(y10.arr)+' de ARR em 10 anos e vale '+k(y10.arr*mult)+'</h2><p>Mesmo modelo dos 5 anos, estendido até out/36. Do ano 6 ao 10, a meta de NMRR segue crescendo '+pct(p.cresc5,0)+' ao mês (o ritmo do ano 5), com churn de '+pct(p.churn)+' ao mês e o time do ano 5. O valuation usa o múltiplo de hoje ('+nf(mult,1)+'× o ARR), com a sensibilidade a múltiplos menores logo abaixo.</p></div>';
+  h+='<div class="tiles">'+
+   '<div class="tile"><span class="label">ARR hoje</span><span class="num">'+k(arr0)+'</span><span class="note">valuation de '+k(p.valuation)+'</span></div>'+
+   '<div class="tile"><span class="label">ARR no ano 5</span><span class="num">'+k(y5.arr)+'</span><span class="note">valuation de '+k(y5.arr*mult)+'</span></div>'+
+   '<div class="tile"><span class="label">ARR no ano 10</span><span class="num">'+k(y10.arr)+'</span><span class="note">'+nf(y10.arr/arr0,0)+'× o de hoje · '+nf(y10.cli,0)+' clientes</span></div>'+
+   '<div class="tile"><span class="label">Valuation no ano 10</span><span class="num">'+k(y10.arr*mult)+'</span><span class="note">5% da Dixx: '+k(y10.arr*mult*p.equityPct)+'</span></div></div>';
+  h+='<div class="card"><h3>ARR e valuation ao longo de 10 anos<small>fim de cada ano; valuation pelo múltiplo de hoje</small></h3>'+legend([{nome:'Valuation ('+nf(mult,1)+'× ARR)',cor:'--accent'},{nome:'Valuation a 4× ARR',cor:'--s2'},{nome:'ARR',cor:'--s1'}])+'<div class="scroll" id="chDez"></div></div>';
+  h+='<div class="card"><h3>Ano a ano</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">NMRR vendido</th><th class="r">MRR no fim do ano</th><th class="r">ARR</th><th class="r">Crescimento do ARR</th><th class="r">Clientes</th>'+mults.map(function(m){ return '<th class="r">Valuation a '+nf(m,1)+'×'+(m===mult?'<small>múltiplo de hoje</small>':'')+'</th>'; }).join('')+'<th class="r">5% da Dixx<small>múltiplo de hoje</small></th></tr></thead><tbody>';
+  Y.forEach(function(y,i){ var ant=i?Y[i-1].arr:arr0;
+    h+='<tr'+(i===4||i===9?' class="tot"':'')+'><td>Ano '+y.ano+'<small>'+mesLabel(i*12)+'–'+mesLabel(i*12+11)+'</small></td><td class="r">'+brl(y.nmrr)+'</td><td class="r">'+brl(y.mrr)+'</td><td class="r"><b>'+brl(y.arr)+'</b></td><td class="r pos">+'+pct(y.arr/ant-1,0)+'</td><td class="r">'+nf(y.cli,0)+'</td>'+mults.map(function(m){ return '<td class="r">'+brl(y.arr*m)+'</td>'; }).join('')+'<td class="r">'+brl(y.arr*mult*p.equityPct)+'</td></tr>'; });
+  h+='</tbody></table></div><p class="small muted">ARR = MRR do último mês do ano × 12. Valuation = ARR × múltiplo. Empresas SaaS costumam ser avaliadas entre 4× e 10× o ARR, conforme crescimento, margem e churn; com o crescimento desacelerando, o múltiplo tende a cair, por isso a coluna de 4× é a referência mais conservadora.</p></div>';
+  h+='<div class="cols"><div class="callout"><h4>O que sustenta essa projeção</h4><p>Metas de NMRR crescendo '+pct(p.cresc5,0)+' ao mês depois do ano 5, churn de '+pct(p.churn)+' ao mês, '+pct(p.shareHigh,0)+' do NMRR em high ticket e o time do ano 5 mantido. A recorrência da Dixx termina no ano 5, mas não muda o ARR da Weesu, que conta a mensalidade cheia dos clientes.</p></div>'+
+   '<div class="callout warn"><h4>Riscos para validar</h4><p>Em 10 anos seriam cerca de '+nf(y10.cli,0)+' clientes ativos, bem acima das 949 empresas com aderência da nossa base atual: o crescimento depende de novas bases, novos territórios e da frente high ticket. Também pressupõe que o time e o produto acompanhem esse volume e que o churn não suba com a escala.</p></div></div>';
+  return h;
+}
+function afterDezAnos(){
+  var b=el('chDez'); if(!b) return; var D=projDez(), p=S.prem, L=['hoje'].concat(D.Y.map(function(y){return 'ano '+y.ano;})), arr=[p.mrrInicial*12].concat(D.Y.map(function(y){return y.arr;}));
+  var o={labels:L,aria:'ARR e valuation em 10 anos',series:[{nome:'Valuation ('+nf(D.mult,1)+'× ARR)',cor:'--accent',vals:arr.map(function(v){return v*D.mult;}),area:true},{nome:'Valuation a 4× ARR',cor:'--s2',vals:arr.map(function(v){return v*4;})},{nome:'ARR',cor:'--s1',vals:arr}],h:300};
+  b.innerHTML=chartLines(o); bindLines(b,o);
+}
+
 /* ---------- Cenário sem aporte da Dixx ---------- */
 function simSemAporte(o,mercado){
   var p=S.prem, base=Object.assign({},p,o||{},{pagaCotas:0});
@@ -967,10 +997,10 @@ function secMetodo(){
 function render(){
   var M=modelo(), h='', ok=SECOES.some(function(s){return s[0]===aba;}); if(!ok) aba='abertura';
   if(aba==='abertura') h=secAbertura(M); else if(aba==='canais') h=secCanais(M); else if(aba==='metas') h=secMetas(M); else if(aba==='receitas') h=secReceitas(M);
-  else if(aba==='sociedade') h=secSociedade(M); else if(aba==='repasse') h=secRepasse(M); else if(aba==='semaporte') h=secSemAporte(M); else if(aba==='investimento') h=secInvest(M); else if(aba==='plano') h=secPlano();
+  else if(aba==='sociedade') h=secSociedade(M); else if(aba==='repasse') h=secRepasse(M); else if(aba==='semaporte') h=secSemAporte(M); else if(aba==='dezanos') h=secDezAnos(M); else if(aba==='investimento') h=secInvest(M); else if(aba==='plano') h=secPlano();
   else if(aba==='pipeline') h=secPipeline(); else if(aba==='acompanhamento') h=secAcomp(M); else if(aba==='wms') h=secWms(); else h=secMetodo();
   el('main').innerHTML='<div class="wrap">'+h+'<footer>Plano Comercial Weesu · base de leads de 12/10/2026 · pipeline de 08/10/2026 · valores em reais, premissas revisadas mensalmente</footer></div>';
-  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='repasse') afterRepasse(M); if(aba==='receitas') afterReceitas(M); if(aba==='semaporte') afterSemAporte(M); if(aba==='acompanhamento') afterAcomp(M);
+  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='repasse') afterRepasse(M); if(aba==='receitas') afterReceitas(M); if(aba==='semaporte') afterSemAporte(M); if(aba==='dezanos') afterDezAnos(M); if(aba==='acompanhamento') afterAcomp(M);
 }
 
 /* ---------- interações e gravação ---------- */
