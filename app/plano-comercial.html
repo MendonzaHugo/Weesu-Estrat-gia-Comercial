@@ -440,7 +440,7 @@ function bindLines(box,o){
 function legend(items){ return '<div class="legend">'+items.map(function(it){ return '<span><i class="'+(it.cls||'')+'" style="'+(it.cor?'background:var('+it.cor+')':'')+'"></i>'+it.nome+'</span>'; }).join('')+'</div>'; }
 
 /* ---------- seções ---------- */
-var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['sociedade','Sociedade'],['repasse','Repasse viável'],['semaporte','Sem aporte'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
+var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['receitas','Receitas'],['sociedade','Sociedade'],['repasse','Repasse viável'],['semaporte','Sem aporte'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
 function renderNav(){ el('nav').innerHTML=SECOES.map(function(s){return '<button class="chip" data-v="'+s[0]+'" aria-pressed="'+(s[0]===aba)+'">'+s[1]+'</button>';}).join(''); }
 el('nav').addEventListener('click',function(e){ var b=e.target.closest('[data-v]'); if(!b) return; aba=b.getAttribute('data-v'); try{history.replaceState(null,'','#'+aba);}catch(_){}
   renderNav(); render(); window.scrollTo(0,0); });
@@ -661,6 +661,40 @@ function timelineBE(R){
     i++; }); });
   s+='</svg>';
   return '<div class="card"><h3>Quanto tempo a Dixx leva para o breakeven<small>meses até o caixa acumulado voltar a zero</small></h3>'+legend([{nome:'Salário informado',cor:'--accent'},{nome:'Salário de mercado',cor:'--s2'}])+'<div class="scroll">'+s+'</div><p class="small muted">Barras depois da linha tracejada mostram breakeven que só acontece se o acordo for renovado após os 5 anos.</p></div>';
+}
+
+/* ---------- Projeção de receitas ---------- */
+function receitasAnuais(M){
+  return [0,1,2,3,4].map(function(y){
+    var a=y*12,b=a+12,base=0,novo=0;
+    for(var t=a;t<b;t++){ var n=M.mrrD[t]+M.mrrI[t]; novo+=n; base+=M.mrr[t]-n; }
+    var setup=sum(M.setup.slice(a,b)), dixx=sum(M.rev.slice(a,b)), parc=sum(M.comParc.slice(a,b));
+    return {base:base,novo:novo,setup:setup,total:base+novo+setup,dixx:dixx,parc:parc,liq:base+novo+setup-dixx-parc,mrrFim:M.mrr[b-1],arrFim:M.mrr[b-1]*12};
+  });
+}
+function secReceitas(M){
+  var p=S.prem, Y=receitasAnuais(M), T=function(f){ return sum(Y.map(function(y){return y[f];})); };
+  var rec0=p.mrrInicial*12;
+  var h='<div class="sec-head"><span class="label">Projeção de receitas · 5 anos</span><h2>A receita anual da Weesu vai de '+k(rec0)+' para '+k(Y[4].total)+' no ano 5</h2><p>Só receitas, sem custos: mensalidades da base atual (com churn de '+pct(p.churn)+' ao mês), mensalidades dos novos clientes trazidos pela área comercial e setup de implantação. Somadas, são '+k(T('total'))+' em 5 anos.</p></div>';
+  h+='<div class="tiles">'+
+   '<div class="tile"><span class="label">Receita total em 5 anos</span><span class="num">'+k(T('total'))+'</span><span class="note">mensalidades e setup</span></div>'+
+   '<div class="tile"><span class="label">Receita de novos clientes</span><span class="num">'+k(T('novo'))+'</span><span class="note">mensalidades geradas pela área comercial</span></div>'+
+   '<div class="tile"><span class="label">Setup em 5 anos</span><span class="num">'+k(T('setup'))+'</span><span class="note">100% da Weesu, para a implantação</span></div>'+
+   '<div class="tile"><span class="label">ARR no fim do ano 5</span><span class="num">'+k(Y[4].arrFim)+'</span><span class="note">hoje '+k(rec0)+'</span></div></div>';
+  h+='<div class="card"><h3>Receita por ano e por origem</h3>'+legend([{nome:'Mensalidades da base atual',cor:'--s1'},{nome:'Mensalidades de novos clientes',cor:'--accent'},{nome:'Setup',cor:'--s4'}])+'<div class="scroll" id="chRec"></div></div>';
+  h+='<div class="card"><h3>Tabela anual</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">Base atual</th><th class="r">Novos clientes</th><th class="r">Setup</th><th class="r">Receita total</th><th class="r">Crescimento</th><th class="r">MRR no fim do ano</th></tr></thead><tbody>';
+  Y.forEach(function(y,i){ var cr=i===0? y.total/rec0-1 : y.total/Y[i-1].total-1;
+    h+='<tr><td>'+ANOS[i]+'<small>'+ANOS_P[i]+'</small></td><td class="r">'+brl(y.base)+'</td><td class="r">'+brl(y.novo)+'</td><td class="r">'+brl(y.setup)+'</td><td class="r"><b>'+brl(y.total)+'</b></td><td class="r pos">+'+pct(cr,0)+'</td><td class="r">'+brl(y.mrrFim)+'</td></tr>'; });
+  h+='<tr class="tot"><td>5 anos</td><td class="r">'+brl(T('base'))+'</td><td class="r">'+brl(T('novo'))+'</td><td class="r">'+brl(T('setup'))+'</td><td class="r">'+brl(T('total'))+'</td><td></td><td class="r">'+brl(Y[4].mrrFim)+'</td></tr></tbody></table></div><p class="small muted">Crescimento do ano 1 comparado com a receita anual de hoje ('+k(rec0)+', MRR atual × 12, sem setup).</p></div>';
+  h+='<div class="card"><h3>Para onde vai a receita dos novos clientes</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">Mensalidades de novos clientes</th><th class="r">Recorrente da Dixx</th><th class="r">Parceiros</th><th class="r">Fica com a Weesu</th></tr></thead><tbody>';
+  Y.forEach(function(y,i){ h+='<tr><td>'+ANOS[i]+'</td><td class="r">'+brl(y.novo)+'</td><td class="r">'+brl(y.dixx)+'</td><td class="r">'+brl(y.parc)+'</td><td class="r">'+brl(y.novo-y.dixx-y.parc)+'</td></tr>'; });
+  h+='<tr class="tot"><td>5 anos</td><td class="r">'+brl(T('novo'))+'</td><td class="r">'+brl(T('dixx'))+'</td><td class="r">'+brl(T('parc'))+'</td><td class="r">'+brl(T('novo')-T('dixx')-T('parc'))+'</td></tr></tbody></table></div><p class="small muted">Com o acordo atual ('+pct(p.revDireta,0)+' direta, '+pct(p.revIndicacao,0)+' + '+pct(p.comissaoParceiro,0)+' na indicação). A base atual e o setup ficam 100% com a Weesu.</p></div>';
+  return h;
+}
+function afterReceitas(M){
+  var b=el('chRec'); if(!b) return; var Y=receitasAnuais(M);
+  var o={labels:ANOS,aria:'Receita anual da Weesu por origem',series:[{nome:'Base atual',cor:'--s1',vals:Y.map(function(y){return y.base;})},{nome:'Novos clientes',cor:'--accent',vals:Y.map(function(y){return y.novo;})},{nome:'Setup',cor:'--s4',vals:Y.map(function(y){return y.setup;})}]};
+  b.innerHTML=chartStack(o); bindStack(b,o);
 }
 
 /* ---------- Cenário sem aporte da Dixx ---------- */
@@ -909,11 +943,11 @@ function secMetodo(){
 /* ---------- render ---------- */
 function render(){
   var M=modelo(), h='', ok=SECOES.some(function(s){return s[0]===aba;}); if(!ok) aba='abertura';
-  if(aba==='abertura') h=secAbertura(M); else if(aba==='canais') h=secCanais(M); else if(aba==='metas') h=secMetas(M);
+  if(aba==='abertura') h=secAbertura(M); else if(aba==='canais') h=secCanais(M); else if(aba==='metas') h=secMetas(M); else if(aba==='receitas') h=secReceitas(M);
   else if(aba==='sociedade') h=secSociedade(M); else if(aba==='repasse') h=secRepasse(M); else if(aba==='semaporte') h=secSemAporte(M); else if(aba==='investimento') h=secInvest(M); else if(aba==='plano') h=secPlano();
   else if(aba==='pipeline') h=secPipeline(); else if(aba==='acompanhamento') h=secAcomp(M); else if(aba==='wms') h=secWms(); else h=secMetodo();
   el('main').innerHTML='<div class="wrap">'+h+'<footer>Plano Comercial Weesu · base de leads de 12/10/2026 · pipeline de 08/10/2026 · valores em reais, premissas revisadas mensalmente</footer></div>';
-  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='repasse') afterRepasse(M); if(aba==='semaporte') afterSemAporte(M); if(aba==='acompanhamento') afterAcomp(M);
+  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='repasse') afterRepasse(M); if(aba==='receitas') afterReceitas(M); if(aba==='semaporte') afterSemAporte(M); if(aba==='acompanhamento') afterAcomp(M);
 }
 
 /* ---------- interações e gravação ---------- */
