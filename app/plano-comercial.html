@@ -6,19 +6,19 @@
   --bg:#F2F5F7; --surface:#FFFFFF; --ink:#15202B; --muted:#586674; --line:#D8DFE6; --soft:#E9EEF2;
   --accent:#0A6C74; --accent-soft:#D9EEF0; --on-accent:#FFFFFF;
   --good:#1B7A4B; --good-soft:#DDF1E6; --warn:#9A5B00; --warn-soft:#FBEBD0; --crit:#AE3329; --crit-soft:#F8DEDB;
-  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#7b61ff;
   --display:"Archivo","Arial Narrow",Arial,sans-serif; --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0F151B; --surface:#172029; --ink:#E7EDF2; --muted:#9BA8B4; --line:#2B3743; --soft:#1F2A34;
   --accent:#55C4C0; --accent-soft:#16383B; --on-accent:#0B1A1C;
   --good:#63C892; --good-soft:#173527; --warn:#E5A84C; --warn-soft:#3A2C12; --crit:#F0837A; --crit-soft:#40201D;
-  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; color-scheme:dark } }
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9580ff; color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#0F151B; --surface:#172029; --ink:#E7EDF2; --muted:#9BA8B4; --line:#2B3743; --soft:#1F2A34;
   --accent:#55C4C0; --accent-soft:#16383B; --on-accent:#0B1A1C;
   --good:#63C892; --good-soft:#173527; --warn:#E5A84C; --warn-soft:#3A2C12; --crit:#F0837A; --crit-soft:#40201D;
-  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; color-scheme:dark }
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9580ff; color-scheme:dark }
 *{box-sizing:border-box}
 html,body{background:var(--bg)}
 body{margin:0;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
@@ -177,6 +177,8 @@ footer{font-size:12.5px;color:var(--muted)}
 .hero h2{font-family:var(--display);font-weight:800;font-stretch:88%;font-size:clamp(28px,5vw,42px);line-height:1.04;text-wrap:balance}
 .hero h2 span{color:var(--accent)}
 .hero p{font-size:16.5px}
+.mixbar{display:flex;height:12px;border-radius:3px;overflow:hidden;background:var(--soft);min-width:120px;gap:2px}
+.mixbar i{display:block;height:100%}
 .focos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .foco{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .foco.star{grid-column:span 2;border:2px solid var(--accent)}
@@ -217,7 +219,7 @@ footer{font-size:12.5px;color:var(--muted)}
 var DEF = {
   mrrInicial:202000, clientesIniciais:50, valuation:19000000, equityPct:0.05, anosVesting:5, pagaCotas:1, prazoCotasMeses:60,
   metaM1:15000, cresc1:0.05, cresc2:0.03, cresc3:0.02, cresc4:0.01, cresc5:0.01, churn:0.015,
-  ticketLow:3000, ticketHigh:12000, shareHigh:0.30, shareInd:0.60,
+  ticketLow:3000, ticketHigh:12000, shareHigh:0.30, shareInd:0.60, shareInb:0.25, convInbound:0.20,
   setupMedio:12500, margemBruta:0.80,
   revDireta:0.20, revIndicacao:0.10, comissaoParceiro:0.10, vigenciaMeses:60,
   fatorEncargos:1.70, reajuste:0.05, sdrBase:3000, closerBase:6000, execBase:6000, comissaoInclusa:1, mktSdr:6000, mktCloser:11000, mktExec:12000,
@@ -230,6 +232,7 @@ var FRANQ=[0,1,2,3,4,5,6,6,7,7,8,8];            // volume adicional da base de o
 var CLIENTES=[0,0.5,1,1,1,1,1.5,1.5,1.5,2,2,2];  // vendas/mês por indicação de clientes ativos
 var CONTAB=[2,4,6,8,10,12,14,16,18,20,22,24];   // contabilidades ativas (0,3 indicação/mês cada)
 var ECOM=[0,0,1,2,3,3,4,4,5,5,6,6];             // novas indicações/mês do e-commerce Puro, além dos leads MeliXP já no pipeline
+var INBOUND=[0,1,2,3,4,5,6,7,8,9,10,11];       // leads inbound qualificados/mês (marketing da Weesu; SDR qualifica, Closer fecha)
 var ERPS=[0,0,1,1,2,2,3,3,3,4,4,4];             // ERPs corporativos parceiros de integração (0,5 oportunidade/mês cada, prospectada pela Dixx)
 var MX={pos:'07/10/2026',leads:103,contatados:86,responderam:28,apresentacoes:10,fechamento:1,semConvite:18,semResposta:58,semContato:7,aDormentes:11};
 var MESES=['2026-11','2026-12','2027-01','2027-02','2027-03','2027-04','2027-05','2027-06','2027-07','2027-08','2027-09','2027-10'];
@@ -242,16 +245,17 @@ var CANAIS=[
  {id:'cli',nome:'Indicação de clientes ativos',cor:'--s3',tipo:'Indicação'},
  {id:'contab',nome:'Contabilidades parceiras',cor:'--s4',tipo:'Indicação'},
  {id:'ecom',nome:'E-commerce Puro (parceiro)',cor:'--s5',tipo:'Indicação'},
- {id:'erp',nome:'ERPs corporativos (high ticket)',cor:'--s6',tipo:'Direta'}
+ {id:'erp',nome:'ERPs corporativos (high ticket)',cor:'--s6',tipo:'Direta'},
+ {id:'inb',nome:'Inbound sales',cor:'--s7',tipo:'Direta'}
 ];
 
 var PREM_CAMPOS=[
  ['Empresa hoje e sociedade',[['mrrInicial','MRR atual (R$)','r'],['clientesIniciais','Clientes ativos','n'],['valuation','Valuation atual (R$)','r'],['equityPct','Participação ao fim do vesting','p'],['anosVesting','Anos de vesting','n'],['pagaCotas','Parte do valor das cotas paga pela Dixx','p','100% = compra ao valuation de hoje'],['prazoCotasMeses','Meses para pagar as cotas','n','diluído mês a mês; padrão 60']]],
  ['Metas e retenção',[['metaM1','Meta de NMRR do mês 1 (R$)','r'],['cresc1','Crescimento da meta ao mês · ano 1','p','cenário oficial: 5%'],['cresc2','· ano 2','p'],['cresc3','· ano 3','p'],['cresc4','· ano 4','p'],['cresc5','· ano 5','p'],['churn','Churn mensal do MRR','p','faixa de 1% a 2%']]],
- ['Ticket e mix',[['ticketLow','Ticket low (ERPs de entrada) (R$)','r'],['ticketHigh','Ticket high (ERPs corporativos) (R$)','r'],['shareHigh','NMRR high ticket a partir do ano 2','p'],['shareInd','NMRR via indicações a partir do ano 2','p'],['setupMedio','Setup médio (R$)','r'],['margemBruta','Margem bruta da mensalidade','p']]],
+ ['Ticket e mix',[['ticketLow','Ticket low (ERPs de entrada) (R$)','r'],['ticketHigh','Ticket high (ERPs corporativos) (R$)','r'],['shareHigh','NMRR high ticket a partir do ano 2','p'],['shareInd','NMRR via indicações a partir do ano 2','p'],['shareInb','NMRR via inbound a partir do ano 2','p','captação direta; o resto é prospecção ativa e ERPs'],['setupMedio','Setup médio (R$)','r'],['margemBruta','Margem bruta da mensalidade','p']]],
  ['Remuneração da Dixx',[['revDireta','Recorrente sobre captação direta','p'],['revIndicacao','Recorrente sobre indicação (parte da Dixx)','p'],['comissaoParceiro','Recorrente do parceiro na indicação','p'],['vigenciaMeses','Meses em que a recorrente é paga','n','padrão: 60, igual ao vesting']]],
  ['Time e custos',[['sdrBase','Salário + comissão · SDR sênior (R$/mês)','r','média mensal'],['closerBase','Salário + comissão · Closer sênior (R$/mês)','r'],['execBase','Salário + comissão · Executivo de Negócios (R$/mês)','r'],['comissaoInclusa','Comissão já incluída no valor (1 = sim, 0 = somar à parte)','n'],['mktSdr','Mercado · SDR sênior, salário + comissão (R$)','r','referência para comparação'],['mktCloser','Mercado · Closer sênior, salário + comissão (R$)','r'],['mktExec','Mercado · Executivo de Negócios, salário + comissão (R$)','r'],['fatorEncargos','Fator de encargos','x','custo total ÷ salário'],['reajuste','Reajuste salarial ao ano','p'],['hcSdr','SDRs por ano (anos 1 a 5)','t'],['hcCloser','Closers por ano','t'],['hcExec','Executivos de Negócios por ano','t']]],
- ['Funil do ano 1 (até medir o real)',[['reunioesSdrPlena','Reuniões realizadas por SDR ao mês','n'],['convReuniaoVenda','Reunião → venda (nossa base)','p'],['convIndicacao','Indicação → venda (contabilidades e bases dos franqueados)','p'],['convEcom','Indicação → venda (e-commerce Puro)','p'],['convErp','Oportunidade → venda (ERPs corporativos, direta)','p'],['mxResposta','MeliXP: contatado → resposta (real: 33%)','p'],['mxRespPres','MeliXP: resposta → apresentação (real: 36%)','p'],['mxFechamento','MeliXP: apresentação → contrato','p','cenário conservador do relatório: 20%'],['mxTicket','MeliXP: ticket médio esperado (R$)','r']]]
+ ['Funil do ano 1 (até medir o real)',[['reunioesSdrPlena','Reuniões realizadas por SDR ao mês','n'],['convReuniaoVenda','Reunião → venda (nossa base)','p'],['convIndicacao','Indicação → venda (contabilidades e bases dos franqueados)','p'],['convEcom','Indicação → venda (e-commerce Puro)','p'],['convErp','Oportunidade → venda (ERPs corporativos, direta)','p'],['convInbound','Lead inbound qualificado → venda','p'],['mxResposta','MeliXP: contatado → resposta (real: 33%)','p'],['mxRespPres','MeliXP: resposta → apresentação (real: 36%)','p'],['mxFechamento','MeliXP: apresentação → contrato','p','cenário conservador do relatório: 20%'],['mxTicket','MeliXP: ticket médio esperado (R$)','r']]]
 ];
 
 /* ---------- Ações por horizonte ---------- */
@@ -265,6 +269,7 @@ var HORIZ=[
   ['n1i','Lançar o programa de indicação de clientes ativos: convite aos 50 clientes, regra do benefício e formulário de indicação','Closer + Weesu (marketing)','Programa lançado'],
   ['n1f','Reativar as contabilidades parceiras que já conhecemos pela Omie, com kit de indicação','Executivo de Negócios','2 contabilidades ativas'],
   ['n1g','MeliXP: registrar o desfecho das 5 apresentações com data passada, convidar os 18 que responderam e ligar para os 11 tier A sem resposta','SDR + Closer','+6 apresentações'],
+  ['n1j','Montar com o marketing da Weesu a frente de inbound: ICP, oferta de diagnóstico gratuito da operação, landing page, formulário ligado ao CRM e retorno do SDR em até 1 hora útil','Weesu (marketing) + SDR','Formulário no CRM'],
   ['n1h','Abrir conversa com os canais de Sankhya, Senior e TOTVS para a frente high ticket','Comercial + sócios','2 conversas abertas']]},
  {id:'m3',nome:'Próximos 3 meses',per:'nov/2026 a jan/2027',goal:'{nmrr3} de NMRR acumulado, funil real medido e o primeiro ERP corporativo parceiro',acts:[
   ['n3a','Cadência em 100% da Onda 1 e início da Onda 2 (614 contas com ERP conhecido)','SDR','20 reuniões realizadas/mês'],
@@ -272,18 +277,21 @@ var HORIZ=[
   ['n3c','Primeiro acordo de integração com ERP corporativo (Sankhya, Senior ou TOTVS) e lista de clientes-alvo para a Dixx prospectar','Comercial + sócios','1 ERP parceiro'],
   ['n3d','Trocar as premissas do funil pelas conversões medidas no CRM','Comercial','Premissas revisadas'],
   ['n3e','Definir com o produto os requisitos do Seenc para high ticket (LPN, estoque entre CNPJs, integrações com ERPs corporativos)','Comercial + produto','Roadmap decidido'],
+  ['n3g','Inbound: 3 conteúdos por mês sobre dores de estoque e expedição, busca paga por ERP (Omie, Bling, Olist) e 3 a 4 leads qualificados por mês','Weesu (marketing) + SDR','≥ 3 leads qualificados/mês'],
   ['n3f','Manter pipeline de 3× a meta do mês seguinte para atravessar os meses em que a capacidade fica abaixo da meta','Closer','Cobertura ≥ 3×']]},
  {id:'m6',nome:'Próximos 6 meses',per:'nov/2026 a abr/2027',goal:'{nmrr6} de NMRR acumulado e os primeiros contratos high ticket',acts:[
   ['n6a','2 ERPs corporativos parceiros e 3 propostas high ticket na mesa, prospectadas pela Dixx','Executivo de Negócios + Closer','3 propostas ≥ R$ 10 mil'],
   ['n6b','12 contabilidades ativas e indicação de clientes acompanhada a cada nova implantação','Executivo de Negócios','≥ 35% do NMRR via indicações'],
   ['n6c','Publicar 3 casos com ROI (erros de expedição, produtividade, acuracidade)','Closer + implantação','3 casos'],
   ['n6d','Revisar o comissionamento do time com 5 meses de dados reais','Comercial','Plano v2'],
+  ['n6f','Medir custo por lead e conversão do inbound e ajustar a verba de mídia para chegar a {inb}% do NMRR no ano 2','Weesu (marketing) + comercial','CPL e conversão medidos'],
   ['n6e','Estudo de América Latina: Argentina a partir do caso Grupoucza (moeda, fiscal, integrações)','Comercial + produto','Estudo concluído']]},
  {id:'m12',nome:'Próximo ano',per:'nov/2026 a out/2027',goal:'{nmrr12} de NMRR no ano, MRR de {mrr12} em out/27 e o primeiro marco de vesting',acts:[
   ['n12a','NMRR de {meta12} no mês 12','Time comercial','Meta do mês 12'],
   ['n12b','4 ERPs corporativos parceiros de integração (TOTVS, Sankhya, Senior, Oracle ou SAP Business One), sem comissão','Executivo de Negócios','4 parceiros'],
   ['n12c','Ticket médio dos novos contratos acima de R$ 4 mil','Closer','Ticket ≥ R$ 4 mil'],
   ['n12d','Primeiro marco de vesting (1%) e revisão do acordo com os números do ano','Sócios','Marco 1 cumprido'],
+  ['n12f','Inbound com cerca de 11 leads qualificados por mês, perto de 15% do NMRR no mês 12 e verba aprovada para chegar a {inb}% no ano 2','SDR + Weesu (marketing)','≈ 11 leads qualificados/mês'],
   ['n12e','Plano do ano 2: segundo SDR e decisão sobre América Latina','Comercial + sócios','Plano do ano 2']]}
 ];
 
@@ -321,7 +329,7 @@ function modelo(pp){
   var p=pp||S.prem, M={}, N=(pp&&pp.__N)||60;
   var hcS=arr5(p.hcSdr), hcC=arr5(p.hcCloser), hcE=arr5(p.hcExec), cres=[p.cresc1,p.cresc2,p.cresc3,p.cresc4,p.cresc5];
   // ano 1: capacidade por canal
-  var cap={pipe:[],base:[],cli:[],contab:[],ecom:[],erp:[]}, reun=[];
+  var cap={pipe:[],base:[],cli:[],contab:[],ecom:[],erp:[],inb:[]}, reun=[];
   for(var m=0;m<12;m++){
     var pipe=0, puro=0; S.pipeline.forEach(function(d){ if(d.status==='aberto'&&d.mes===MESES[m]){ var w=(+d.mrr||0)*(+d.prob||0); if(d.origem==='puro') puro+=w; else pipe+=w; } });
     cap.pipe.push(pipe);
@@ -333,8 +341,9 @@ function modelo(pp){
     var mxDist=[0,0.4,0.4,0.2,0,0,0,0,0,0,0,0];
     cap.ecom.push(puro+mxRest*mxDist[m]+(m>0? ECOM[m-1]*p.convEcom*p.ticketLow : 0));
     cap.erp.push(m>1? ERPS[m-2]*0.5*p.convErp*p.ticketHigh : 0);
+    cap.inb.push(INBOUND[m]*p.convInbound*p.ticketLow);
   }
-  M.cap=cap; M.capTot=MESES.map(function(_,i){ return cap.pipe[i]+cap.base[i]+cap.cli[i]+cap.contab[i]+cap.ecom[i]+cap.erp[i]; });
+  M.cap=cap; M.capTot=MESES.map(function(_,i){ return cap.pipe[i]+cap.base[i]+cap.cli[i]+cap.contab[i]+cap.ecom[i]+cap.erp[i]+cap.inb[i]; });
   // 60 meses
   var K=['meta','ind','hi','deals','mrr','cli','churnR','mrrD','mrrI','rev','comParc','custoFixo','custoVar','custo','cotas','caixa','acum','weesuLiq','setup','reun'];
   K.forEach(function(x){M[x]=[];});
@@ -475,7 +484,7 @@ function afterAbertura(M){
 
 function secCanais(M){
   var c=M.cap, t=function(id){ return sum(c[id]); };
-  var h='<div class="sec-head"><span class="label">Pontos focais</span><h2>Cinco frentes de captação</h2><p>A Weesu já cresce por parceiros e indicações. A estratégia organiza esses canais, soma a prospecção ativa sobre a nossa base e abre a frente high ticket com os ERPs corporativos.</p></div>';
+  var h='<div class="sec-head"><span class="label">Pontos focais</span><h2>Seis frentes de captação, com inbound chegando a '+pct(S.prem.shareInb,0)+' do NMRR</h2><p>A Weesu já cresce por parceiros e indicações. A estratégia organiza esses canais, soma a prospecção ativa sobre a nossa base, abre a frente high ticket com os ERPs corporativos e cria o inbound sales, alimentado pelo marketing da Weesu, como canal de escala.</p></div>';
   h+='<div class="focos">';
   var PU=S.pipeline.filter(function(d){return d.origem==='puro';}), PUa=PU.filter(function(d){return d.status==='aberto';});
   var tierN=function(t){return PU.filter(function(d){return d.tier===t;}).length;};
@@ -485,11 +494,23 @@ function secCanais(M){
    {c:'--s3',n:'Indicação de clientes ativos',d:'Os 50 clientes atuais, que já chegaram por indicação, passam a indicar de forma organizada: convite após cada implantação bem-sucedida, regra clara de benefício e acompanhamento do Closer.',tipo:'Indicação · Closer',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' de benefício ao cliente que indica',a1:t('cli')},
    {c:'--s4',n:'Contabilidades parceiras',d:'Contabilidades a que já tínhamos acesso pela Omie. Conhecem o porte e a operação dos clientes e indicam quem tem dor de estoque.',tipo:'Indicação · Executivo de Negócios',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' à contabilidade',a1:t('contab')},
    {c:'--s5',n:'E-commerce Puro',d:'Parceiro que indica operações de e-commerce que já chegam com a necessidade identificada, o que tende a aumentar a conversão.',tipo:'Indicação · Closer',rem:pct(S.prem.revIndicacao,0)+' para a Dixx + '+pct(S.prem.comissaoParceiro,0)+' ao parceiro',a1:t('ecom')},
+   {c:'--s7',n:'Inbound sales',d:'Leads que chegam pelo marketing da Weesu (site, conteúdo, busca paga, redes, eventos e webinars). O SDR qualifica em até 1 hora útil e o Closer conduz. É o canal que escala sem depender de parceiro: começa pequeno no ano 1 e chega a '+pct(S.prem.shareInb,0)+' do NMRR a partir do ano 2.',tipo:'Captação direta · SDR + Closer',rem:pct(S.prem.revDireta,0)+' para a Dixx · mídia e conteúdo pagos pela Weesu',a1:t('inb')},
    {c:'--s6',n:'ERPs corporativos (high ticket)',d:'A Dixx vai atrás, diretamente, das operações que rodam TOTVS, Sankhya, Senior, Oracle e SAP Business One, com ticket a partir de '+brl(S.prem.ticketHigh)+'. Os ERPs entram como parceiros de integração e abrem portas, sem receber comissão.',tipo:'Captação direta · Dixx',rem:pct(S.prem.revDireta,0)+' para a Dixx · sem comissão ao ERP',a1:t('erp')}
   ];
   F.forEach(function(f){ h+='<div class="foco'+(f.star?' star':'')+'">'+(f.star?'<span class="pill acc" style="align-self:flex-start">Primeiro parceiro formalizado</span>':'')+'<h4><i style="background:var('+f.c+')"></i>'+f.n+'</h4><p>'+f.d+'</p><div class="kv"><div><span>Tipo</span><span>'+f.tipo+'</span></div><div><span>Remuneração</span><span>'+f.rem+'</span></div><div><span>NMRR previsto no ano 1</span><span>'+brl(f.a1)+'</span></div></div></div>'; });
   h+='<div class="foco opt"><h4>América Latina <span class="pill">possibilidade</span></h4><p>Não é ponto focal nem entra nos números. Há sinal de demanda: Grupoucza (Infinitcell) vende no Mercado Livre da Argentina e a Weesu já decidiu fazer a integração. Antes de abrir a frente: moeda, fiscal local e integrações com os ERPs da região.</p><p class="small muted">Estudo previsto para o 6º mês; decisão no plano do ano 2.</p></div>';
   h+='</div>';
+  // evolução do mix de captação
+  var p=S.prem, mixA=M.anos.map(function(a,y){ var s=y*12, e=s+12, nm=a.nmrr, ind, inb;
+    if(y===0){ ind=sum(M.meta.slice(0,12).map(function(v,i){return v*M.ind[i];}))/nm; inb=sum(M.meta.slice(0,12).map(function(v,i){return M.capTot[i]>0? v*c.inb[i]/M.capTot[i] : 0;}))/nm; }
+    else { ind=p.shareInd; inb=p.shareInb; }
+    var out=Math.max(0,1-ind-inb), tk=a.nmrr/a.deals;
+    return {nm:nm,ind:ind,inb:inb,out:out,leads:nm*inb/12/(tk*p.convInbound)}; });
+  var inb12=M.capTot[11]>0? M.meta[11]*c.inb[11]/M.capTot[11]/M.meta[11] : 0;
+  var bar=function(m){ return '<div class="mixbar"><i style="width:'+(m.ind*100)+'%;background:var(--s3)"></i><i style="width:'+(m.inb*100)+'%;background:var(--s7)"></i><i style="width:'+(m.out*100)+'%;background:var(--s2)"></i></div>'; };
+  h+='<div class="card"><h3>Evolução do mix de captação<small>participação no NMRR de cada ano</small></h3>'+legend([{nome:'Indicações (clientes, contabilidades, e-commerce Puro)',cor:'--s3'},{nome:'Inbound sales',cor:'--s7'},{nome:'Prospecção ativa, pipeline e ERPs',cor:'--s2'}])+'<div class="scroll"><table class="t"><thead><tr><th>Ano</th><th style="width:30%">Mix</th><th class="r">NMRR do ano</th><th class="r">Indicações</th><th class="r">Inbound</th><th class="r">NMRR via inbound</th><th class="r">Prospecção ativa e ERPs</th><th class="r">Leads inbound qualificados<small>por mês, em média</small></th></tr></thead><tbody>';
+  mixA.forEach(function(m,y){ h+='<tr><td style="white-space:nowrap">'+ANOS[y]+'</td><td>'+bar(m)+'</td><td class="r">'+brl(m.nm)+'</td><td class="r">'+pct(m.ind,0)+'</td><td class="r"><b>'+pct(m.inb,0)+'</b></td><td class="r">'+brl(m.nm*m.inb)+'</td><td class="r">'+pct(m.out,0)+'</td><td class="r">'+nf(m.leads,0)+'</td></tr>'; });
+  h+='</tbody></table></div><p class="small muted">No ano 1 o inbound começa do zero e sobe até '+pct(inb12,0)+' do NMRR em out/27 (de 1 para 11 leads qualificados por mês, com '+pct(p.convInbound,0)+' de conversão). Do ano 2 em diante, a meta é '+pct(p.shareInb,0)+' do NMRR. Leads qualificados = NMRR via inbound ÷ ticket médio do ano ÷ conversão. A mídia e o conteúdo são da Weesu; o time da Dixx qualifica e fecha, com a recorrente de captação direta.</p></div>';
   h+='<div class="card"><h3>De low ticket para high ticket</h3><div class="vs">'+
    '<div><span class="label">Hoje</span><h4>Low ticket · '+brl(S.prem.ticketLow)+' de mensalidade</h4><p class="small">Clientes de ERPs de entrada: Omie, Bling, Olist e Athon. Bom volume, ticket baixo para o ramo de WMS.</p><p class="small muted">Continua sendo a base de volume pela nossa base, franqueados e contabilidades.</p></div>'+
    '<div class="hi"><span class="label">Para onde vamos</span><h4>High ticket · a partir de '+brl(S.prem.ticketHigh)+'</h4><p class="small">Operações que rodam em TOTVS, Sankhya, Senior, Oracle e SAP Business One, prospectadas diretamente pela Dixx, com os ERPs como parceiros de integração, sem comissão. Nessa frente, o foco deixa de ser Omie, Bling, Olist e Athon.</p><p class="small muted">Já há prova no pipeline: Pink Urban (R$ 18.000), All Filmes (R$ 12.550) e DBN (R$ 12.000).</p></div></div>'+
@@ -509,7 +530,7 @@ function secMetas(M){
   h+='<tr class="tot"><td>5 anos</td><td class="r">'+brl(sum(A.map(function(a){return a.nmrr;})))+'</td><td class="r">'+nf(sum(A.map(function(a){return a.deals;})),0)+'</td><td></td><td></td><td class="r">'+brl(A[4].mrr)+'</td><td class="r">'+nf(A[4].cli,0)+'</td><td class="r">'+brl(sum(A.map(function(a){return a.setup;})))+'</td></tr></tbody></table></div></div>';
   h+='<div class="card"><h3>Ano 1, mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Meta NMRR</th><th class="r">Contratos</th><th class="r">Churn do MRR</th><th class="r">MRR final</th><th class="r">Capacidade dos canais</th><th class="r">Folga ou gap</th></tr></thead><tbody>';
   for(var i=0;i<12;i++){ var g=M.capTot[i]-M.meta[i]; h+='<tr><td>'+ROT[i]+'</td><td class="r">'+brl(M.meta[i])+'</td><td class="r">'+nf(M.deals[i],1)+'</td><td class="r">'+brl(M.churnR[i])+'</td><td class="r">'+brl(M.mrr[i])+'</td><td class="r">'+brl(M.capTot[i])+'</td><td class="r '+(g<0?'neg':'pos')+'">'+(g<0?'−':'+')+brl(Math.abs(g))+'</td></tr>'; }
-  h+='</tbody></table></div><p class="small muted">Capacidade = pipeline atual ponderado + nossa base e franqueados Omie (SDR) + indicação de clientes ativos + contabilidades + e-commerce Puro + ERPs corporativos, com as premissas abaixo.</p></div>';
+  h+='</tbody></table></div><p class="small muted">Capacidade = pipeline atual ponderado + nossa base e franqueados Omie (SDR) + indicação de clientes ativos + contabilidades + e-commerce Puro + ERPs corporativos + inbound sales, com as premissas abaixo.</p></div>';
   h+='<div class="card"><h3>Premissas do modelo<small>'+(S.canWrite?'mudanças recalculam a proposta inteira e ficam salvas para todos':'somente leitura para o seu nível de acesso')+'</small></h3>';
   PREM_CAMPOS.forEach(function(gr){
     h+='<div class="fgroup"><h4>'+gr[0]+'</h4><div class="form">';
@@ -927,7 +948,7 @@ function secInvest(M){
 }
 
 function secPlano(){
-  var Mp=modelo(), p=S.prem, fx={meta1:brl(Mp.meta[0]),nmrr3:brl(sum(Mp.meta.slice(0,3))),nmrr6:brl(sum(Mp.meta.slice(0,6))),nmrr12:brl(sum(Mp.meta.slice(0,12))),mrr12:k(Mp.mrr[11]),meta12:brl(Mp.meta[11]),dir:pct(p.revDireta,0),ind:pct(p.revIndicacao,0),parc:pct(p.comissaoParceiro,0)};
+  var Mp=modelo(), p=S.prem, fx={meta1:brl(Mp.meta[0]),nmrr3:brl(sum(Mp.meta.slice(0,3))),nmrr6:brl(sum(Mp.meta.slice(0,6))),nmrr12:brl(sum(Mp.meta.slice(0,12))),mrr12:k(Mp.mrr[11]),meta12:brl(Mp.meta[11]),dir:pct(p.revDireta,0),ind:pct(p.revIndicacao,0),parc:pct(p.comissaoParceiro,0),inb:nf(p.shareInb*100,0)};
   var F=function(t){ return String(t).replace(/\{(\w+)\}/g,function(_,k){ return fx[k]!=null?fx[k]:'{'+k+'}'; }); };
   var total=0,feitos=0; HORIZ.forEach(function(hz){ hz.acts.forEach(function(a){ total++; if(S.acoes[a[0]]&&S.acoes[a[0]].feito) feitos++; }); });
   var h='<div class="sec-head"><span class="label">Plano de ação por horizonte</span><h2>'+feitos+' de '+total+' ações concluídas</h2><p>Cada horizonte tem um resultado esperado, as ações, quem responde por elas e como medir. Marque o que estiver concluído: fica salvo para todos que acessam o painel.</p></div><div class="horiz">';
@@ -1062,7 +1083,7 @@ function secMetodo(){
    '<li>Valuation projetado mantém o múltiplo de hoje ('+nf(p.valuation/(p.mrrInicial*12),1)+'× o ARR). A tabela de sensibilidade mostra o efeito de múltiplos menores.</li>'+
    '<li>A Dixx compra os '+pct(p.equityPct,0)+' a preço fixo de '+brl(p.valuation*p.equityPct*p.pagaCotas)+' (valuation de hoje), em parcelas mensais iguais ao longo de '+p.prazoCotasMeses+' meses. O calendário exato ainda não está definido.</li>'+
    '<li>A recorrente da Dixx é paga por '+p.vigenciaMeses+' meses (5 anos, como acordado), enquanto o cliente estiver ativo.</li>'+
-   '<li>A partir do ano 2: '+pct(p.shareInd,0)+' do NMRR via indicação e '+pct(p.shareHigh,0)+' em high ticket, com ticket de '+brl(p.ticketHigh)+'.</li>'+
+   '<li>A partir do ano 2: '+pct(p.shareInd,0)+' do NMRR via indicação, '+pct(p.shareInb,0)+' via inbound e '+pct(Math.max(0,1-p.shareInd-p.shareInb),0)+' via prospecção ativa e ERPs; '+pct(p.shareHigh,0)+' em high ticket, com ticket de '+brl(p.ticketHigh)+'.</li>'+
    '<li>Conversões do ano 1: '+pct(p.convReuniaoVenda,0)+' de reunião em venda; '+pct(p.convIndicacao,0)+' de indicação em venda (contabilidades e bases dos franqueados); '+pct(p.convEcom,0)+' no e-commerce Puro; '+pct(p.convErp,0)+' nos ERPs corporativos, com ciclo de 2 meses.</li>'+
    '<li>Rampa no ano 1: bases de até 8 franqueados Omie somadas à nossa base, indicação de clientes ativos subindo de 0,5 para 2 vendas/mês, 24 contabilidades (0,3 indicação/mês cada), 6 novas indicações/mês do e-commerce Puro além dos leads MeliXP, e 4 ERPs corporativos parceiros de integração (0,5 oportunidade/mês cada, prospectada e fechada pela Dixx, sem comissão) em out/27.</li>'+
    '<li>Chance de fechar e mês previsto de cada negócio do pipeline: estimados pela etapa e pelo engajamento na Carteira Comercial.</li></ul></div>';
