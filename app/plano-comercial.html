@@ -440,7 +440,7 @@ function bindLines(box,o){
 function legend(items){ return '<div class="legend">'+items.map(function(it){ return '<span><i class="'+(it.cls||'')+'" style="'+(it.cor?'background:var('+it.cor+')':'')+'"></i>'+it.nome+'</span>'; }).join('')+'</div>'; }
 
 /* ---------- seções ---------- */
-var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['sociedade','Sociedade'],['repasse','Repasse viável'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
+var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['sociedade','Sociedade'],['repasse','Repasse viável'],['semaporte','Sem aporte'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
 function renderNav(){ el('nav').innerHTML=SECOES.map(function(s){return '<button class="chip" data-v="'+s[0]+'" aria-pressed="'+(s[0]===aba)+'">'+s[1]+'</button>';}).join(''); }
 el('nav').addEventListener('click',function(e){ var b=e.target.closest('[data-v]'); if(!b) return; aba=b.getAttribute('data-v'); try{history.replaceState(null,'','#'+aba);}catch(_){}
   renderNav(); render(); window.scrollTo(0,0); });
@@ -663,6 +663,53 @@ function timelineBE(R){
   return '<div class="card"><h3>Quanto tempo a Dixx leva para o breakeven<small>meses até o caixa acumulado voltar a zero</small></h3>'+legend([{nome:'Salário informado',cor:'--accent'},{nome:'Salário de mercado',cor:'--s2'}])+'<div class="scroll">'+s+'</div><p class="small muted">Barras depois da linha tracejada mostram breakeven que só acontece se o acordo for renovado após os 5 anos.</p></div>';
 }
 
+/* ---------- Cenário sem aporte da Dixx ---------- */
+function simSemAporte(o,mercado){
+  var p=S.prem, base=Object.assign({},p,o||{},{pagaCotas:0});
+  if(mercado) Object.assign(base,{sdrBase:p.mktSdr,closerBase:p.mktCloser,execBase:p.mktExec});
+  var M=modelo(base), cotasTot=p.valuation*p.equityPct*(p.pagaCotas==null?1:p.pagaCotas);
+  var adiant=0, adMax=0, adTot=0, quit=-1, cotasRest=cotasTot, cotasMes=-1, dixx=0;
+  var R={saldo:[],cotas:[],dixx:[],adMes:[]};
+  for(var t=0;t<60;t++){
+    var g=M.rev[t]-M.custo[t], ad=0;
+    if(g<0){ ad=-g; adiant+=ad; adTot+=ad; g=0; }
+    else { var pg=Math.min(g,adiant); adiant-=pg; g-=pg; if(adMax>0&&adiant<=1e-6&&quit<0&&pg>0) quit=t;
+      var pc=Math.min(g,cotasRest); cotasRest-=pc; g-=pc; if(cotasRest<=1e-6&&cotasMes<0) cotasMes=t; dixx+=g; }
+    adMax=Math.max(adMax,adiant);
+    R.saldo.push(adiant); R.cotas.push(cotasTot-cotasRest); R.dixx.push(dixx); R.adMes.push(ad);
+  }
+  return {M:M,R:R,adMax:adMax,adTot:adTot,quit:quit,saldoFim:adiant,cotasPagas:cotasTot-cotasRest,cotasTot:cotasTot,cotasMes:cotasMes,dixx:dixx,custo5:sum(M.custo)};
+}
+function cenSemAporte(){ var cp=S.prem.comissaoParceiro; return [{id:'atual',nome:'Acordo atual',desc:pct(S.prem.revDireta,0)+' direta · '+pct(S.prem.revIndicacao,0)+' indicação',o:{}},{id:'prop',nome:'Proposta 33%',desc:'33% direta · '+pct(Math.max(0,0.33-cp),0)+' indicação',o:{revDireta:0.33,revIndicacao:Math.max(0,0.33-cp)}}]; }
+function secSemAporte(M){
+  var p=S.prem, C=cenSemAporte(), R=C.map(function(c){ return {c:c,inf:simSemAporte(c.o,false),mkt:simSemAporte(c.o,true)}; }), a=R[0].inf;
+  var mq=function(t){ return t<0?'não quita em 5 anos':mesLabel(t)+' (mês '+(t+1)+')'; };
+  var h='<div class="sec-head"><span class="label">Cenário alternativo · sem aporte da Dixx</span><h2>A Dixx não coloca dinheiro: a operação se paga com a própria recorrência</h2><p>Neste cenário, a Dixx não faz aporte de caixa em nenhum mês. Nos primeiros meses, quando a recorrência ainda não cobre o time, a Weesu adianta a diferença, e esse valor volta para a Weesu descontado da recorrência futura da Dixx. As cotas também deixam de ser pagas com caixa da Dixx: são quitadas com o excedente da recorrência, depois que o adiantamento estiver devolvido.</p></div>';
+  h+='<div class="tiles">'+
+   '<div class="tile"><span class="label">Aporte da Dixx</span><span class="num">R$ 0</span><span class="note">em todos os meses dos 5 anos</span></div>'+
+   '<div class="tile"><span class="label">Adiantamento máximo da Weesu</span><span class="num">'+k(a.adMax)+'</span><span class="note">recuperável; devolvido em '+mq(a.quit)+'</span></div>'+
+   '<div class="tile"><span class="label">Cotas (5%) quitadas</span><span class="num">'+(a.cotasMes<0?pct(a.cotasPagas/a.cotasTot,0):mesLabel(a.cotasMes))+'</span><span class="note">'+(a.cotasMes<0?'do valor pago em 5 anos':'pagas com o excedente da recorrência')+'</span></div>'+
+   '<div class="tile"><span class="label">Dixx recebe livre em 5 anos</span><span class="num">'+k(a.dixx)+'</span><span class="note">depois de devolver o adiantamento e quitar as cotas</span></div></div>';
+  h+='<div class="card"><h3>Como funciona, mês a mês</h3><div class="steps" style="grid-template-columns:repeat(3,minmax(0,1fr))">'+
+   '<div><span class="label">1 · Meses iniciais</span><span class="num">Weesu adianta</span><span class="note">A Weesu cobre a diferença entre o custo do time e a recorrência da Dixx. Nada sai do caixa da Dixx.</span></div>'+
+   '<div><span class="label">2 · Recorrência maior que o time</span><span class="num">Devolve</span><span class="note">Todo o excedente vai primeiro para devolver o adiantamento à Weesu.</span></div>'+
+   '<div><span class="label">3 · Adiantamento devolvido</span><span class="num">Cotas e lucro</span><span class="note">O excedente quita as cotas de '+k(a.cotasTot)+' e, depois disso, fica com a Dixx.</span></div></div></div>';
+  h+='<div class="card"><h3>Os quatro cenários<small>acordo atual e proposta de 33%, com salário informado e com salário de mercado</small></h3><div class="scroll"><table class="t"><thead><tr><th>Cenário</th><th class="r">Adiantamento máximo da Weesu</th><th class="r">Adiantamento devolvido em</th><th class="r">Cotas quitadas em</th><th class="r">Dixx recebe livre em 5 anos</th></tr></thead><tbody>';
+  R.forEach(function(r){ [['inf','salário informado'],['mkt','salário de mercado']].forEach(function(v){ var x=r[v[0]];
+    h+='<tr><td><b>'+r.c.nome+'</b><small>'+r.c.desc+' · '+v[1]+'</small></td><td class="r">'+brl(x.adMax)+'</td><td class="r '+(x.quit<0?'neg':'')+'">'+mq(x.quit)+(x.quit<0?'<small>saldo a devolver: '+brl(x.saldoFim)+'</small>':'')+'</td><td class="r '+(x.cotasMes<0?'neg':'')+'">'+(x.cotasMes<0?'não quita em 5 anos<small>'+brl(x.cotasPagas)+' pagos de '+brl(x.cotasTot)+'</small>':mesLabel(x.cotasMes)+'<small>mês '+(x.cotasMes+1)+'</small>')+'</td><td class="r '+(x.dixx>0?'pos':'')+'">'+brl(x.dixx)+'</td></tr>'; }); });
+  h+='</tbody></table></div><p class="small muted">Mesmas metas, canais, recorrência por 5 anos e custo do time de cada cenário. O adiantamento não tem juros nem correção nesta simulação. A participação só é transferida à medida que as cotas forem pagas.</p></div>';
+  h+='<div class="card"><h3>Adiantamento da Weesu e cotas pagas<small>acordo atual, salário informado</small></h3>'+legend([{nome:'Saldo do adiantamento a devolver à Weesu',cor:'--s2'},{nome:'Cotas pagas (acumulado)',cor:'--accent'},{nome:'Dixx recebe livre (acumulado)',cor:'--s3'}])+'<div class="scroll" id="chSA"></div></div>';
+  var custoSozinha=sum(R[0].inf.M.custo);
+  h+='<div class="cols"><div class="callout"><h4>Para a Weesu</h4><p>Em vez de bancar o time inteiro ('+k(custoSozinha)+' em 5 anos, sem volta), a Weesu adianta no máximo '+k(a.adMax)+' nos primeiros meses e recebe esse valor de volta com a recorrência da Dixx. Além disso, recebe '+k(a.cotasPagas)+' pelas cotas ao longo do acordo.</p></div>'+
+   '<div class="callout warn"><h4>Cuidados para o acordo</h4><p>Neste formato, o risco dos primeiros meses passa para a Weesu. Para equilibrar: definir um teto para o adiantamento, condicionar o adiantamento ao cumprimento de pelo menos 80% da meta trimestral, dar prioridade total à devolução antes de qualquer pagamento à Dixx e transferir cada 1% de participação só depois de pago.</p></div></div>';
+  return h;
+}
+function afterSemAporte(M){
+  var b=el('chSA'); if(!b) return; var x=simSemAporte({},false), L=[]; for(var t=0;t<60;t++) L.push(mesLabel(t));
+  var o={labels:L,aria:'Saldo do adiantamento da Weesu, cotas pagas e valor livre da Dixx',series:[{nome:'Saldo do adiantamento',cor:'--s2',vals:x.R.saldo},{nome:'Cotas pagas',cor:'--accent',vals:x.R.cotas},{nome:'Dixx recebe livre',cor:'--s3',vals:x.R.dixx}],tick:function(i){ return i%12===0? 'ano '+(i/12+1) : (i===59?mesLabel(59):null); }};
+  b.innerHTML=chartLines(o); bindLines(b,o);
+}
+
 function afterRepasse(M){
   var b=el('chRep'); if(!b) return; var C=cenariosRepasse(), L=[]; for(var t=0;t<HZ;t++) L.push(mesLabel(t));
   var g=function(id,mk){ return avaliaCenario(C.filter(function(c){return c.id===id;})[0],mk).M.acum; };
@@ -863,10 +910,10 @@ function secMetodo(){
 function render(){
   var M=modelo(), h='', ok=SECOES.some(function(s){return s[0]===aba;}); if(!ok) aba='abertura';
   if(aba==='abertura') h=secAbertura(M); else if(aba==='canais') h=secCanais(M); else if(aba==='metas') h=secMetas(M);
-  else if(aba==='sociedade') h=secSociedade(M); else if(aba==='repasse') h=secRepasse(M); else if(aba==='investimento') h=secInvest(M); else if(aba==='plano') h=secPlano();
+  else if(aba==='sociedade') h=secSociedade(M); else if(aba==='repasse') h=secRepasse(M); else if(aba==='semaporte') h=secSemAporte(M); else if(aba==='investimento') h=secInvest(M); else if(aba==='plano') h=secPlano();
   else if(aba==='pipeline') h=secPipeline(); else if(aba==='acompanhamento') h=secAcomp(M); else if(aba==='wms') h=secWms(); else h=secMetodo();
   el('main').innerHTML='<div class="wrap">'+h+'<footer>Plano Comercial Weesu · base de leads de 12/10/2026 · pipeline de 08/10/2026 · valores em reais, premissas revisadas mensalmente</footer></div>';
-  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='repasse') afterRepasse(M); if(aba==='acompanhamento') afterAcomp(M);
+  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='repasse') afterRepasse(M); if(aba==='semaporte') afterSemAporte(M); if(aba==='acompanhamento') afterAcomp(M);
 }
 
 /* ---------- interações e gravação ---------- */
