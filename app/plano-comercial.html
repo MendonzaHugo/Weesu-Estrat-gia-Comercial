@@ -541,6 +541,7 @@ function secSociedade(M){
   h+=disclaimerSalarios(M,modeloMercado(),false);
   h+='<div class="card"><h3>Caixa acumulado da Dixx<small>abaixo de zero é o que a Dixx investe na Weesu</small></h3><div class="scroll" id="chAcum"></div>'+
    '<p class="small">O investimento chega a <b>'+k(-M.pico)+'</b> em '+mesLabel(M.picoMes)+'. '+(M.breakEven>=0?'A operação passa a se pagar mês a mês em '+mesLabel(M.breakEven)+'.':'Com estas premissas, a operação ainda não se paga mês a mês em 5 anos.')+' '+(M.acum[59]>=0?'O investimento é recuperado em caixa dentro dos 5 anos.':'No fim do ano 5 o saldo acumulado ainda é de '+k(M.acum[59])+': o retorno da Dixx vem da participação.')+'</p></div>';
+  h+='<div class="card"><h3>Mês a mês<small>recorrente, custos e caixa da Dixx; escolha o ano</small></h3>'+anoChips('data-anosoc',anoSoc)+'<div id="tbSocMes">'+tabelaMesSoc(M)+'</div></div>';
   h+='<div class="card"><h3>Ano a ano</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">Time</th><th class="r">Custo do time</th><th class="r">Compra das cotas</th><th class="r">Recorrente recebida</th><th class="r">Caixa do ano</th><th class="r">Caixa acumulado</th><th class="r">Participação</th><th class="r">Valor da participação</th></tr></thead><tbody>';
   A.forEach(function(a,y){ h+='<tr><td>'+ANOS[y]+'</td><td class="r">'+a.hc+' pessoas</td><td class="r">'+brl(a.custo)+'</td><td class="r">'+brl(a.cotas)+'</td><td class="r">'+brl(a.rev)+'</td><td class="r '+(a.caixa<0?'neg':'pos')+'">'+brl(a.caixa)+'</td><td class="r '+(a.acum<0?'neg':'pos')+'">'+brl(a.acum)+'</td><td class="r">'+pct(a.eqPct,0)+'</td><td class="r">'+brl(a.eqVal)+'</td></tr>'; });
   h+='<tr class="tot"><td>5 anos</td><td></td><td class="r">'+brl(custo5)+'</td><td class="r">'+brl(M.cotasTot)+'</td><td class="r">'+brl(receb5)+'</td><td class="r '+(receb5-custo5-M.cotasTot<0?'neg':'pos')+'">'+brl(receb5-custo5-M.cotasTot)+'</td><td></td><td class="r">'+pct(a5.eqPct,0)+'</td><td class="r">'+brl(a5.eqVal)+'</td></tr></tbody></table></div><p class="small muted">Valor da participação = participação adquirida × valuation projetado (ARR × '+nf(M.mult,1)+'). Com múltiplo menor, o valor cai na mesma proporção; veja a sensibilidade abaixo.</p></div>';
@@ -663,6 +664,27 @@ function timelineBE(R){
   return '<div class="card"><h3>Quanto tempo a Dixx leva para o breakeven<small>meses até o caixa acumulado voltar a zero</small></h3>'+legend([{nome:'Salário informado',cor:'--accent'},{nome:'Salário de mercado',cor:'--s2'}])+'<div class="scroll">'+s+'</div><p class="small muted">Barras depois da linha tracejada mostram breakeven que só acontece se o acordo for renovado após os 5 anos.</p></div>';
 }
 
+
+/* ---------- visão mês a mês ---------- */
+var anoRec=0, anoSoc=0;
+function anoChips(attr,sel){ return '<div class="row" role="group" aria-label="Escolher o ano">'+ANOS.map(function(a,i){ return '<button class="chip" '+attr+'="'+i+'" aria-pressed="'+(i===sel)+'">'+a+' · '+ANOS_P[i]+'</button>'; }).join('')+'</div>'; }
+function cresc(v,ant){ if(!(ant>0)) return '—'; var c=v/ant-1; return (c>=0?'+':'')+pct(c,1); }
+function recDixxMensal(M){ var p=S.prem; return M.mrrD.map(function(d,t){ var on=t<p.vigenciaMeses; return {dir:on?p.revDireta*d:0, ind:on?p.revIndicacao*M.mrrI[t]:0}; }); }
+function tabelaMesRec(M){
+  var R=recDixxMensal(M), a=anoRec*12, acum=0; for(var t=0;t<a;t++) acum+=R[t].dir+R[t].ind;
+  var h='<div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Captação direta</th><th class="r">Indicação</th><th class="r">Receita da Dixx no mês</th><th class="r">Crescimento sobre o mês anterior</th><th class="r">Novos clientes no mês</th><th class="r">Acumulado desde nov/26</th></tr></thead><tbody>';
+  for(var t=a;t<a+12;t++){ var tot=R[t].dir+R[t].ind, ant=t>0?R[t-1].dir+R[t-1].ind:0; acum+=tot;
+    h+='<tr><td>'+mesLabel(t)+'</td><td class="r">'+brl(R[t].dir)+'</td><td class="r">'+brl(R[t].ind)+'</td><td class="r"><b>'+brl(tot)+'</b></td><td class="r pos">'+cresc(tot,ant)+'</td><td class="r">'+nf(M.deals[t],1)+'</td><td class="r">'+brl(acum)+'</td></tr>'; }
+  return h+'</tbody></table></div>';
+}
+function tabelaMesSoc(M){
+  var a=anoSoc*12;
+  var h='<div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Recorrente recebida</th><th class="r">Crescimento da recorrente</th><th class="r">Custo do time</th><th class="r">Compra das cotas</th><th class="r">Caixa do mês</th><th class="r">Caixa acumulado</th><th class="r">MRR total da Weesu</th></tr></thead><tbody>';
+  for(var t=a;t<a+12;t++){
+    h+='<tr><td>'+mesLabel(t)+'</td><td class="r"><b>'+brl(M.rev[t])+'</b></td><td class="r pos">'+cresc(M.rev[t],t>0?M.rev[t-1]:0)+'</td><td class="r">'+brl(M.custo[t])+'</td><td class="r">'+brl(M.cotas[t])+'</td><td class="r '+(M.caixa[t]<0?'neg':'pos')+'">'+brl(M.caixa[t])+'</td><td class="r '+(M.acum[t]<0?'neg':'pos')+'">'+brl(M.acum[t])+'</td><td class="r">'+brl(M.mrr[t])+'</td></tr>'; }
+  return h+'</tbody></table></div>';
+}
+
 /* ---------- Projeção de receitas da Dixx ---------- */
 function receitasDixx(M){
   var p=S.prem;
@@ -682,6 +704,7 @@ function secReceitas(M){
    '<div class="tile"><span class="label">Receita no ano 5</span><span class="num">'+k(Y[4].total)+'</span><span class="note">'+k(Y[4].mensalFim)+' por mês em out/31</span></div>'+
    '<div class="tile"><span class="label">Clientes captados</span><span class="num">'+nf(T('deals'),0)+'</span><span class="note">em 5 anos, base da recorrência</span></div></div>';
   h+='<div class="card"><h3>Receita da Dixx por ano</h3>'+legend([{nome:'Captação direta ('+pct(p.revDireta,0)+')',cor:'--accent'},{nome:'Indicação ('+pct(p.revIndicacao,0)+')',cor:'--s3'}])+'<div class="scroll" id="chRec"></div></div>';
+  h+='<div class="card"><h3>Receita da Dixx mês a mês<small>60 meses, de nov/26 a out/31</small></h3>'+legend([{nome:'Receita total no mês',cor:'--ink'},{nome:'Captação direta',cor:'--accent'},{nome:'Indicação',cor:'--s3'}])+'<div class="scroll" id="chRecMes"></div>'+anoChips('data-anorec',anoRec)+'<div id="tbRecMes">'+tabelaMesRec(M)+'</div></div>';
   h+='<div class="card"><h3>Tabela anual</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">Captação direta</th><th class="r">Indicação</th><th class="r">Receita da Dixx no ano</th><th class="r">Crescimento</th><th class="r">Receita mensal no fim do ano</th><th class="r">Clientes captados no ano</th></tr></thead><tbody>';
   Y.forEach(function(y,i){ var cr=i===0?null:y.total/Y[i-1].total-1;
     h+='<tr><td>'+ANOS[i]+'<small>'+ANOS_P[i]+'</small></td><td class="r">'+brl(y.dir)+'</td><td class="r">'+brl(y.ind)+'</td><td class="r"><b>'+brl(y.total)+'</b></td><td class="r '+(cr==null?'':'pos')+'">'+(cr==null?'—':'+'+pct(cr,0))+'</td><td class="r">'+brl(y.mensalFim)+'</td><td class="r">'+nf(y.deals,0)+'</td></tr>'; });
@@ -692,6 +715,9 @@ function afterReceitas(M){
   var b=el('chRec'); if(!b) return; var Y=receitasDixx(M), p=S.prem;
   var o={labels:ANOS,aria:'Receita anual da Dixx por origem',series:[{nome:'Captação direta',cor:'--accent',vals:Y.map(function(y){return y.dir;})},{nome:'Indicação',cor:'--s3',vals:Y.map(function(y){return y.ind;})}]};
   b.innerHTML=chartStack(o); bindStack(b,o);
+  var c=el('chRecMes'); if(c){ var R=recDixxMensal(M), L=[]; for(var t=0;t<60;t++) L.push(mesLabel(t));
+    var o2={labels:L,aria:'Receita mensal da Dixx',series:[{nome:'Receita total no mês',cor:'--ink',vals:R.map(function(r){return r.dir+r.ind;})},{nome:'Captação direta',cor:'--accent',vals:R.map(function(r){return r.dir;})},{nome:'Indicação',cor:'--s3',vals:R.map(function(r){return r.ind;})}],tick:function(i){ return i%12===0? 'ano '+(i/12+1) : (i===59?mesLabel(59):null); }};
+    c.innerHTML=chartLines(o2); bindLines(c,o2); }
 }
 
 /* ---------- Cenário sem aporte da Dixx ---------- */
@@ -967,6 +993,8 @@ function wmsSave(t){ var id=t.getAttribute('data-wms'), f=t.getAttribute('data-f
 el('main').addEventListener('click',function(e){
   var t=e.target;
   var pf=t.closest&&t.closest('[data-pf]'); if(pf){ pipeFiltro=pf.getAttribute('data-pf'); render(); return; }
+  var ar=t.closest&&t.closest('[data-anorec]'); if(ar){ anoRec=+ar.getAttribute('data-anorec'); var Mx=modelo(); el('tbRecMes').innerHTML=tabelaMesRec(Mx); ar.parentNode.querySelectorAll('[data-anorec]').forEach(function(b){ b.setAttribute('aria-pressed', String(+b.getAttribute('data-anorec')===anoRec)); }); return; }
+  var as=t.closest&&t.closest('[data-anosoc]'); if(as){ anoSoc=+as.getAttribute('data-anosoc'); var My=modelo(); el('tbSocMes').innerHTML=tabelaMesSoc(My); as.parentNode.querySelectorAll('[data-anosoc]').forEach(function(b){ b.setAttribute('aria-pressed', String(+b.getAttribute('data-anosoc')===anoSoc)); }); return; }
   if(t.id==='premSalvar'){ var np=Object.assign({},S.prem); document.querySelectorAll('[data-prem]').forEach(function(i){ var ty=i.getAttribute('data-t'), key=i.getAttribute('data-prem'); if(ty==='t'){ np[key]=arr5(i.value).join(','); return; } var v=parseFloat(i.value); if(isNaN(v)) return; np[key]= ty==='p'? v/100 : v; }); S.prem=np; render(); setStatus('premStatus','Salvando…'); salvar('config/premissas',np,'premStatus','Premissas salvas. A proposta foi recalculada.'); }
   if(t.id==='premPadrao'){ S.prem=Object.assign({},DEF); render(); salvar('config/premissas',S.prem,'premStatus','Premissas de volta ao padrão.'); }
   if(t.id==='rzSalvar'){ var r={}; document.querySelectorAll('[data-rz]').forEach(function(i){ if(i.value!=='') r[i.getAttribute('data-rz')]=parseFloat(i.value); }); var nt=el('rz-nota').value; if(nt) r.nota=nt; S.realizado[mesSel]=r; var m=mesSel; render(); setStatus('rzStatus','Salvando…'); salvar('realizado/'+m,r,'rzStatus',ROT[MESES.indexOf(m)]+' salvo.'); }
