@@ -324,6 +324,19 @@ var S={prem:Object.assign({},DEF),pipeline:[],realizado:{},acoes:{},wms:{},db:nu
 var aba='abertura';
 try{ var h=(location.hash||'').slice(1); if(h) aba=h; }catch(e){}
 
+/* ---------- fechamentos anteriores ao plano (status ganho, mês antes de nov/26) ---------- */
+function preplano(){
+  var it=S.pipeline.filter(function(d){ return d.status==='ganho'&&d.mes&&d.mes<MESES[0]; }).sort(function(a,b){ return (+b.mrr||0)-(+a.mrr||0); });
+  var R={itens:it,total:0,extra:0,extraCli:0,dir:0,ind:0,setup:0,meses:0};
+  it.forEach(function(d){ var v=+d.mrr||0; R.total+=v; R.setup+=+d.setup||0; if(d.origem==='puro') R.ind+=v; else R.dir+=v; if(!d.noMrrInicial){ R.extra+=v; if(!d.upsell) R.extraCli++; } });
+  if(it.length){ var m0=it.map(function(d){return d.mes;}).sort()[0], y=+m0.slice(0,4), mo=+m0.slice(5,7); R.meses=(2026-y)*12+(11-mo)-1; R.mesFech=m0; }
+  R.recMes=S.prem.revDireta*R.dir+S.prem.revIndicacao*R.ind;
+  return R;
+}
+function mrrHoje(){ return S.prem.mrrInicial+preplano().extra; }
+function cliHoje(){ return S.prem.clientesIniciais+preplano().extraCli; }
+function mesNome(m){ var n=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez']; return n[+m.slice(5,7)-1]+'/'+m.slice(2,4); }
+
 /* ---------- modelo ---------- */
 function modelo(pp){
   var p=pp||S.prem, M={}, N=(pp&&pp.__N)||60;
@@ -347,7 +360,7 @@ function modelo(pp){
   // 60 meses
   var K=['meta','ind','hi','deals','mrr','cli','churnR','mrrD','mrrI','rev','comParc','custoFixo','custoVar','custo','cotas','caixa','acum','weesuLiq','setup','reun'];
   K.forEach(function(x){M[x]=[];});
-  var meta=p.metaM1, mrr=p.mrrInicial, cli=p.clientesIniciais, mD=0, mI=0, acum=0;
+  var PP=preplano(), meta=p.metaM1, mrr=p.mrrInicial+PP.extra, cli=p.clientesIniciais+PP.extraCli, mD=PP.dir, mI=PP.ind, acum=0;
   for(var t=0;t<N;t++){
     var y=Math.floor(t/12), yi=Math.min(4,y);
     if(t>0) meta=meta*(1+cres[yi]);
@@ -464,9 +477,9 @@ function capSeries(M){ return CANAIS.map(function(c){ return {nome:c.nome,cor:c.
 function secAbertura(M){
   var A=M.anos, a1=A[0], a5=A[4];
   var h='<div class="hero"><span class="label">Weesu · estratégia de captação 2026–2031</span><h2>Obrigado por atestarem nossa capacidade. Agora, <span>vamos desenvolver juntos</span> a estratégia de captação da Weesu.</h2>'+
-   '<p>A Weesu chegou a '+k(S.prem.mrrInicial)+' de MRR e '+S.prem.clientesIniciais+' clientes sem uma área comercial estruturada: tudo veio de parceiros e indicações. A Dixx propõe criar essa área, assumir a responsabilidade comercial por inteiro e crescer junto como sócia. A Weesu segue com o marketing, o produto e a implantação.</p></div>';
+   '<p>A Weesu chegou a '+k(mrrHoje())+' de MRR e '+cliHoje()+' clientes sem uma área comercial estruturada: tudo veio de parceiros e indicações. A Dixx propõe criar essa área, assumir a responsabilidade comercial por inteiro e crescer junto como sócia. A Weesu segue com o marketing, o produto e a implantação.</p></div>';
   h+='<div class="tiles">'+
-   '<div class="tile"><span class="label">MRR no fim do ano 1</span><span class="num">'+k(a1.mrr)+'</span><span class="note">'+nf(a1.mrr/S.prem.mrrInicial,1)+'× o atual · '+nf(a1.deals,0)+' novos contratos</span></div>'+
+   '<div class="tile"><span class="label">MRR no fim do ano 1</span><span class="num">'+k(a1.mrr)+'</span><span class="note">'+nf(a1.mrr/mrrHoje(),1)+'× o atual · '+nf(a1.deals,0)+' novos contratos</span></div>'+
    '<div class="tile"><span class="label">MRR no fim do ano 5</span><span class="num">'+k(a5.mrr)+'</span><span class="note">ARR de '+k(a5.arr)+' · '+nf(a5.cli,0)+' clientes</span></div>'+
    '<div class="tile"><span class="label">Valuation projetado no ano 5</span><span class="num">'+k(a5.val)+'</span><span class="note">hoje '+k(S.prem.valuation)+', mantido o múltiplo de '+nf(M.mult,1)+'× ARR</span></div>'+
    '<div class="tile"><span class="label">Investimento da Dixx</span><span class="num">'+k(-M.pico)+'</span><span class="note">pico de caixa com o time e a compra das cotas, em '+mesLabel(M.picoMes)+'; com salário de mercado, '+k(-modeloMercado().pico)+'</span></div></div>';
@@ -574,7 +587,7 @@ function secSociedade(M){
   var revPago=receb5, comP=sum(A.map(function(a){return a.comParc;}));
   h+='<div class="sec-head" style="margin-top:8px"><span class="label">Valor criado para a Weesu</span><h2>A área comercial que hoje não existe acrescenta '+k(a5.val-p.valuation)+' ao valor da empresa em 5 anos</h2><p>Valor medido pelo mesmo múltiplo de hoje sobre o ARR projetado. É o efeito de transformar crescimento por indicação espontânea em uma máquina de vendas com metas, canais e acompanhamento.</p></div>';
   h+='<div class="tiles">'+
-   '<div class="tile"><span class="label">ARR adicionado</span><span class="num">'+k(a5.arr-p.mrrInicial*12)+'</span><span class="note">de '+k(p.mrrInicial*12)+' para '+k(a5.arr)+'</span></div>'+
+   '<div class="tile"><span class="label">ARR adicionado</span><span class="num">'+k(a5.arr-mrrHoje()*12)+'</span><span class="note">de '+k(mrrHoje()*12)+' para '+k(a5.arr)+'</span></div>'+
    '<div class="tile"><span class="label">Valuation no ano 5</span><span class="num">'+k(a5.val)+'</span><span class="note">'+nf(a5.val/p.valuation,1)+'× o de hoje</span></div>'+
    '<div class="tile"><span class="label">Receita nova líquida para a Weesu</span><span class="num">'+k(sum(A.map(function(a){return a.weesu;})))+'</span><span class="note">mensalidades novas em 5 anos, já descontadas a parte da Dixx e a dos parceiros</span></div>'+
    '<div class="tile"><span class="label">Custo fixo comercial da Weesu</span><span class="num">R$ 0</span><span class="note">o time é 100% investimento da Dixx; a Weesu cuida do marketing</span></div></div>';
@@ -721,7 +734,7 @@ function receitasDixx(M){
 }
 function secReceitas(M){
   var p=S.prem, Y=receitasDixx(M), T=function(f){ return sum(Y.map(function(y){return y[f];})); };
-  var h='<div class="sec-head"><span class="label">Receitas da Dixx · 5 anos</span><h2>A Dixx recebe '+k(T('total'))+' de recorrência em 5 anos, chegando a '+k(Y[4].mensalFim)+' por mês no fim do ano 5</h2><p>Só receitas, sem custos: '+pct(p.revDireta,0)+' da mensalidade dos clientes de captação direta e '+pct(p.revIndicacao,0)+' dos clientes vindos por indicação, todo mês, enquanto o cliente estiver ativo e dentro da vigência de '+p.vigenciaMeses+' meses. O setup não entra: é 100% da Weesu.</p></div>';
+  var h='<div class="sec-head"><span class="label">Receitas da Dixx · 5 anos</span><h2>A Dixx recebe '+k(T('total'))+' de recorrência em 5 anos, chegando a '+k(Y[4].mensalFim)+' por mês no fim do ano 5</h2><p>Só receitas, sem custos: '+pct(p.revDireta,0)+' da mensalidade dos clientes de captação direta e '+pct(p.revIndicacao,0)+' dos clientes vindos por indicação, todo mês, enquanto o cliente estiver ativo e dentro da vigência de '+p.vigenciaMeses+' meses. O setup não entra: é 100% da Weesu.'+(function(){ var P=preplano(); return P.itens.length? ' Inclui a carteira fechada em '+mesNome(P.mesFech)+' ('+brl(P.total)+' de mensalidade, '+brl(P.recMes)+' por mês para a Dixx), que começa a pagar antes do plano: '+brl(P.recMes*P.meses)+' devidos até out/26, fora destes 5 anos.' : ''; })()+'</p></div>';
   h+='<div class="tiles">'+
    '<div class="tile"><span class="label">Receita da Dixx em 5 anos</span><span class="num">'+k(T('total'))+'</span><span class="note">recorrente sobre os clientes captados</span></div>'+
    '<div class="tile"><span class="label">Receita no ano 1</span><span class="num">'+k(Y[0].total)+'</span><span class="note">'+k(Y[0].mensalFim)+' por mês em out/27</span></div>'+
@@ -751,7 +764,7 @@ function projDez(){
   return {M:M,Y:Y,mult:mult};
 }
 function secDezAnos(){
-  var p=S.prem, D=projDez(), Y=D.Y, y5=Y[4], y10=Y[9], mult=D.mult, arr0=p.mrrInicial*12;
+  var p=S.prem, D=projDez(), Y=D.Y, y5=Y[4], y10=Y[9], mult=D.mult, arr0=mrrHoje()*12;
   var mults=[4,6,mult];
   var h='<div class="sec-head"><span class="label">Projeção de 10 anos · ARR e valuation</span><h2>Mantido o ritmo, a Weesu chega a '+k(y10.arr)+' de ARR em 10 anos e vale '+k(y10.arr*mult)+'</h2><p>Mesmo modelo dos 5 anos, estendido até out/36. Do ano 6 ao 10, a meta de NMRR segue crescendo '+pct(p.cresc5,0)+' ao mês (o ritmo do ano 5), com churn de '+pct(p.churn)+' ao mês e o time do ano 5. O valuation usa o múltiplo de hoje ('+nf(mult,1)+'× o ARR), com a sensibilidade a múltiplos menores logo abaixo.</p></div>';
   h+='<div class="tiles">'+
@@ -769,7 +782,7 @@ function secDezAnos(){
   return h;
 }
 function afterDezAnos(){
-  var b=el('chDez'); if(!b) return; var D=projDez(), p=S.prem, L=['hoje'].concat(D.Y.map(function(y){return 'ano '+y.ano;})), arr=[p.mrrInicial*12].concat(D.Y.map(function(y){return y.arr;}));
+  var b=el('chDez'); if(!b) return; var D=projDez(), p=S.prem, L=['hoje'].concat(D.Y.map(function(y){return 'ano '+y.ano;})), arr=[mrrHoje()*12].concat(D.Y.map(function(y){return y.arr;}));
   var o={labels:L,aria:'ARR e valuation em 10 anos',series:[{nome:'Valuation ('+nf(D.mult,1)+'× ARR)',cor:'--accent',vals:arr.map(function(v){return v*D.mult;}),area:true},{nome:'Valuation a 4× ARR',cor:'--s2',vals:arr.map(function(v){return v*4;})},{nome:'ARR',cor:'--s1',vals:arr}],h:300};
   b.innerHTML=chartLines(o); bindLines(b,o);
 }
@@ -821,7 +834,7 @@ function secAbCanais(){
    '<div class="tile"><span class="label">Resultado dos canais para a Weesu</span><span class="num">'+k(liq10)+'</span><span class="note">em 10 anos, após '+k(rep10)+' de repasse e a estrutura de canais</span></div></div>';
   h+='<div class="card"><h3>MRR no fim de cada ano<small>plano comercial + novos canais</small></h3>'+legend([{nome:'Plano comercial (base atual + Dixx)',cor:'--accent'}].concat(C.T.map(function(x){return {nome:x.tp.nome,cor:x.tp.cor};})))+'<div class="scroll" id="chAbC"></div></div>';
   h+='<div class="card"><h3>Ano a ano</h3><div class="scroll"><table class="t nw"><thead><tr><th>Ano</th><th class="r">Canais ativos</th><th class="r">NMRR do plano</th><th class="r">NMRR dos canais</th><th class="r">ARR total</th><th class="r">Crescimento do ARR</th><th class="r">Clientes</th><th class="r">Repasse aos canais</th><th class="r">Resultado para a Weesu</th><th class="r">Valuation<small>'+nf(mult,1)+'× ARR</small></th></tr></thead><tbody>';
-  Y.forEach(function(y,i){ var ant=i?Y[i-1].arr:p.mrrInicial*12;
+  Y.forEach(function(y,i){ var ant=i?Y[i-1].arr:mrrHoje()*12;
     h+='<tr'+(i===4||i===9?' class="tot"':'')+'><td style="white-space:nowrap">Ano '+y.ano+'</td><td class="r">'+(y.ativos>0.5?nf(y.ativos,0):'—')+'</td><td class="r">'+brl(y.nmrrP)+'</td><td class="r">'+(y.nmrrC?brl(y.nmrrC):'—')+'</td><td class="r"><b>'+brl(y.arr)+'</b></td><td class="r pos">+'+pct(y.arr/ant-1,0)+'</td><td class="r">'+nf(y.cliP+y.cliC,0)+'</td><td class="r">'+(y.rep?brl(y.rep):'—')+'</td><td class="r '+(y.liq<0?'neg':y.liq>0?'pos':'')+'">'+(y.est||y.recC?brl(y.liq):'—')+'</td><td class="r">'+brl(y.arr*mult)+'</td></tr>'; });
   h+='</tbody></table></div><p class="small muted">Plano = projeção da aba 10 anos (base atual + vendas do time da Dixx). Ano 1 = nov/26 a out/27. Resultado para a Weesu = mensalidades dos clientes vindos dos canais − repasse de '+pct(cfg.tipos[0].rep,0)+' − estrutura de canais (gestor de canais, treinamento e materiais), sem contar o setup, que fica com a Weesu. Clientes de canais estimados pelo ticket de '+brl(p.ticketLow)+'. Mesmo churn do plano ('+pct(p.churn)+' ao mês).</p></div>';
   // ano 10 por tipo
@@ -995,7 +1008,7 @@ function secPipeline(){
     h+='<tr'+(x.status!=='aberto'?' class="dim"':'')+'><td><b>'+esc(x.nome)+'</b>'+((+x.mrr||0)>=S.prem.ticketHigh?' <span class="pill acc">high ticket</span>':'')+(x.origem==='puro'?' <span class="pill" style="background:color-mix(in srgb,var(--s5) 22%,transparent);color:var(--ink)">e-commerce Puro'+(x.tier?' · '+esc(x.tier):'')+'</span>':'')+'<small>'+esc(x.segmento)+' · '+esc(x.produto||'')+'</small></td><td>'+esc(x.etapa)+'<small><span class="pill '+(x.tom||'')+'">'+esc(x.situacao)+'</span></small><small>'+esc(x.pendencia||'')+'</small></td>'+
      '<td class="r">'+brl(x.mrr)+(x.mrrEstimado?'<small>estimada pelo tier</small>':(x.pedDia?'<small>'+nf(x.pedDia,0)+' ped/dia</small>':''))+'</td><td class="r">'+brl(x.setup)+'</td>'+
      '<td><input class="inl" type="number" min="0" max="100" step="5" id="pp-'+x.id+'" data-pid="'+x.id+'" data-f="prob" value="'+Math.round((+x.prob||0)*100)+'" aria-label="Chance de fechar (%)"'+dis+'>%</td>'+
-     '<td><select class="inl" id="pm-'+x.id+'" data-pid="'+x.id+'" data-f="mes" aria-label="Mês previsto"'+dis+'>'+opts.map(function(m,i){return '<option value="'+m+'"'+(x.mes===m?' selected':'')+'>'+(ROT[i]||'depois')+'</option>';}).join('')+'</select></td>'+
+     (x.mes&&x.mes<MESES[0]? '<td>'+mesNome(x.mes)+'<small>antes do plano</small></td>' : '<td><select class="inl" id="pm-'+x.id+'" data-pid="'+x.id+'" data-f="mes" aria-label="Mês previsto"'+dis+'>'+opts.map(function(m,i){return '<option value="'+m+'"'+(x.mes===m?' selected':'')+'>'+(ROT[i]||'depois')+'</option>';}).join('')+'</select></td>')+
      '<td><select class="inl" id="ps-'+x.id+'" data-pid="'+x.id+'" data-f="status" aria-label="Status"'+dis+'>'+[['aberto','Aberto'],['lead','Lead (sem negócio)'],['ganho','Ganho'],['perdido','Perdido']].map(function(o){return '<option value="'+o[0]+'"'+(x.status===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></td>'+
      '<td class="r">'+(x.status==='aberto'?brl((+x.mrr||0)*(+x.prob||0)):'—')+'</td></tr>'; });
   h+='</tbody></table></div><p class="small muted">Mensalidade de casos com faixa ou "a definir" usa o meio da faixa ou a simulação da Carteira Comercial. Nos leads MeliXP, a mensalidade sai da Tabela A pelo volume declarado (pedidos/dia × 26); sem volume, é estimada pelo tier (A R$ 3.000, B R$ 2.000, C R$ 1.500, D R$ 1.000). Leads do MeliXP sem apresentação ficam como base (status Lead) e não entram no pipeline nem na previsão individual; quando um deles agendar apresentação, mude o status para Aberto. Dados de contato ficam no CRM, fora deste painel.</p></div>';
@@ -1009,9 +1022,24 @@ var ACOMP_CAMPOS=[
 ];
 var VEND=['v_pipe','v_base','v_cli','v_contab','v_ecom','v_erp'];
 var mesSel=MESES[0];
+function preplanoHTML(){
+  var P=preplano(), p=S.prem; if(!P.itens.length) return '';
+  var h='<div class="card"><h3>Fechamentos já realizados antes do plano<small>'+mesNome(P.mesFech)+' · recorrente da Dixx a partir do mês seguinte ao fechamento</small></h3>';
+  h+='<div class="tiles" style="margin-bottom:12px"><div class="tile"><span class="label">NMRR fechado</span><span class="num">'+brl(P.total)+'</span><span class="note">'+P.itens.filter(function(d){return !d.upsell;}).length+' clientes novos e '+P.itens.filter(function(d){return d.upsell;}).length+' upsell</span></div>'+
+   '<div class="tile"><span class="label">Setup fechado</span><span class="num">'+brl(P.setup)+'</span><span class="note">100% da Weesu</span></div>'+
+   '<div class="tile"><span class="label">Recorrente da Dixx</span><span class="num">'+brl(P.recMes)+'</span><span class="note">por mês; '+brl(P.recMes*P.meses)+' devidos antes de nov/26 ('+P.meses+' '+(P.meses===1?'mês':'meses')+')</span></div>'+
+   '<div class="tile"><span class="label">Soma ao MRR de partida</span><span class="num">'+brl(P.extra)+'</span><span class="note">o restante já estava no MRR de '+k(p.mrrInicial)+'; partida: '+k(mrrHoje())+'</span></div></div>';
+  h+='<div class="scroll"><table class="t"><thead><tr><th>Cliente</th><th>Produto</th><th>Origem</th><th class="r">Mensalidade</th><th class="r">Setup</th><th class="r">Recorrente da Dixx</th><th class="r">Parceiro</th><th>No MRR de '+k(p.mrrInicial)+'</th></tr></thead><tbody>';
+  P.itens.forEach(function(d){ var v=+d.mrr||0, ind=d.origem==='puro';
+    h+='<tr><td><b>'+esc(d.nome)+'</b>'+(d.upsell?' <span class="pill">upsell</span>':'')+(v>=p.ticketHigh?' <span class="pill acc">high ticket</span>':'')+(d.condicoes?'<small>'+esc(d.condicoes)+'</small>':'')+'</td><td>'+esc(d.produto||'')+'</td><td>'+(ind?'Indicação · e-commerce Puro':'Captação direta')+'</td><td class="r">'+brl(v)+'</td><td class="r">'+(d.setup?brl(d.setup):'—')+'</td><td class="r">'+brl(v*(ind?p.revIndicacao:p.revDireta))+'<small>'+pct(ind?p.revIndicacao:p.revDireta,0)+'</small></td><td class="r">'+(ind?brl(v*p.comissaoParceiro):'—')+'</td><td>'+(d.noMrrInicial?'Já incluído':'Somado')+'</td></tr>'; });
+  h+='<tr class="tot"><td>Total</td><td></td><td></td><td class="r">'+brl(P.total)+'</td><td class="r">'+brl(P.setup)+'</td><td class="r">'+brl(P.recMes)+'</td><td class="r">'+brl(P.ind*p.comissaoParceiro)+'</td><td></td></tr></tbody></table></div>';
+  h+='<p class="small muted">Esses clientes entram na carteira da Dixx desde o início da projeção: a recorrente de '+brl(P.recMes)+' por mês já está nas abas Receitas da Dixx, Sociedade e Sem aporte, com o churn do plano. Os '+brl(P.recMes*P.meses)+' devidos antes de nov/26 ficam fora dos 5 anos projetados. Não contam para as metas de NMRR, que começam em nov/26. Os clientes que ainda não estavam no MRR atual somam '+brl(P.extra)+' ao MRR de partida, que vai para '+brl(mrrHoje())+', com '+cliHoje()+' clientes.</p></div>';
+  return h;
+}
 function secAcomp(M){
   var i=MESES.indexOf(mesSel), r=S.realizado[mesSel]||{};
   var h='<div class="sec-head"><span class="label">Previsto × realizado</span><h2>Acompanhamento mensal de fechamentos, conversões e recorrente</h2><p>Lance os números do mês a partir do CRM. As conversões e a recorrente devida à Dixx são calculadas na hora; depois de 2 ou 3 meses, as conversões substituem as premissas do funil.</p></div>';
+  h+=preplanoHTML();
   h+='<div class="card"><div class="row"><div class="field" style="max-width:220px"><label for="mesSel">Mês</label><select id="mesSel">'+MESES.map(function(m,j){return '<option value="'+m+'"'+(m===mesSel?' selected':'')+'>'+ROT[j]+(S.realizado[m]?' · lançado':'')+'</option>';}).join('')+'</select></div>'+
    '<div class="tile" style="padding:0 12px"><span class="label">Meta do mês</span><span class="num" style="font-size:20px">'+brl(M.meta[i])+'</span></div>'+
    '<div class="tile" style="padding:0 12px"><span class="label">Contratos esperados</span><span class="num" style="font-size:20px">'+nf(M.deals[i],1)+'</span></div>'+
