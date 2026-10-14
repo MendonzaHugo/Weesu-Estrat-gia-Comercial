@@ -440,7 +440,7 @@ function bindLines(box,o){
 function legend(items){ return '<div class="legend">'+items.map(function(it){ return '<span><i class="'+(it.cls||'')+'" style="'+(it.cor?'background:var('+it.cor+')':'')+'"></i>'+it.nome+'</span>'; }).join('')+'</div>'; }
 
 /* ---------- seções ---------- */
-var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['receitas','Receitas'],['sociedade','Sociedade'],['repasse','Repasse viável'],['semaporte','Sem aporte'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
+var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['receitas','Receitas da Dixx'],['sociedade','Sociedade'],['repasse','Repasse viável'],['semaporte','Sem aporte'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
 function renderNav(){ el('nav').innerHTML=SECOES.map(function(s){return '<button class="chip" data-v="'+s[0]+'" aria-pressed="'+(s[0]===aba)+'">'+s[1]+'</button>';}).join(''); }
 el('nav').addEventListener('click',function(e){ var b=e.target.closest('[data-v]'); if(!b) return; aba=b.getAttribute('data-v'); try{history.replaceState(null,'','#'+aba);}catch(_){}
   renderNav(); render(); window.scrollTo(0,0); });
@@ -663,37 +663,34 @@ function timelineBE(R){
   return '<div class="card"><h3>Quanto tempo a Dixx leva para o breakeven<small>meses até o caixa acumulado voltar a zero</small></h3>'+legend([{nome:'Salário informado',cor:'--accent'},{nome:'Salário de mercado',cor:'--s2'}])+'<div class="scroll">'+s+'</div><p class="small muted">Barras depois da linha tracejada mostram breakeven que só acontece se o acordo for renovado após os 5 anos.</p></div>';
 }
 
-/* ---------- Projeção de receitas ---------- */
-function receitasAnuais(M){
+/* ---------- Projeção de receitas da Dixx ---------- */
+function receitasDixx(M){
+  var p=S.prem;
   return [0,1,2,3,4].map(function(y){
-    var a=y*12,b=a+12,base=0,novo=0;
-    for(var t=a;t<b;t++){ var n=M.mrrD[t]+M.mrrI[t]; novo+=n; base+=M.mrr[t]-n; }
-    var setup=sum(M.setup.slice(a,b)), dixx=sum(M.rev.slice(a,b)), parc=sum(M.comParc.slice(a,b));
-    return {base:base,novo:novo,setup:setup,total:base+novo+setup,dixx:dixx,parc:parc,liq:base+novo+setup-dixx-parc,mrrFim:M.mrr[b-1],arrFim:M.mrr[b-1]*12};
+    var a=y*12,b=a+12,dir=0,ind=0;
+    for(var t=a;t<b;t++){ if(t<p.vigenciaMeses){ dir+=p.revDireta*M.mrrD[t]; ind+=p.revIndicacao*M.mrrI[t]; } }
+    var fim=b-1, mensal= fim<p.vigenciaMeses ? p.revDireta*M.mrrD[fim]+p.revIndicacao*M.mrrI[fim] : 0;
+    return {dir:dir,ind:ind,total:dir+ind,mensalFim:mensal,deals:sum(M.deals.slice(a,b))};
   });
 }
 function secReceitas(M){
-  var p=S.prem, Y=receitasAnuais(M), T=function(f){ return sum(Y.map(function(y){return y[f];})); };
-  var rec0=p.mrrInicial*12;
-  var h='<div class="sec-head"><span class="label">Projeção de receitas · 5 anos</span><h2>A receita anual da Weesu vai de '+k(rec0)+' para '+k(Y[4].total)+' no ano 5</h2><p>Só receitas, sem custos: mensalidades da base atual (com churn de '+pct(p.churn)+' ao mês), mensalidades dos novos clientes trazidos pela área comercial e setup de implantação. Somadas, são '+k(T('total'))+' em 5 anos.</p></div>';
+  var p=S.prem, Y=receitasDixx(M), T=function(f){ return sum(Y.map(function(y){return y[f];})); };
+  var h='<div class="sec-head"><span class="label">Receitas da Dixx · 5 anos</span><h2>A Dixx recebe '+k(T('total'))+' de recorrência em 5 anos, chegando a '+k(Y[4].mensalFim)+' por mês no fim do ano 5</h2><p>Só receitas, sem custos: '+pct(p.revDireta,0)+' da mensalidade dos clientes de captação direta e '+pct(p.revIndicacao,0)+' dos clientes vindos por indicação, todo mês, enquanto o cliente estiver ativo e dentro da vigência de '+p.vigenciaMeses+' meses. O setup não entra: é 100% da Weesu.</p></div>';
   h+='<div class="tiles">'+
-   '<div class="tile"><span class="label">Receita total em 5 anos</span><span class="num">'+k(T('total'))+'</span><span class="note">mensalidades e setup</span></div>'+
-   '<div class="tile"><span class="label">Receita de novos clientes</span><span class="num">'+k(T('novo'))+'</span><span class="note">mensalidades geradas pela área comercial</span></div>'+
-   '<div class="tile"><span class="label">Setup em 5 anos</span><span class="num">'+k(T('setup'))+'</span><span class="note">100% da Weesu, para a implantação</span></div>'+
-   '<div class="tile"><span class="label">ARR no fim do ano 5</span><span class="num">'+k(Y[4].arrFim)+'</span><span class="note">hoje '+k(rec0)+'</span></div></div>';
-  h+='<div class="card"><h3>Receita por ano e por origem</h3>'+legend([{nome:'Mensalidades da base atual',cor:'--s1'},{nome:'Mensalidades de novos clientes',cor:'--accent'},{nome:'Setup',cor:'--s4'}])+'<div class="scroll" id="chRec"></div></div>';
-  h+='<div class="card"><h3>Tabela anual</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">Base atual</th><th class="r">Novos clientes</th><th class="r">Setup</th><th class="r">Receita total</th><th class="r">Crescimento</th><th class="r">MRR no fim do ano</th></tr></thead><tbody>';
-  Y.forEach(function(y,i){ var cr=i===0? y.total/rec0-1 : y.total/Y[i-1].total-1;
-    h+='<tr><td>'+ANOS[i]+'<small>'+ANOS_P[i]+'</small></td><td class="r">'+brl(y.base)+'</td><td class="r">'+brl(y.novo)+'</td><td class="r">'+brl(y.setup)+'</td><td class="r"><b>'+brl(y.total)+'</b></td><td class="r pos">+'+pct(cr,0)+'</td><td class="r">'+brl(y.mrrFim)+'</td></tr>'; });
-  h+='<tr class="tot"><td>5 anos</td><td class="r">'+brl(T('base'))+'</td><td class="r">'+brl(T('novo'))+'</td><td class="r">'+brl(T('setup'))+'</td><td class="r">'+brl(T('total'))+'</td><td></td><td class="r">'+brl(Y[4].mrrFim)+'</td></tr></tbody></table></div><p class="small muted">Crescimento do ano 1 comparado com a receita anual de hoje ('+k(rec0)+', MRR atual × 12, sem setup).</p></div>';
-  h+='<div class="card"><h3>Para onde vai a receita dos novos clientes</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">Mensalidades de novos clientes</th><th class="r">Recorrente da Dixx</th><th class="r">Parceiros</th><th class="r">Fica com a Weesu</th></tr></thead><tbody>';
-  Y.forEach(function(y,i){ h+='<tr><td>'+ANOS[i]+'</td><td class="r">'+brl(y.novo)+'</td><td class="r">'+brl(y.dixx)+'</td><td class="r">'+brl(y.parc)+'</td><td class="r">'+brl(y.novo-y.dixx-y.parc)+'</td></tr>'; });
-  h+='<tr class="tot"><td>5 anos</td><td class="r">'+brl(T('novo'))+'</td><td class="r">'+brl(T('dixx'))+'</td><td class="r">'+brl(T('parc'))+'</td><td class="r">'+brl(T('novo')-T('dixx')-T('parc'))+'</td></tr></tbody></table></div><p class="small muted">Com o acordo atual ('+pct(p.revDireta,0)+' direta, '+pct(p.revIndicacao,0)+' + '+pct(p.comissaoParceiro,0)+' na indicação). A base atual e o setup ficam 100% com a Weesu.</p></div>';
+   '<div class="tile"><span class="label">Receita da Dixx em 5 anos</span><span class="num">'+k(T('total'))+'</span><span class="note">recorrente sobre os clientes captados</span></div>'+
+   '<div class="tile"><span class="label">Receita no ano 1</span><span class="num">'+k(Y[0].total)+'</span><span class="note">'+k(Y[0].mensalFim)+' por mês em out/27</span></div>'+
+   '<div class="tile"><span class="label">Receita no ano 5</span><span class="num">'+k(Y[4].total)+'</span><span class="note">'+k(Y[4].mensalFim)+' por mês em out/31</span></div>'+
+   '<div class="tile"><span class="label">Clientes captados</span><span class="num">'+nf(T('deals'),0)+'</span><span class="note">em 5 anos, base da recorrência</span></div></div>';
+  h+='<div class="card"><h3>Receita da Dixx por ano</h3>'+legend([{nome:'Captação direta ('+pct(p.revDireta,0)+')',cor:'--accent'},{nome:'Indicação ('+pct(p.revIndicacao,0)+')',cor:'--s3'}])+'<div class="scroll" id="chRec"></div></div>';
+  h+='<div class="card"><h3>Tabela anual</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">Captação direta</th><th class="r">Indicação</th><th class="r">Receita da Dixx no ano</th><th class="r">Crescimento</th><th class="r">Receita mensal no fim do ano</th><th class="r">Clientes captados no ano</th></tr></thead><tbody>';
+  Y.forEach(function(y,i){ var cr=i===0?null:y.total/Y[i-1].total-1;
+    h+='<tr><td>'+ANOS[i]+'<small>'+ANOS_P[i]+'</small></td><td class="r">'+brl(y.dir)+'</td><td class="r">'+brl(y.ind)+'</td><td class="r"><b>'+brl(y.total)+'</b></td><td class="r '+(cr==null?'':'pos')+'">'+(cr==null?'—':'+'+pct(cr,0))+'</td><td class="r">'+brl(y.mensalFim)+'</td><td class="r">'+nf(y.deals,0)+'</td></tr>'; });
+  h+='<tr class="tot"><td>5 anos</td><td class="r">'+brl(T('dir'))+'</td><td class="r">'+brl(T('ind'))+'</td><td class="r">'+brl(T('total'))+'</td><td></td><td class="r">'+brl(Y[4].mensalFim)+'</td><td class="r">'+nf(T('deals'),0)+'</td></tr></tbody></table></div><p class="small muted">Acordo atual: '+pct(p.revDireta,0)+' na captação direta (nossa base e franqueados Omie, pipeline e high ticket) e '+pct(p.revIndicacao,0)+' na indicação (e-commerce Puro, contabilidades e clientes ativos). Os percentuais são editáveis em Metas.</p></div>';
   return h;
 }
 function afterReceitas(M){
-  var b=el('chRec'); if(!b) return; var Y=receitasAnuais(M);
-  var o={labels:ANOS,aria:'Receita anual da Weesu por origem',series:[{nome:'Base atual',cor:'--s1',vals:Y.map(function(y){return y.base;})},{nome:'Novos clientes',cor:'--accent',vals:Y.map(function(y){return y.novo;})},{nome:'Setup',cor:'--s4',vals:Y.map(function(y){return y.setup;})}]};
+  var b=el('chRec'); if(!b) return; var Y=receitasDixx(M), p=S.prem;
+  var o={labels:ANOS,aria:'Receita anual da Dixx por origem',series:[{nome:'Captação direta',cor:'--accent',vals:Y.map(function(y){return y.dir;})},{nome:'Indicação',cor:'--s3',vals:Y.map(function(y){return y.ind;})}]};
   b.innerHTML=chartStack(o); bindStack(b,o);
 }
 
