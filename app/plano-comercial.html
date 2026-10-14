@@ -120,6 +120,9 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeri
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .field label{font-size:12.5px;color:var(--muted);font-weight:600}
 .field input,.field select,.field textarea{padding:7px 9px;border:1px solid var(--line);border-radius:4px;background:var(--bg);width:100%;font-variant-numeric:tabular-nums}
+.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:baseline}
+.t.nw td.r{white-space:nowrap}
+.t input.cn{width:88px;padding:5px 7px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:inherit;font:inherit;text-align:right;font-variant-numeric:tabular-nums}
 .field small{font-size:11.5px;color:var(--muted)}
 .fgroup{display:flex;flex-direction:column;gap:10px}
 .fgroup>h4{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);font-weight:600}
@@ -333,9 +336,9 @@ function modelo(pp){
   }
   M.cap=cap; M.capTot=MESES.map(function(_,i){ return cap.pipe[i]+cap.base[i]+cap.cli[i]+cap.contab[i]+cap.ecom[i]+cap.erp[i]; });
   // 60 meses
-  var K=['meta','ind','hi','deals','mrr','cli','churnR','mrrD','mrrI','rev','comParc','custoFixo','custoVar','custo','cotas','caixa','acum','metaC','mrrC','comCanal','weesuLiq','setup','reun'];
+  var K=['meta','ind','hi','deals','mrr','cli','churnR','mrrD','mrrI','rev','comParc','custoFixo','custoVar','custo','cotas','caixa','acum','weesuLiq','setup','reun'];
   K.forEach(function(x){M[x]=[];});
-  var meta=p.metaM1, mrr=p.mrrInicial, cli=p.clientesIniciais, mD=0, mI=0, mC=0, acum=0;
+  var meta=p.metaM1, mrr=p.mrrInicial, cli=p.clientesIniciais, mD=0, mI=0, acum=0;
   for(var t=0;t<N;t++){
     var y=Math.floor(t/12), yi=Math.min(4,y);
     if(t>0) meta=meta*(1+cres[yi]);
@@ -343,9 +346,7 @@ function modelo(pp){
     if(t<12){ var ct=M.capTot[t]; ind= ct>0? (cap.cli[t]+cap.contab[t]+cap.ecom[t])/ct : 0; hi= ct>0? cap.erp[t]/ct : 0; }
     else { ind=p.shareInd; hi=p.shareHigh; }
     var deals=meta*(1-hi)/p.ticketLow+meta*hi/p.ticketHigh;
-    var mcN= p.canalUp ? meta*(p.canalUp[Math.min(9,y)]||0) : 0;
-    var ch=mrr*p.churn; mrr=mrr-ch+meta+mcN; cli=cli*(1-p.churn)+deals+(mcN>0? mcN*deals/meta : 0);
-    mC=mC*(1-p.churn)+mcN; M.metaC.push(mcN); M.mrrC.push(mC); M.comCanal.push((p.revCanal||0)*mC);
+    var ch=mrr*p.churn; mrr=mrr-ch+meta; cli=cli*(1-p.churn)+deals;
     mD=mD*(1-p.churn)+meta*(1-ind); mI=mI*(1-p.churn)+meta*ind;
     var dr=p.revDireta, ir=p.revIndicacao; if(p.sched){ var sc=p.sched(t); dr=sc[0]; ir=sc[1]; }
     var rev= (t<p.vigenciaMeses ? dr*mD+ir*mI : 0) + (p.bonusPrimeira||0)*meta + (p.setupDixx||0)*deals*p.setupMedio;
@@ -442,7 +443,7 @@ function bindLines(box,o){
 function legend(items){ return '<div class="legend">'+items.map(function(it){ return '<span><i class="'+(it.cls||'')+'" style="'+(it.cor?'background:var('+it.cor+')':'')+'"></i>'+it.nome+'</span>'; }).join('')+'</div>'; }
 
 /* ---------- seções ---------- */
-var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['receitas','Receitas da Dixx'],['sociedade','Sociedade'],['repasse','Repasse viável'],['semaporte','Sem aporte'],['dezanos','10 anos'],['sempart','Sem participação'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
+var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['receitas','Receitas da Dixx'],['sociedade','Sociedade'],['repasse','Repasse viável'],['semaporte','Sem aporte'],['dezanos','10 anos'],['abcanais','Abertura de canais'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
 function renderNav(){ el('nav').innerHTML=SECOES.map(function(s){return '<button class="chip" data-v="'+s[0]+'" aria-pressed="'+(s[0]===aba)+'">'+s[1]+'</button>';}).join(''); }
 el('nav').addEventListener('click',function(e){ var b=e.target.closest('[data-v]'); if(!b) return; aba=b.getAttribute('data-v'); try{history.replaceState(null,'','#'+aba);}catch(_){}
   renderNav(); render(); window.scrollTo(0,0); });
@@ -752,60 +753,77 @@ function afterDezAnos(){
   b.innerHTML=chartLines(o); bindLines(b,o);
 }
 
-/* ---------- Cenário sem participação ---------- */
-var CANAL_UP=[0,0,0,0,0.25,0.40,0.55,0.70,0.85,1.00]; // NMRR extra dos canais da Weesu sobre a meta, por ano (a partir do ano 5)
-function cenSemPart(mercado){
-  var p=S.prem, cp=p.comissaoParceiro, o=Object.assign({},p,{__N:120,vigenciaMeses:120,pagaCotas:0,revDireta:0.30,revIndicacao:Math.max(0,0.30-cp),canalUp:CANAL_UP,revCanal:0.30});
-  if(mercado) Object.assign(o,{sdrBase:p.mktSdr,closerBase:p.mktCloser,execBase:p.mktExec});
-  return modelo(o);
+/* ---------- Abertura de canais (10 anos) ---------- */
+// cada tipo de canal: ano de início, unidades abertas no 1º ano, crescimento anual das aberturas,
+// NMRR por unidade madura (R$/mês), meses até maturar, inativação de unidades ao ano, repasse recorrente
+var CN_DEF={estrutura:15000,tipos:[
+ {id:'fr',nome:'Franquias Weesu',cor:'--s2',inicio:5,abre:3,cresc:0.20,prod:4500,ramp:6,inat:0.10,rep:0.30,d:'Operação regional exclusiva, com SDR e Closer próprios'},
+ {id:'rv',nome:'Revendas e integradores',cor:'--s3',inicio:5,abre:8,cresc:0.15,prod:1500,ramp:6,inat:0.20,rep:0.30,d:'Consultorias logísticas, implantadores de ERP, integradores'},
+ {id:'pi',nome:'Parceiros de indicação',cor:'--s4',inicio:5,abre:20,cresc:0.10,prod:500,ramp:3,inat:0.30,rep:0.30,d:'Contabilidades, agências de e-commerce, marketplaces'}]};
+function cnPrem(){ var c=S.prem.canaisNovos, d=JSON.parse(JSON.stringify(CN_DEF)); if(!c||!c.tipos) return d;
+  d.estrutura= c.estrutura!=null? +c.estrutura : d.estrutura;
+  d.tipos.forEach(function(t){ var s=c.tipos.find(function(x){return x.id===t.id;}); if(s) ['inicio','abre','cresc','prod','ramp','inat','rep'].forEach(function(f){ if(s[f]!=null&&!isNaN(s[f])) t[f]=+s[f]; }); });
+  return d; }
+function simCanais(){
+  var p=S.prem, cfg=cnPrem(), D=projDez(), M=D.M, N=120, ini=99;
+  var T=cfg.tipos.map(function(tp){
+    ini=Math.min(ini,tp.inicio);
+    var sob=Math.pow(1-tp.inat,1/12), coh=[], R={ativos:[],abertas:[],nmrr:[],mrr:[],rep:[]}, mrr=0, ab=0;
+    for(var t=0;t<N;t++){
+      var y=Math.floor(t/12), n=0;
+      if(y+1>=tp.inicio){ n=tp.abre*Math.pow(1+tp.cresc,y+1-tp.inicio)/12; }
+      coh.push(n); ab+=n;
+      var at=0, nm=0;
+      for(var s=0;s<=t;s++){ if(!coh[s]) continue; var a=t-s, vivo=coh[s]*Math.pow(sob,a); at+=vivo; nm+=vivo*tp.prod*Math.min(1,(a+1)/Math.max(1,tp.ramp)); }
+      mrr=mrr*(1-p.churn)+nm;
+      R.ativos.push(at); R.abertas.push(ab); R.nmrr.push(nm); R.mrr.push(mrr); R.rep.push(mrr*tp.rep);
+    }
+    return {tp:tp,R:R};
+  });
+  var est=[]; for(var t=0;t<N;t++) est.push(Math.floor(t/12)+1>=ini? cfg.estrutura*Math.pow(1+p.reajuste,Math.floor(t/12)) : 0);
+  var tot=function(f,t){ return sum(T.map(function(x){return x.R[f][t];})); };
+  var Y=[]; for(var y=0;y<10;y++){ var a=y*12,b=a+12, sl=function(arr){return sum(arr.slice(a,b));};
+    var nmC=0, rep=0, recC=0; T.forEach(function(x){ nmC+=sl(x.R.nmrr); rep+=sl(x.R.rep); recC+=sl(x.R.mrr); });
+    var mrrC=tot('mrr',b-1), mrrP=M.mrr[b-1];
+    Y.push({ano:y+1,nmrrP:sum(M.meta.slice(a,b)),nmrrC:nmC,mrrP:mrrP,mrrC:mrrC,arrP:mrrP*12,arr:(mrrP+mrrC)*12,ativos:tot('ativos',b-1),recC:recC,rep:rep,est:sl(est),liq:recC-rep-sl(est),cliC:mrrC/p.ticketLow,cliP:M.cli[b-1]}); }
+  return {cfg:cfg,T:T,Y:Y,M:M,mult:D.mult,ini:ini};
 }
-function cenComPart(mercado){
-  var p=S.prem, o=Object.assign({},p,{__N:120}); if(mercado) Object.assign(o,{sdrBase:p.mktSdr,closerBase:p.mktCloser,execBase:p.mktExec});
-  var M=modelo(o);
-  // a operação com participação vai até o mês 60 (fim da recorrência); depois, caixa congelado
-  var ac=M.acum.map(function(v,t){ return t<60? v : M.acum[59]; });
-  return {M:M,acum:ac};
-}
-function beMes(arr){ var mn=Math.min.apply(null,arr), im=arr.indexOf(mn); if(mn>=0) return 0; for(var t=im;t<arr.length;t++){ if(arr[t]>=0) return t; } return -1; }
-function anosSP(M){ var p=S.prem, mult=p.valuation/(p.mrrInicial*12), Y=[];
-  for(var y=0;y<10;y++){ var a=y*12,b=a+12, sl=function(x){ return sum(M[x].slice(a,b)); };
-    var receitaW=sum(M.mrr.slice(a,b));
-    Y.push({nmrr:sl('meta'),nmrrC:sl('metaC'),arr:M.mrr[b-1]*12,val:M.mrr[b-1]*12*mult,rev:sl('rev'),custo:sl('custo'),caixa:sl('caixa'),acum:M.acum[b-1],canal:sl('comCanal'),parc:sl('comParc'),receitaW:receitaW,weesu:receitaW-sl('rev')-sl('comParc')-sl('comCanal')}); }
-  return Y; }
-function secSemPart(){
-  var p=S.prem, M=cenSemPart(false), Mk=cenSemPart(true), Y=anosSP(M), mult=p.valuation/(p.mrrInicial*12);
-  var C=cenComPart(false), Ck=cenComPart(true), Yc=anosSP(C.M);
-  var be=beMes(M.acum), bek=beMes(Mk.acum), y10=Y[9];
-  var eq10=Yc[9].val*p.equityPct, eq10sp=0;
-  var mq=function(t){ return t<0?'não ocorre em 10 anos':t===0?'desde o início':mesLabel(t)+' · '+nf((t+1)/12,1)+' anos'; };
-  var h='<div class="sec-head"><span class="label">Cenário alternativo · Dixx sem participação</span><h2>Sem comprar cotas e com 30% vitalício, a Dixx acumula '+k(M.acum[119])+' em 10 anos</h2><p>Mesmas metas, time e salários do plano, sem a compra dos '+pct(p.equityPct,0)+' da Weesu. A Dixx recebe 30% da mensalidade dos clientes de captação direta e '+pct(Math.max(0,0.30-p.comissaoParceiro),0)+' nos de indicação (o parceiro fica com '+pct(p.comissaoParceiro,0)+'), enquanto o cliente estiver ativo. A partir do ano 5, a Weesu abre canais próprios que também recebem 30% recorrente e somam vendas novas: +25% do NMRR no ano 5, chegando a +100% no ano 10. A Dixx não recebe nada sobre esses canais.</p></div>';
+function secAbCanais(){
+  var p=S.prem, C=simCanais(), Y=C.Y, y10=Y[9], mult=C.mult, cfg=C.cfg;
+  var ganho=y10.arr-y10.arrP, liq10=sum(Y.map(function(y){return y.liq;})), rep10=sum(Y.map(function(y){return y.rep;}));
+  var be=-1, ac=0; Y.forEach(function(y,i){ ac+=y.liq; if(be<0&&y.est>0&&ac>0) be=i; });
+  var h='<div class="sec-head"><span class="label">Abertura de canais · projeção de 10 anos</span><h2>Com novos canais a partir do ano '+C.ini+', a Weesu chega a '+k(y10.arr)+' de ARR e vale '+k(y10.arr*mult)+' no ano 10</h2><p>Partimos do plano comercial (a projeção da aba 10 anos) e somamos canais de venda novos: franquias, revendas e integradores, e parceiros de indicação. Cada canal recebe '+pct(cfg.tipos[0].rep,0)+' da mensalidade dos clientes que trouxer, de forma recorrente, como na proposta da Dixx. Os números de cada canal são premissas editáveis no fim da aba.</p></div>';
   h+='<div class="tiles">'+
-   '<div class="tile"><span class="label">Investimento máximo da Dixx</span><span class="num">'+k(-M.pico)+'</span><span class="note">sem cotas; com salário de mercado, '+k(-Mk.pico)+'</span></div>'+
-   '<div class="tile"><span class="label">Breakeven da Dixx</span><span class="num">'+(be<0?'—':nf((be+1)/12,1)+' anos')+'</span><span class="note">'+(be>0?mesLabel(be):mq(be))+'; com salário de mercado, '+mq(bek)+'</span></div>'+
-   '<div class="tile"><span class="label">Dixx em 10 anos</span><span class="num">'+k(M.acum[119])+'</span><span class="note">caixa acumulado; com salário de mercado, '+k(Mk.acum[119])+'</span></div>'+
-   '<div class="tile"><span class="label">ARR da Weesu no ano 10</span><span class="num">'+k(y10.arr)+'</span><span class="note">valuation de '+k(y10.val)+' ('+nf(mult,1)+'×), 100% da Weesu</span></div></div>';
-  h+='<div class="card"><h3>Ano a ano · 10 anos<small>salário informado</small></h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">NMRR da Dixx</th><th class="r">NMRR dos canais Weesu</th><th class="r">ARR da Weesu</th><th class="r">Dixx recebe</th><th class="r">Custo do time Dixx</th><th class="r">Caixa acumulado Dixx</th><th class="r">Canais Weesu recebem</th><th class="r">Weesu fica</th></tr></thead><tbody>';
-  Y.forEach(function(y,i){ h+='<tr'+(i===4||i===9?' class="tot"':'')+'><td>Ano '+(i+1)+'</td><td class="r">'+brl(y.nmrr)+'</td><td class="r">'+(y.nmrrC?brl(y.nmrrC):'—')+'</td><td class="r"><b>'+brl(y.arr)+'</b></td><td class="r">'+brl(y.rev)+'</td><td class="r">'+brl(y.custo)+'</td><td class="r '+(y.acum<0?'neg':'pos')+'">'+brl(y.acum)+'</td><td class="r">'+(y.canal?brl(y.canal):'—')+'</td><td class="r">'+brl(y.weesu)+'</td></tr>'; });
-  h+='</tbody></table></div><p class="small muted">Weesu fica = mensalidades do ano (base atual, clientes da Dixx e dos canais) menos o que vai para a Dixx, parceiros de indicação e canais. Setup fora, 100% da Weesu. Do ano 6 ao 10, metas crescem '+pct(p.cresc5,0)+' ao mês e o time da Dixx é o do ano 5.</p></div>';
-  h+='<div class="card"><h3>Caixa acumulado da Dixx · com e sem participação<small>salário informado</small></h3>'+legend([{nome:'Sem participação (30% vitalício, sem cotas)',cor:'--accent'},{nome:'Com participação (acordo atual, até o mês 60)',cor:'--s2'}])+'<div class="scroll" id="chSP"></div></div>';
-  var lin=function(n,a,b){ return '<tr><td>'+n+'</td><td class="r">'+a+'</td><td class="r">'+b+'</td></tr>'; };
-  h+='<div class="card"><h3>Para a Dixx: com participação × sem participação<small>salário informado; valores nominais</small></h3><div class="scroll"><table class="t"><thead><tr><th></th><th class="r">Com participação<small>20% / 10% por 5 anos + compra de 5%</small></th><th class="r">Sem participação<small>30% / '+pct(Math.max(0,0.30-p.comissaoParceiro),0)+' vitalício</small></th></tr></thead><tbody>'+
-   lin('Investimento máximo',brl(-Math.min(0,Math.min.apply(null,C.acum))),brl(-M.pico))+
-   lin('Breakeven',mq(beMes(C.acum)),mq(be))+
-   lin('Caixa acumulado em 5 anos',brl(C.acum[59]),brl(M.acum[59]))+
-   lin('Caixa acumulado em 10 anos',brl(C.acum[119])+'<small>recorrência termina no mês 60</small>',brl(M.acum[119]))+
-   lin('Participação na Weesu',pct(p.equityPct,0)+' · '+brl(eq10)+'<small>valor no ano 10, múltiplo de hoje</small>','—')+
-   '<tr class="tot"><td>Total no ano 10 (caixa + participação)</td><td class="r">'+brl(C.acum[119]+eq10)+'</td><td class="r">'+brl(M.acum[119])+'</td></tr>'+
-   lin('Com salário de mercado · total no ano 10',brl(Ck.acum[119]+eq10),brl(Mk.acum[119]))+
-   '</tbody></table></div><p class="small muted">A participação só vira dinheiro numa venda ou entrada de investidor; o caixa da recorrência entra todo mês. Com participação, o valor dos 5% usa o valuation do ano 10 do plano sem canais.</p></div>';
-  h+='<div class="cols"><div class="callout"><h4>Para a Weesu</h4><p>Mantém 100% da empresa, que chega a '+k(y10.val)+' de valuation no ano 10 neste cenário. Em troca, paga 30% vitalício sobre os clientes da Dixx e 30% sobre os dos canais próprios: em 10 anos, '+k(sum(Y.map(function(y){return y.rev;})))+' para a Dixx e '+k(sum(Y.map(function(y){return y.canal;})))+' para os canais.</p></div>'+
-   '<div class="callout warn"><h4>Pontos a definir</h4><p>Recorrência vitalícia precisa de regra de saída (por exemplo, recompra da carteira pela Weesu por um múltiplo da recorrência anual). Também é preciso definir quem atende o cliente depois da venda e se a Dixx mantém a exclusividade dos canais que já trabalha quando os canais próprios da Weesu entrarem.</p></div></div>';
+   '<div class="tile"><span class="label">ARR no ano 10 com canais</span><span class="num">'+k(y10.arr)+'</span><span class="note">só o plano: '+k(y10.arrP)+' · +'+pct(ganho/y10.arrP,0)+'</span></div>'+
+   '<div class="tile"><span class="label">Valuation no ano 10</span><span class="num">'+k(y10.arr*mult)+'</span><span class="note">'+nf(mult,1)+'× o ARR; a 4×, '+k(y10.arr*4)+'</span></div>'+
+   '<div class="tile"><span class="label">Canais ativos no ano 10</span><span class="num">'+nf(y10.ativos,0)+'</span><span class="note">cerca de '+nf(y10.cliC,0)+' clientes vindos dos canais</span></div>'+
+   '<div class="tile"><span class="label">Resultado dos canais para a Weesu</span><span class="num">'+k(liq10)+'</span><span class="note">em 10 anos, após '+k(rep10)+' de repasse e a estrutura de canais</span></div></div>';
+  h+='<div class="card"><h3>MRR no fim de cada ano<small>plano comercial + novos canais</small></h3>'+legend([{nome:'Plano comercial (base atual + Dixx)',cor:'--accent'}].concat(C.T.map(function(x){return {nome:x.tp.nome,cor:x.tp.cor};})))+'<div class="scroll" id="chAbC"></div></div>';
+  h+='<div class="card"><h3>Ano a ano</h3><div class="scroll"><table class="t nw"><thead><tr><th>Ano</th><th class="r">Canais ativos</th><th class="r">NMRR do plano</th><th class="r">NMRR dos canais</th><th class="r">ARR total</th><th class="r">Crescimento do ARR</th><th class="r">Clientes</th><th class="r">Repasse aos canais</th><th class="r">Resultado para a Weesu</th><th class="r">Valuation<small>'+nf(mult,1)+'× ARR</small></th></tr></thead><tbody>';
+  Y.forEach(function(y,i){ var ant=i?Y[i-1].arr:p.mrrInicial*12;
+    h+='<tr'+(i===4||i===9?' class="tot"':'')+'><td style="white-space:nowrap">Ano '+y.ano+'</td><td class="r">'+(y.ativos>0.5?nf(y.ativos,0):'—')+'</td><td class="r">'+brl(y.nmrrP)+'</td><td class="r">'+(y.nmrrC?brl(y.nmrrC):'—')+'</td><td class="r"><b>'+brl(y.arr)+'</b></td><td class="r pos">+'+pct(y.arr/ant-1,0)+'</td><td class="r">'+nf(y.cliP+y.cliC,0)+'</td><td class="r">'+(y.rep?brl(y.rep):'—')+'</td><td class="r '+(y.liq<0?'neg':y.liq>0?'pos':'')+'">'+(y.est||y.recC?brl(y.liq):'—')+'</td><td class="r">'+brl(y.arr*mult)+'</td></tr>'; });
+  h+='</tbody></table></div><p class="small muted">Plano = projeção da aba 10 anos (base atual + vendas do time da Dixx). Ano 1 = nov/26 a out/27. Resultado para a Weesu = mensalidades dos clientes vindos dos canais − repasse de '+pct(cfg.tipos[0].rep,0)+' − estrutura de canais (gestor de canais, treinamento e materiais), sem contar o setup, que fica com a Weesu. Clientes de canais estimados pelo ticket de '+brl(p.ticketLow)+'. Mesmo churn do plano ('+pct(p.churn)+' ao mês).</p></div>';
+  // ano 10 por tipo
+  h+='<div class="card"><h3>Ano 10 por tipo de canal</h3><div class="scroll"><table class="t"><thead><tr><th>Canal</th><th class="r">Abertos em 10 anos</th><th class="r">Ativos no ano 10</th><th class="r">NMRR no ano 10</th><th class="r">MRR no fim do ano 10</th><th class="r">Clientes</th><th class="r">Repasse no ano 10</th><th class="r">Participação no ARR</th></tr></thead><tbody>';
+  C.T.forEach(function(x){ var R=x.R, s=function(a){return sum(a.slice(108,120));};
+    h+='<tr><td><span class="dot" style="background:var('+x.tp.cor+')"></span>'+x.tp.nome+'</td><td class="r">'+nf(R.abertas[119],0)+'</td><td class="r">'+nf(R.ativos[119],0)+'</td><td class="r">'+brl(s(R.nmrr))+'</td><td class="r">'+brl(R.mrr[119])+'</td><td class="r">'+nf(R.mrr[119]/p.ticketLow,0)+'</td><td class="r">'+brl(s(R.rep))+'</td><td class="r">'+pct(R.mrr[119]*12/y10.arr,0)+'</td></tr>'; });
+  h+='<tr><td><span class="dot" style="background:var(--accent)"></span>Plano comercial</td><td></td><td></td><td class="r">'+brl(y10.nmrrP)+'</td><td class="r">'+brl(y10.mrrP)+'</td><td class="r">'+nf(y10.cliP,0)+'</td><td></td><td class="r">'+pct(y10.arrP/y10.arr,0)+'</td></tr>';
+  h+='</tbody></table></div></div>';
+  // premissas editáveis
+  var cel=function(t,f,v,tipo){ var show=tipo==='p'?+(v*100).toFixed(2):v; return '<td class="r"><input class="cn" type="number" step="any" data-cn="'+t+'" data-f="'+f+'" data-t="'+(tipo||'')+'" value="'+show+'" aria-label="'+f+'"'+(S.canWrite?'':' disabled')+'></td>'; };
+  h+='<div class="card"><h3>Premissas dos canais<small>'+(S.canWrite?'altere e salve para recalcular a aba':'somente leitura para o seu nível de acesso')+'</small></h3><div class="scroll"><table class="t"><thead><tr><th>Canal</th><th class="r">Ano de início</th><th class="r">Abertos no 1º ano</th><th class="r">Crescimento das aberturas<small>% ao ano</small></th><th class="r">NMRR por unidade madura<small>R$ por mês</small></th><th class="r">Meses até maturar</th><th class="r">Inativação<small>% das unidades ao ano</small></th><th class="r">Repasse recorrente<small>%</small></th></tr></thead><tbody>';
+  cfg.tipos.forEach(function(t){ h+='<tr><td style="min-width:200px">'+t.nome+'<small>'+t.d+'</small></td>'+cel(t.id,'inicio',t.inicio)+cel(t.id,'abre',t.abre)+cel(t.id,'cresc',t.cresc,'p')+cel(t.id,'prod',t.prod)+cel(t.id,'ramp',t.ramp)+cel(t.id,'inat',t.inat,'p')+cel(t.id,'rep',t.rep,'p')+'</tr>'; });
+  h+='</tbody></table></div><div class="form" style="margin-top:12px"><div class="field"><label for="cn-est">Estrutura de canais (R$ por mês)</label><input id="cn-est" type="number" step="any" value="'+cfg.estrutura+'"'+(S.canWrite?'':' disabled')+'><small>gestor de canais, treinamento e materiais, a partir do 1º canal; reajuste de '+pct(p.reajuste,0)+' ao ano</small></div></div>';
+  h+='<div class="row"><button class="btn" id="cnSalvar"'+(S.canWrite?'':' disabled')+'>Salvar premissas dos canais</button><button class="btn ghost" id="cnPadrao"'+(S.canWrite?'':' disabled')+'>Voltar ao padrão</button><span class="status" id="cnStatus"></span></div>';
+  h+='<p class="small muted">Referência de produtividade: com ticket de '+brl(p.ticketLow)+', uma franquia madura com '+brl(cfg.tipos[0].prod)+' de NMRR fecha '+nf(cfg.tipos[0].prod/p.ticketLow,1)+' contrato por mês; uma revenda com '+brl(cfg.tipos[1].prod)+', um contrato a cada '+nf(p.ticketLow/cfg.tipos[1].prod,0)+' meses; um parceiro de indicação com '+brl(cfg.tipos[2].prod)+', um a cada '+nf(p.ticketLow/cfg.tipos[2].prod,0)+' meses.</p></div>';
+  h+='<div class="cols"><div class="callout"><h4>O que precisa existir para os canais venderem</h4><p>Um gestor de canais na Weesu, um programa de certificação (produto, implantação e venda), material e demonstração padronizados, regras de território e de conflito entre canais, e o repasse de '+pct(cfg.tipos[0].rep,0)+' pago todo mês sem atraso. O modelo de franquia exige também contrato, taxa de entrada e manual de operação, e leva de 6 a 12 meses para ficar de pé.</p></div>'+
+   '<div class="callout warn"><h4>Riscos para validar</h4><p>Produtividade dos canais abaixo da premissa (é comum metade dos parceiros não vender nada), capacidade de implantação e suporte para '+nf(y10.cliP+y10.cliC,0)+' clientes, conflito com os canais que o time da Dixx já trabalha e churn mais alto em clientes vindos de canais. Vale testar com 2 ou 3 unidades piloto antes de abrir em escala.</p></div></div>';
   return h;
 }
-function afterSemPart(){
-  var b=el('chSP'); if(!b) return; var M=cenSemPart(false), C=cenComPart(false), L=[]; for(var t=0;t<120;t++) L.push(mesLabel(t));
-  var o={labels:L,aria:'Caixa acumulado da Dixx com e sem participação',series:[{nome:'Sem participação',cor:'--accent',vals:M.acum,area:true},{nome:'Com participação',cor:'--s2',vals:C.acum}],tick:function(i){ return i%12===0? 'ano '+(i/12+1) : (i===119?mesLabel(119):null); },h:300};
-  b.innerHTML=chartLines(o); bindLines(b,o);
+function afterAbCanais(){
+  var b=el('chAbC'); if(!b) return; var C=simCanais(), L=C.Y.map(function(y){return 'ano '+y.ano;});
+  var o={labels:L,aria:'MRR do plano e dos novos canais por ano',series:[{nome:'Plano comercial',cor:'--accent',vals:C.Y.map(function(y){return y.mrrP;})}].concat(C.T.map(function(x){ return {nome:x.tp.nome,cor:x.tp.cor,vals:C.Y.map(function(_,i){return x.R.mrr[i*12+11];})}; }))};
+  b.innerHTML=chartStack(o); bindStack(b,o);
 }
 
 /* ---------- Cenário sem aporte da Dixx ---------- */
@@ -1055,10 +1073,10 @@ function secMetodo(){
 function render(){
   var M=modelo(), h='', ok=SECOES.some(function(s){return s[0]===aba;}); if(!ok) aba='abertura';
   if(aba==='abertura') h=secAbertura(M); else if(aba==='canais') h=secCanais(M); else if(aba==='metas') h=secMetas(M); else if(aba==='receitas') h=secReceitas(M);
-  else if(aba==='sociedade') h=secSociedade(M); else if(aba==='repasse') h=secRepasse(M); else if(aba==='semaporte') h=secSemAporte(M); else if(aba==='dezanos') h=secDezAnos(M); else if(aba==='sempart') h=secSemPart(); else if(aba==='investimento') h=secInvest(M); else if(aba==='plano') h=secPlano();
+  else if(aba==='sociedade') h=secSociedade(M); else if(aba==='repasse') h=secRepasse(M); else if(aba==='semaporte') h=secSemAporte(M); else if(aba==='dezanos') h=secDezAnos(M); else if(aba==='abcanais') h=secAbCanais(); else if(aba==='investimento') h=secInvest(M); else if(aba==='plano') h=secPlano();
   else if(aba==='pipeline') h=secPipeline(); else if(aba==='acompanhamento') h=secAcomp(M); else if(aba==='wms') h=secWms(); else h=secMetodo();
   el('main').innerHTML='<div class="wrap">'+h+'<footer>Plano Comercial Weesu · base de leads de 12/10/2026 · pipeline de 08/10/2026 · valores em reais, premissas revisadas mensalmente</footer></div>';
-  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='repasse') afterRepasse(M); if(aba==='receitas') afterReceitas(M); if(aba==='semaporte') afterSemAporte(M); if(aba==='dezanos') afterDezAnos(M); if(aba==='sempart') afterSemPart(); if(aba==='acompanhamento') afterAcomp(M);
+  if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='repasse') afterRepasse(M); if(aba==='receitas') afterReceitas(M); if(aba==='semaporte') afterSemAporte(M); if(aba==='dezanos') afterDezAnos(M); if(aba==='abcanais') afterAbCanais(); if(aba==='acompanhamento') afterAcomp(M);
 }
 
 /* ---------- interações e gravação ---------- */
@@ -1084,6 +1102,9 @@ el('main').addEventListener('click',function(e){
   var ar=t.closest&&t.closest('[data-anorec]'); if(ar){ anoRec=+ar.getAttribute('data-anorec'); var Mx=modelo(); el('tbRecMes').innerHTML=tabelaMesRec(Mx); ar.parentNode.querySelectorAll('[data-anorec]').forEach(function(b){ b.setAttribute('aria-pressed', String(+b.getAttribute('data-anorec')===anoRec)); }); return; }
   var as=t.closest&&t.closest('[data-anosoc]'); if(as){ anoSoc=+as.getAttribute('data-anosoc'); var My=modelo(); el('tbSocMes').innerHTML=tabelaMesSoc(My); as.parentNode.querySelectorAll('[data-anosoc]').forEach(function(b){ b.setAttribute('aria-pressed', String(+b.getAttribute('data-anosoc')===anoSoc)); }); return; }
   if(t.id==='premSalvar'){ var np=Object.assign({},S.prem); document.querySelectorAll('[data-prem]').forEach(function(i){ var ty=i.getAttribute('data-t'), key=i.getAttribute('data-prem'); if(ty==='t'){ np[key]=arr5(i.value).join(','); return; } var v=parseFloat(i.value); if(isNaN(v)) return; np[key]= ty==='p'? v/100 : v; }); S.prem=np; render(); setStatus('premStatus','Salvando…'); salvar('config/premissas',np,'premStatus','Premissas salvas. A proposta foi recalculada.'); }
+  if(t.id==='cnSalvar'){ var cfg=cnPrem(); document.querySelectorAll('[data-cn]').forEach(function(i){ var v=parseFloat(i.value); if(isNaN(v)) return; var tp=cfg.tipos.find(function(x){return x.id===i.getAttribute('data-cn');}); tp[i.getAttribute('data-f')]= i.getAttribute('data-t')==='p'? v/100 : v; }); var ev=parseFloat(el('cn-est').value); if(!isNaN(ev)) cfg.estrutura=ev;
+    var np=Object.assign({},S.prem,{canaisNovos:{estrutura:cfg.estrutura,tipos:cfg.tipos.map(function(x){return {id:x.id,inicio:x.inicio,abre:x.abre,cresc:x.cresc,prod:x.prod,ramp:x.ramp,inat:x.inat,rep:x.rep};})}}); S.prem=np; render(); setStatus('cnStatus','Salvando…'); salvar('config/premissas',np,'cnStatus','Premissas dos canais salvas.'); }
+  if(t.id==='cnPadrao'){ var np2=Object.assign({},S.prem); delete np2.canaisNovos; S.prem=np2; render(); salvar('config/premissas',np2,'cnStatus','Premissas dos canais de volta ao padrão.'); }
   if(t.id==='premPadrao'){ S.prem=Object.assign({},DEF); render(); salvar('config/premissas',S.prem,'premStatus','Premissas de volta ao padrão.'); }
   if(t.id==='rzSalvar'){ var r={}; document.querySelectorAll('[data-rz]').forEach(function(i){ if(i.value!=='') r[i.getAttribute('data-rz')]=parseFloat(i.value); }); var nt=el('rz-nota').value; if(nt) r.nota=nt; S.realizado[mesSel]=r; var m=mesSel; render(); setStatus('rzStatus','Salvando…'); salvar('realizado/'+m,r,'rzStatus',ROT[MESES.indexOf(m)]+' salvo.'); }
 });
