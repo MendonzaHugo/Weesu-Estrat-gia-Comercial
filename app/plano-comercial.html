@@ -37,6 +37,15 @@ button,input,select,textarea{font:inherit;color:inherit}
 .brand h1{font-family:var(--display);font-weight:800;font-stretch:88%;font-size:22px;line-height:1.1}
 .brand h1 span{color:var(--accent)}
 .brand p{font-size:12.5px;color:var(--muted)}
+.blocos{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.bloco{display:flex;align-items:center;gap:8px;border:0;background:none;padding:6px 12px 9px;font:inherit;font-size:14.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-1px;flex:none}
+.bloco b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--soft);color:var(--muted);font-size:11.5px}
+.bloco:hover{color:var(--ink)}
+.bloco[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.bloco[aria-pressed="true"] b{background:var(--accent);color:var(--on-accent)}
+.bloco .sm{display:none}
+@media (max-width:520px){.bloco{padding:6px 8px 9px;font-size:14px}.bloco .lg{display:none}.bloco .sm{display:inline}}
+.proxima{display:flex;justify-content:flex-end;margin-top:20px}
 .nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap;flex:none}
 .chip:hover{border-color:var(--accent)}
@@ -205,7 +214,8 @@ footer{font-size:12.5px;color:var(--muted)}
       <h1>Plano Comercial <span>Weesu</span></h1>
       <p>Proposta de sociedade Dixx + Weesu · estratégia de captação · 2026 a 2031</p>
     </div>
-    <nav class="nav" id="nav" aria-label="Seções da proposta"></nav>
+    <nav class="blocos" id="blocos" aria-label="Blocos da proposta"></nav>
+    <nav class="nav" id="nav" aria-label="Seções do bloco"></nav>
   </div>
 </header>
 <main id="main"></main>
@@ -465,8 +475,18 @@ function bindLines(box,o){
 function legend(items){ return '<div class="legend">'+items.map(function(it){ return '<span><i class="'+(it.cls||'')+'" style="'+(it.cor?'background:var('+it.cor+')':'')+'"></i>'+it.nome+'</span>'; }).join('')+'</div>'; }
 
 /* ---------- seções ---------- */
-var SECOES=[['abertura','Abertura'],['canais','Canais'],['metas','Metas'],['receitas','Receitas da Dixx'],['sociedade','Sociedade'],['repasse','Repasse viável'],['semaporte','Sem aporte'],['dezanos','10 anos'],['abcanais','Abertura de canais'],['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['metodo','Método e fontes']];
-function renderNav(){ el('nav').innerHTML=SECOES.map(function(s){return '<button class="chip" data-v="'+s[0]+'" aria-pressed="'+(s[0]===aba)+'">'+s[1]+'</button>';}).join(''); }
+var BLOCOS=[
+ {id:'intro',nome:'Introdução',abas:[['abertura','Abertura'],['canais','Canais'],['metas','Metas']]},
+ {id:'soc',nome:'Sociedade',abas:[['receitas','Receitas da Dixx'],['sociedade','Sociedade'],['repasse','Repasse viável']]},
+ {id:'exec',nome:'Execução e projeções',curto:'Execução',abas:[['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['semaporte','Sem aporte'],['dezanos','10 anos'],['abcanais','Abertura de canais'],['metodo','Método e fontes']]}
+];
+var SECOES=[]; BLOCOS.forEach(function(b){ b.abas.forEach(function(a){ SECOES.push(a); }); });
+function blocoDe(id){ return BLOCOS.find(function(b){ return b.abas.some(function(a){return a[0]===id;}); })||BLOCOS[0]; }
+function renderNav(){ var bl=blocoDe(aba);
+  el('blocos').innerHTML=BLOCOS.map(function(b,i){return '<button class="bloco" data-bloco="'+b.id+'" aria-pressed="'+(b===bl)+'"><b>'+(i+1)+'</b>'+(b.curto?'<span class="lg">'+b.nome+'</span><span class="sm">'+b.curto+'</span>':b.nome)+'</button>';}).join('');
+  el('nav').innerHTML=bl.abas.map(function(s){return '<button class="chip" data-v="'+s[0]+'" aria-pressed="'+(s[0]===aba)+'">'+s[1]+'</button>';}).join(''); }
+function irPara(id){ aba=id; try{history.replaceState(null,'','#'+aba);}catch(_){} renderNav(); render(); window.scrollTo(0,0); }
+el('blocos').addEventListener('click',function(e){ var b=e.target.closest('[data-bloco]'); if(!b) return; var bl=BLOCOS.find(function(x){return x.id===b.getAttribute('data-bloco');}); if(blocoDe(aba)!==bl) irPara(bl.abas[0][0]); });
 el('nav').addEventListener('click',function(e){ var b=e.target.closest('[data-v]'); if(!b) return; aba=b.getAttribute('data-v'); try{history.replaceState(null,'','#'+aba);}catch(_){}
   renderNav(); render(); window.scrollTo(0,0); });
 
@@ -1124,6 +1144,8 @@ function render(){
   if(aba==='abertura') h=secAbertura(M); else if(aba==='canais') h=secCanais(M); else if(aba==='metas') h=secMetas(M); else if(aba==='receitas') h=secReceitas(M);
   else if(aba==='sociedade') h=secSociedade(M); else if(aba==='repasse') h=secRepasse(M); else if(aba==='semaporte') h=secSemAporte(M); else if(aba==='dezanos') h=secDezAnos(M); else if(aba==='abcanais') h=secAbCanais(); else if(aba==='investimento') h=secInvest(M); else if(aba==='plano') h=secPlano();
   else if(aba==='pipeline') h=secPipeline(); else if(aba==='acompanhamento') h=secAcomp(M); else if(aba==='wms') h=secWms(); else h=secMetodo();
+  var ix=SECOES.findIndex(function(s){return s[0]===aba;}), nx=SECOES[ix+1], nb=nx&&blocoDe(nx[0])!==blocoDe(aba)?blocoDe(nx[0]):null;
+  if(nx) h+='<div class="proxima"><button class="btn ghost" data-ir="'+nx[0]+'">Próximo: '+(nb?(BLOCOS.indexOf(nb)+1)+'. '+nb.nome+' · ':'')+nx[1]+' →</button></div>';
   el('main').innerHTML='<div class="wrap">'+h+'<footer>Plano Comercial Weesu · base de leads de 12/10/2026 · pipeline de 08/10/2026 · valores em reais, premissas revisadas mensalmente</footer></div>';
   if(aba==='abertura') afterAbertura(M); if(aba==='sociedade') afterSociedade(M); if(aba==='investimento') afterInvest(M); if(aba==='repasse') afterRepasse(M); if(aba==='receitas') afterReceitas(M); if(aba==='semaporte') afterSemAporte(M); if(aba==='dezanos') afterDezAnos(M); if(aba==='abcanais') afterAbCanais(); if(aba==='acompanhamento') afterAcomp(M);
 }
@@ -1147,6 +1169,7 @@ el('main').addEventListener('focusout',function(e){ var t=e.target; if(t.hasAttr
 function wmsSave(t){ var id=t.getAttribute('data-wms'), f=t.getAttribute('data-f'), w=Object.assign({},S.wms[id]||{}); if(w[f]===t.value) return; w[f]=t.value; S.wms[id]=w; if(t.tagName==='SELECT') render(); salvar('wms/'+id,w); }
 el('main').addEventListener('click',function(e){
   var t=e.target;
+  var ir=t.closest&&t.closest('[data-ir]'); if(ir){ irPara(ir.getAttribute('data-ir')); return; }
   var pf=t.closest&&t.closest('[data-pf]'); if(pf){ pipeFiltro=pf.getAttribute('data-pf'); render(); return; }
   var ar=t.closest&&t.closest('[data-anorec]'); if(ar){ anoRec=+ar.getAttribute('data-anorec'); var Mx=modelo(); el('tbRecMes').innerHTML=tabelaMesRec(Mx); ar.parentNode.querySelectorAll('[data-anorec]').forEach(function(b){ b.setAttribute('aria-pressed', String(+b.getAttribute('data-anorec')===anoRec)); }); return; }
   var as=t.closest&&t.closest('[data-anosoc]'); if(as){ anoSoc=+as.getAttribute('data-anosoc'); var My=modelo(); el('tbSocMes').innerHTML=tabelaMesSoc(My); as.parentNode.querySelectorAll('[data-anosoc]').forEach(function(b){ b.setAttribute('aria-pressed', String(+b.getAttribute('data-anosoc')===anoSoc)); }); return; }
