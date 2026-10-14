@@ -233,7 +233,7 @@ var DEF = {
   metaM1:15000, cresc1:0.05, cresc2:0.03, cresc3:0.02, cresc4:0.01, cresc5:0.01, churn:0.015,
   ticketLow:3000, ticketHigh:12000, shareHigh:0.30, shareInd:0.60, shareInb:0.25, convInbound:0.20,
   setupMedio:12500, margemBruta:0.80,
-  revDireta:0.30, revIndicacao:0.20, comissaoParceiro:0.10, vigenciaMeses:60,
+  revDireta:0.20, revIndicacao:0.10, comissaoParceiro:0.10, vigenciaMeses:60,
   fatorEncargos:1.70, reajuste:0.05, sdrBase:3000, closerBase:6000, execBase:6000, comissaoInclusa:1, mktSdr:6000, mktCloser:11000, mktExec:12000, mktDiretor:25000,
   hcSdr:'1,2,2,2,3', hcCloser:'1,1,2,2,2', hcExec:'1,1,1,2,2',
   sdrPorReuniao:150, closerPctNmrr:0.40, execPctNmrrInd:0.25, execGarantia:2500,
@@ -639,6 +639,7 @@ function secSociedade(M){
 function afterInvest(M){}
 
 /* ---------- Repasse viável ---------- */
+var PROP_DIR=0.30; // proposta da Dixx na aba Repasse viável (indicação: 30% menos o parceiro)
 var HZ=120; // horizonte estendido da análise de repasse (meses)
 var REF_MERCADO=[
  ['Omie · franquias','33% recorrente + 100% da primeira mensalidade + 50% do setup','Canal por franquias que assume a venda na região','Informação de mercado trazida pela Dixx'],
@@ -653,10 +654,10 @@ function beTxt(x){ if(x.rec===0) return 'desde o início'; if(x.rec<0) return 'n
 function cenariosRepasse(){
   var p=S.prem, cp=p.comissaoParceiro;
   return [
-   {id:'anterior',nome:'Proposta anterior',desc:'20% direta · 10% indicação (+10% ao parceiro)',o:{revDireta:0.20,revIndicacao:0.10}},
+   {id:'atual',nome:'Acordo atual',desc:pct(p.revDireta,0)+' direta · '+pct(p.revIndicacao,0)+' indicação (+'+pct(cp,0)+' ao parceiro)',o:{}},
    {id:'omie',nome:'Padrão Omie (franquias)',desc:'33% recorrente + 1ª mensalidade + 50% do setup',o:{revDireta:0.33,revIndicacao:Math.max(0,0.33-cp),bonusPrimeira:1,setupDixx:0.5}},
    {id:'solides',nome:'Padrão Sólides (meio da faixa)',desc:'35% recorrente',o:{revDireta:0.35,revIndicacao:Math.max(0,0.35-cp)}},
-   {id:'proposta',nome:'Proposta Dixx',desc:pct(p.revDireta,0)+' direta · '+pct(p.revIndicacao,0)+' indicação (+'+pct(cp,0)+' ao parceiro), sem setup e sem 1ª mensalidade',o:{},rec:true}
+   {id:'proposta',nome:'Proposta Dixx',desc:pct(PROP_DIR,0)+' direta · '+pct(Math.max(0,PROP_DIR-cp),0)+' indicação (+'+pct(cp,0)+' ao parceiro), sem setup e sem 1ª mensalidade',o:{revDireta:PROP_DIR,revIndicacao:Math.max(0,PROP_DIR-cp)},rec:true}
   ];
 }
 function avaliaCenario(c){
@@ -673,10 +674,10 @@ function avaliaCenario(c){
 function secRepasse(M){
   var p=S.prem, C=cenariosRepasse(), R=C.map(function(c){ return {c:c,inf:avaliaCenario(c)}; });
   var at=R[0], pr=R[R.length-1];
-  var h='<div class="sec-head"><span class="label">Repasse viável · comparação com o mercado</span><h2>Com '+pct(p.revDireta,0)+' recorrente, a Dixx fica na faixa que o mercado brasileiro paga aos seus canais de venda</h2><p>Omie, Conta Azul e Sólides pagam de 30% a 40% da mensalidade, de forma recorrente, a franquias e representantes. A Dixx recebe '+pct(p.revDireta,0)+' e, ao contrário desses canais, monta e paga um time exclusivo, assume 100% do risco e ainda compra '+pct(p.equityPct,0)+' da Weesu.</p></div>';
+  var h='<div class="sec-head"><span class="label">Repasse viável · comparação com o mercado</span><h2>No acordo atual ('+pct(p.revDireta,0)+'), a Dixx recebe menos do que o mercado brasileiro paga aos seus canais de venda; a proposta é '+pct(PROP_DIR,0)+'</h2><p>Omie, Conta Azul e Sólides pagam de 30% a 40% da mensalidade, de forma recorrente, a franquias e representantes. No acordo atual a Dixx recebe '+pct(p.revDireta,0)+' e, ao contrário desses canais, monta e paga um time exclusivo, assume 100% do risco e ainda compra '+pct(p.equityPct,0)+' da Weesu.</p></div>';
   h+='<div class="card"><h3>Quanto o mercado paga aos canais</h3><div class="scroll"><table class="t"><thead><tr><th>Empresa ou referência</th><th>Remuneração do canal</th><th>Observação</th><th>Fonte</th></tr></thead><tbody>'+
     REF_MERCADO.map(function(r,i){ return '<tr'+(i<3?' style="font-weight:600"':'')+'><td>'+r[0]+'</td><td>'+r[1]+'</td><td class="muted">'+r[2]+'</td><td class="small">'+r[3]+'</td></tr>'; }).join('')+
-    '<tr class="tot"><td>Dixx · proposta</td><td>'+pct(p.revDireta,0)+' direta; '+pct(p.revIndicacao,0)+' + '+pct(p.comissaoParceiro,0)+' ao parceiro na indicação; sem setup, sem bônus</td><td class="muted">Time próprio, risco integral e compra de cotas</td><td class="small">Esta proposta</td></tr></tbody></table></div>'+
+    '<tr><td>Dixx · acordo atual</td><td>'+pct(p.revDireta,0)+' direta; '+pct(p.revIndicacao,0)+' + '+pct(p.comissaoParceiro,0)+' ao parceiro na indicação; sem setup, sem bônus</td><td class="muted">Time próprio, risco integral e compra de cotas</td><td class="small">Acordo atual</td></tr>'+'<tr class="tot"><td>Dixx · proposta</td><td>'+pct(PROP_DIR,0)+' direta; '+pct(Math.max(0,PROP_DIR-p.comissaoParceiro),0)+' + '+pct(p.comissaoParceiro,0)+' ao parceiro na indicação; sem setup, sem bônus</td><td class="muted">Time próprio, risco integral e compra de cotas</td><td class="small">Esta proposta</td></tr></tbody></table></div>'+
     '<p class="small muted">Os números de Omie, Conta Azul e Sólides são informação de mercado trazida pela Dixx e não estão publicados nos sites das empresas. As demais referências são internacionais e servem como direção.</p></div>';
   h+='<div class="card"><h3>O que cada modelo significa para a Dixx e para a Weesu<small>mesmas metas, canais e compra das cotas; na indicação, o parceiro sai do mesmo percentual</small></h3><div class="scroll"><table class="t"><thead><tr><th>Modelo</th><th class="r">Custo comercial da Weesu no ano 1<small>% da receita total</small></th><th class="r">Dixx recebe em 5 anos</th><th class="r">Breakeven da Dixx</th><th class="r">Resultado em 5 · 10 anos</th></tr></thead><tbody>';
   R.forEach(function(r){ var c=r.c;
@@ -684,9 +685,9 @@ function secRepasse(M){
     h+='<tr'+(c.rec?' class="tot"':'')+'><td><b>'+c.nome+'</b>'+(c.rec?' <span class="pill acc">recomendado</span>':'')+'<small>'+c.desc+'</small></td><td class="r">'+pct(r.inf.pctW1,1)+'</td><td class="r">'+brl(r.inf.rec5)+'</td>'+cel(r.inf)+'</tr>'; });
   h+='</tbody></table></div><p class="small muted">Custo comercial da Weesu = recorrente paga à Dixx e aos parceiros (e, no padrão Omie, a primeira mensalidade e metade do setup) ÷ receita total da Weesu no ano 1 (mensalidades e setup). Breakeven = mês em que o caixa acumulado da Dixx (recorrente recebida menos time e cotas) volta a zero. Do ano 6 ao 10, a projeção supõe que o acordo seja renovado nas mesmas condições, com o time e o crescimento do ano 5. Sem renovação, a recorrência para no mês 60 e o que não foi recuperado até lá vira prejuízo.</p></div>';
   h+=timelineBE(R);
-  h+='<div class="card"><h3>Caixa acumulado da Dixx em 10 anos<small>salários de mercado</small></h3>'+legend([{nome:'Proposta anterior (20%)',cor:'--s2'},{nome:'Padrão Omie',cor:'--s1'},{nome:'Proposta Dixx ('+pct(p.revDireta,0)+')',cor:'--accent'}])+'<div class="scroll" id="chRep"></div></div>';
-  h+='<div class="cols"><div class="callout"><h4>Proposta: '+pct(p.revDireta,0)+' recorrente, sem setup e sem bônus</h4><p>A Dixx recebe '+pct(p.revDireta,0)+' da mensalidade na captação direta e '+pct(p.revIndicacao,0)+' na indicação, com o parceiro ficando com '+pct(p.comissaoParceiro,0)+'. O setup continua 100% da Weesu e não há bônus de primeira mensalidade. O custo comercial da Weesu no ano 1 fica em '+pct(pr.inf.pctW1,1)+' da receita, abaixo do que a Omie paga às franquias (33% + 1ª mensalidade + 50% do setup). Com salários de mercado, o breakeven da Dixx vem em '+beTxt(pr.inf)+'.</p></div>'+
-    '<div class="callout warn"><h4>Por que a proposta anterior (20%) não fecha</h4><p>Com 20% na direta e 10% na indicação e salários de mercado, o breakeven da Dixx vem em '+beTxt(at.inf)+(at.inf.rec<0||at.inf.rec>59?', depois dos 5 anos de recorrência acordados':(at.inf.rec>47?', já no último ano da recorrência acordada':''))+', e o resultado em 5 anos é de '+brl(at.inf.acum5)+'. A Dixx carregaria o time e as cotas sem retorno em caixa dentro do acordo.</p></div></div>';
+  h+='<div class="card"><h3>Caixa acumulado da Dixx em 10 anos<small>salários de mercado</small></h3>'+legend([{nome:'Acordo atual ('+pct(p.revDireta,0)+')',cor:'--s2'},{nome:'Padrão Omie',cor:'--s1'},{nome:'Proposta Dixx ('+pct(PROP_DIR,0)+')',cor:'--accent'}])+'<div class="scroll" id="chRep"></div></div>';
+  h+='<div class="cols"><div class="callout"><h4>Proposta: '+pct(PROP_DIR,0)+' recorrente, sem setup e sem bônus</h4><p>A Dixx receberia '+pct(PROP_DIR,0)+' da mensalidade na captação direta e '+pct(Math.max(0,PROP_DIR-p.comissaoParceiro),0)+' na indicação, com o parceiro ficando com '+pct(p.comissaoParceiro,0)+'. O setup continua 100% da Weesu e não há bônus de primeira mensalidade. O custo comercial da Weesu no ano 1 fica em '+pct(pr.inf.pctW1,1)+' da receita, abaixo do que a Omie paga às franquias (33% + 1ª mensalidade + 50% do setup). Com salários de mercado, o breakeven da Dixx vem em '+beTxt(pr.inf)+'.</p></div>'+
+    '<div class="callout warn"><h4>O risco do acordo atual para a Dixx</h4><p>Com '+pct(p.revDireta,0)+' na direta e '+pct(p.revIndicacao,0)+' na indicação e salários de mercado, o breakeven da Dixx vem em '+beTxt(at.inf)+(at.inf.rec<0||at.inf.rec>59?', depois dos 5 anos de recorrência acordados':(at.inf.rec>47?', já no último ano da recorrência acordada':''))+', e o resultado em 5 anos é de '+brl(at.inf.acum5)+'.'+(at.inf.acum5<0?' A Dixx carregaria o time e as cotas sem retorno em caixa dentro do acordo.':' A Dixx carrega o time e as cotas por quase todo o acordo, e o retorno em caixa só aparece no fim dos 5 anos.')+'</p></div></div>';
   return h;
 }
 function timelineBE(R){
@@ -867,7 +868,7 @@ function afterAbCanais(){
 function afterRepasse(M){
   var b=el('chRep'); if(!b) return; var C=cenariosRepasse(), L=[]; for(var t=0;t<HZ;t++) L.push(mesLabel(t));
   var g=function(id){ return avaliaCenario(C.filter(function(c){return c.id===id;})[0]).M.acum; };
-  var o={labels:L,aria:'Caixa acumulado da Dixx em 10 anos por modelo',series:[{nome:'Proposta anterior (20%)',cor:'--s2',vals:g('anterior')},{nome:'Padrão Omie',cor:'--s1',vals:g('omie')},{nome:'Proposta Dixx ('+pct(S.prem.revDireta,0)+')',cor:'--accent',vals:g('proposta')}],tick:function(i){ return i%12===0? 'ano '+(i/12+1) : (i===HZ-1?mesLabel(HZ-1):null); },h:300};
+  var o={labels:L,aria:'Caixa acumulado da Dixx em 10 anos por modelo',series:[{nome:'Acordo atual ('+pct(S.prem.revDireta,0)+')',cor:'--s2',vals:g('atual')},{nome:'Padrão Omie',cor:'--s1',vals:g('omie')},{nome:'Proposta Dixx ('+pct(PROP_DIR,0)+')',cor:'--accent',vals:g('proposta')}],tick:function(i){ return i%12===0? 'ano '+(i/12+1) : (i===HZ-1?mesLabel(HZ-1):null); },h:300};
   b.innerHTML=chartLines(o); bindLines(b,o);
 }
 
