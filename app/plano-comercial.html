@@ -217,7 +217,7 @@ var DEF = {
   ticketLow:3000, ticketHigh:12000, shareHigh:0.30, shareInd:0.60,
   setupMedio:12500, margemBruta:0.80,
   revDireta:0.20, revIndicacao:0.10, comissaoParceiro:0.10, vigenciaMeses:60,
-  fatorEncargos:1.70, reajuste:0.05, sdrBase:3000, closerBase:6000, execBase:6000, mktSdr:6000, mktCloser:11000, mktExec:12000,
+  fatorEncargos:1.70, reajuste:0.05, sdrBase:3000, closerBase:6000, execBase:6000, comissaoInclusa:1, mktSdr:6000, mktCloser:11000, mktExec:12000,
   hcSdr:'1,2,2,2,3', hcCloser:'1,1,2,2,2', hcExec:'1,1,1,2,2',
   sdrPorReuniao:150, closerPctNmrr:0.40, execPctNmrrInd:0.25, execGarantia:2500,
   reunioesSdrPlena:20, convReuniaoVenda:0.15, convIndicacao:0.25, convEcom:0.30, convErp:0.20, mxRespPres:0.36, mxResposta:0.33, mxFechamento:0.20, mxTicket:2000
@@ -247,15 +247,15 @@ var PREM_CAMPOS=[
  ['Metas e retenção',[['metaM1','Meta de NMRR do mês 1 (R$)','r'],['cresc1','Crescimento da meta ao mês · ano 1','p','cenário oficial: 5%'],['cresc2','· ano 2','p'],['cresc3','· ano 3','p'],['cresc4','· ano 4','p'],['cresc5','· ano 5','p'],['churn','Churn mensal do MRR','p','faixa de 1% a 2%']]],
  ['Ticket e mix',[['ticketLow','Ticket low (ERPs de entrada) (R$)','r'],['ticketHigh','Ticket high (ERPs corporativos) (R$)','r'],['shareHigh','NMRR high ticket a partir do ano 2','p'],['shareInd','NMRR via indicações a partir do ano 2','p'],['setupMedio','Setup médio (R$)','r'],['margemBruta','Margem bruta da mensalidade','p']]],
  ['Remuneração da Dixx',[['revDireta','Recorrente sobre captação direta','p'],['revIndicacao','Recorrente sobre indicação (parte da Dixx)','p'],['comissaoParceiro','Recorrente do parceiro na indicação','p'],['vigenciaMeses','Meses em que a recorrente é paga','n','padrão: 60, igual ao vesting']]],
- ['Time e custos',[['sdrBase','Salário base SDR sênior (R$)','r'],['closerBase','Salário base Closer sênior (R$)','r'],['execBase','Salário base Executivo de Negócios (R$)','r'],['mktSdr','Mercado · SDR sênior (R$)','r','referência para comparação'],['mktCloser','Mercado · Closer sênior (R$)','r'],['mktExec','Mercado · Executivo de Negócios (R$)','r'],['fatorEncargos','Fator de encargos','x','custo total ÷ salário'],['reajuste','Reajuste salarial ao ano','p'],['hcSdr','SDRs por ano (anos 1 a 5)','t'],['hcCloser','Closers por ano','t'],['hcExec','Executivos de Negócios por ano','t']]],
+ ['Time e custos',[['sdrBase','Salário + comissão · SDR sênior (R$/mês)','r','média mensal'],['closerBase','Salário + comissão · Closer sênior (R$/mês)','r'],['execBase','Salário + comissão · Executivo de Negócios (R$/mês)','r'],['comissaoInclusa','Comissão já incluída no valor (1 = sim, 0 = somar à parte)','n'],['mktSdr','Mercado · SDR sênior, salário + comissão (R$)','r','referência para comparação'],['mktCloser','Mercado · Closer sênior, salário + comissão (R$)','r'],['mktExec','Mercado · Executivo de Negócios, salário + comissão (R$)','r'],['fatorEncargos','Fator de encargos','x','custo total ÷ salário'],['reajuste','Reajuste salarial ao ano','p'],['hcSdr','SDRs por ano (anos 1 a 5)','t'],['hcCloser','Closers por ano','t'],['hcExec','Executivos de Negócios por ano','t']]],
  ['Funil do ano 1 (até medir o real)',[['reunioesSdrPlena','Reuniões realizadas por SDR ao mês','n'],['convReuniaoVenda','Reunião → venda (nossa base)','p'],['convIndicacao','Indicação → venda (contabilidades e bases dos franqueados)','p'],['convEcom','Indicação → venda (e-commerce Puro)','p'],['convErp','Oportunidade → venda (ERPs corporativos, direta)','p'],['mxResposta','MeliXP: contatado → resposta (real: 33%)','p'],['mxRespPres','MeliXP: resposta → apresentação (real: 36%)','p'],['mxFechamento','MeliXP: apresentação → contrato','p','cenário conservador do relatório: 20%'],['mxTicket','MeliXP: ticket médio esperado (R$)','r']]]
 ];
 
 /* ---------- Ações por horizonte ---------- */
 var HORIZ=[
- {id:'m1',nome:'Próximo mês',per:'novembro/2026',goal:'R$ 15.000 de NMRR, quase todo do pipeline atual, e o acordo de sociedade assinado',acts:[
+ {id:'m1',nome:'Próximo mês',per:'novembro/2026',goal:'{meta1} de NMRR, quase todo do pipeline atual, e o acordo de sociedade assinado',acts:[
   ['n1a','Fechar os negócios previstos para novembro: Pink Urban, All Filmes, Casa da Laurinha, Coutinho Shopping e Alex Araujo','Closer','NMRR ≥ R$ 15 mil'],
-  ['n1b','Formalizar o acordo: vesting de 5% em 5 anos, recorrente de 20% (direta) e 10% + 10% (indicação), vigência e metas de cada marco','Sócios','Acordo assinado'],
+  ['n1b','Formalizar o acordo: vesting de 5% em 5 anos, recorrente de {dir} (direta) e {ind} + {parc} (indicação), vigência e metas de cada marco','Sócios','Acordo assinado'],
   ['n1c','Aprovar a política comercial: piso de setup, alçada de desconto e regra de canal (quem originou o cliente)','Sócios + comercial','Política publicada'],
   ['n1d','Subir a Onda 1 da nossa base (157 contas Hot de TOTVS, Omie e Senior) com cadência por ERP','SDR','157 contas em cadência'],
   ['n1e','Obter as bases de outros franqueados Omie e somá-las à nossa base, com a mesma cadência de prospecção','SDR + Executivo de Negócios','Bases importadas no CRM'],
@@ -263,21 +263,21 @@ var HORIZ=[
   ['n1f','Reativar as contabilidades parceiras que já conhecemos pela Omie, com kit de indicação','Executivo de Negócios','2 contabilidades ativas'],
   ['n1g','MeliXP: registrar o desfecho das 5 apresentações com data passada, convidar os 18 que responderam e ligar para os 11 tier A sem resposta','SDR + Closer','+6 apresentações'],
   ['n1h','Abrir conversa com os canais de Sankhya, Senior e TOTVS para a frente high ticket','Comercial + sócios','2 conversas abertas']]},
- {id:'m3',nome:'Próximos 3 meses',per:'nov/2026 a jan/2027',goal:'R$ 47.300 de NMRR acumulado, funil real medido e o primeiro ERP corporativo parceiro',acts:[
+ {id:'m3',nome:'Próximos 3 meses',per:'nov/2026 a jan/2027',goal:'{nmrr3} de NMRR acumulado, funil real medido e o primeiro ERP corporativo parceiro',acts:[
   ['n3a','Cadência em 100% da Onda 1 e início da Onda 2 (614 contas com ERP conhecido)','SDR','20 reuniões realizadas/mês'],
   ['n3b','6 contabilidades ativas, com reunião mensal de pipeline, e 1 venda/mês por indicação de clientes','Executivo de Negócios','Indicações recorrentes'],
   ['n3c','Primeiro acordo de integração com ERP corporativo (Sankhya, Senior ou TOTVS) e lista de clientes-alvo para a Dixx prospectar','Comercial + sócios','1 ERP parceiro'],
   ['n3d','Trocar as premissas do funil pelas conversões medidas no CRM','Comercial','Premissas revisadas'],
   ['n3e','Definir com o produto os requisitos do Seenc para high ticket (lote, vários CDs, LPN, integrações)','Comercial + produto','Roadmap decidido'],
-  ['n3f','Manter pipeline de 3× a meta do mês seguinte para atravessar o vale de jan a mar','Closer','Cobertura ≥ 3×']]},
- {id:'m6',nome:'Próximos 6 meses',per:'nov/2026 a abr/2027',goal:'R$ 102.000 de NMRR acumulado e os primeiros contratos high ticket',acts:[
+  ['n3f','Manter pipeline de 3× a meta do mês seguinte para atravessar os meses em que a capacidade fica abaixo da meta','Closer','Cobertura ≥ 3×']]},
+ {id:'m6',nome:'Próximos 6 meses',per:'nov/2026 a abr/2027',goal:'{nmrr6} de NMRR acumulado e os primeiros contratos high ticket',acts:[
   ['n6a','2 ERPs corporativos parceiros e 3 propostas high ticket na mesa, prospectadas pela Dixx','Executivo de Negócios + Closer','3 propostas ≥ R$ 10 mil'],
   ['n6b','12 contabilidades ativas e indicação de clientes acompanhada a cada nova implantação','Executivo de Negócios','≥ 35% do NMRR via indicações'],
   ['n6c','Publicar 3 casos com ROI (erros de expedição, produtividade, acuracidade)','Closer + implantação','3 casos'],
   ['n6d','Revisar o comissionamento do time com 5 meses de dados reais','Comercial','Plano v2'],
   ['n6e','Estudo de América Latina: Argentina a partir do caso Grupoucza (moeda, fiscal, integrações)','Comercial + produto','Estudo concluído']]},
- {id:'m12',nome:'Próximo ano',per:'nov/2026 a out/2027',goal:'R$ 238.800 de NMRR no ano, MRR perto de R$ 390 mil e o primeiro marco de vesting',acts:[
-  ['n12a','NMRR de R$ 25.650 no mês 12','Time comercial','Meta do mês 12'],
+ {id:'m12',nome:'Próximo ano',per:'nov/2026 a out/2027',goal:'{nmrr12} de NMRR no ano, MRR de {mrr12} em out/27 e o primeiro marco de vesting',acts:[
+  ['n12a','NMRR de {meta12} no mês 12','Time comercial','Meta do mês 12'],
   ['n12b','4 ERPs corporativos parceiros de integração (TOTVS, Sankhya, Senior, Oracle ou SAP Business One), sem comissão','Executivo de Negócios','4 parceiros'],
   ['n12c','Ticket médio dos novos contratos acima de R$ 4 mil','Closer','Ticket ≥ R$ 4 mil'],
   ['n12d','Primeiro marco de vesting (1%) e revisão do acordo com os números do ano','Sócios','Marco 1 cumprido'],
@@ -352,7 +352,7 @@ function modelo(pp){
     var fixo=(hcS[yi]*p.sdrBase+hcC[yi]*p.closerBase+hcE[yi]*p.execBase)*inf*p.fatorEncargos;
     var rn= t<12? reun[t] : p.reunioesSdrPlena*hcS[yi];
     var execV=p.execPctNmrrInd*meta*ind; if(t<3) execV=Math.max(execV,p.execGarantia);
-    var vari=(p.sdrPorReuniao*rn+p.closerPctNmrr*meta+execV)*p.fatorEncargos;
+    var vari= p.comissaoInclusa ? 0 : (p.sdrPorReuniao*rn+p.closerPctNmrr*meta+execV)*p.fatorEncargos;
     var cot= t<p.prazoCotasMeses ? p.valuation*p.equityPct*p.pagaCotas/p.prazoCotasMeses : 0;
     var custo=fixo+vari, caixa=rev-custo-cot; acum+=caixa; M.cotas.push(cot);
     M.meta.push(meta); M.ind.push(ind); M.hi.push(hi); M.deals.push(deals); M.mrr.push(mrr); M.cli.push(cli); M.churnR.push(ch);
@@ -494,7 +494,7 @@ function secCanais(M){
   // base de leads
   var fn=[['Linhas nas planilhas',4397],['Registros ativos',2500],['TAM (empresas únicas)',2032],['SAM (comércio e indústria)',949],['SAM com ERP conhecido (Onda 2)',614],['SOM: contas Hot (Onda 1)',157]];
   h+='<div class="cols"><div class="card"><h3>Nossa base: do total à prioridade</h3><div class="funnel">'+fn.map(function(f){return '<div class="fn"><span>'+f[0]+'</span><div class="trk"><i style="width:'+(f[1]/4397*100)+'%"></i></div><span class="num">'+nf(f[1],0)+'</span></div>';}).join('')+'</div><p class="small muted">Foco inicial nas 157 contas Hot, depois nas 614 com ERP conhecido. O peso do ramo no score é igual para todos.</p></div>'+
-   '<div class="card"><h3>Por que os canais de indicação são centrais</h3><p class="small">A meta pede cerca de 80 contratos no ano 1. Trabalhar as 949 empresas da nossa base com 5% de conversão rende perto de 47. O restante vem das indicações, que também convertem mais e custam menos: o parceiro só recebe quando o cliente paga.</p><p class="small">Todos os 50 clientes atuais vieram desse jeito. A prospecção ativa é o canal novo, e suas taxas serão medidas a partir do mês 1.</p></div></div>';
+   '<div class="card"><h3>Por que os canais de indicação são centrais</h3><p class="small">A meta pede cerca de '+nf(M.anos[0].deals,0)+' contratos no ano 1. Trabalhar as 949 empresas da nossa base com 5% de conversão rende perto de 47. O restante vem das indicações, que também convertem mais e custam menos: o parceiro só recebe quando o cliente paga.</p><p class="small">Todos os 50 clientes atuais vieram desse jeito. A prospecção ativa é o canal novo, e suas taxas serão medidas a partir do mês 1.</p></div></div>';
   return h;
 }
 
@@ -551,7 +551,7 @@ function secSociedade(M){
   h+='<div class="tiles">'+
    '<div class="tile"><span class="label">ARR adicionado</span><span class="num">'+k(a5.arr-p.mrrInicial*12)+'</span><span class="note">de '+k(p.mrrInicial*12)+' para '+k(a5.arr)+'</span></div>'+
    '<div class="tile"><span class="label">Valuation no ano 5</span><span class="num">'+k(a5.val)+'</span><span class="note">'+nf(a5.val/p.valuation,1)+'× o de hoje</span></div>'+
-   '<div class="tile"><span class="label">Receita nova líquida para a Weesu</span><span class="num">'+k(sum(A.map(function(a){return a.weesu;})))+'</span><span class="note">mensalidades novas em 5 anos, já pagas a nossa parte e a dos parceiros</span></div>'+
+   '<div class="tile"><span class="label">Receita nova líquida para a Weesu</span><span class="num">'+k(sum(A.map(function(a){return a.weesu;})))+'</span><span class="note">mensalidades novas em 5 anos, já descontadas a parte da Dixx e a dos parceiros</span></div>'+
    '<div class="tile"><span class="label">Custo fixo comercial da Weesu</span><span class="num">R$ 0</span><span class="note">o time é 100% investimento da Dixx; a Weesu cuida do marketing</span></div></div>';
   h+='<div class="cols"><div class="card"><h3>Para a Weesu: montar sozinha × com a Dixx</h3><div class="scroll"><table class="t"><thead><tr><th></th><th class="r">Sozinha</th><th class="r">Com a Dixx</th></tr></thead><tbody>'+
    '<tr><td>Custo do time em 5 anos</td><td class="r">'+brl(custo5)+'</td><td class="r">R$ 0</td></tr>'+
@@ -571,11 +571,11 @@ function disclaimerSalarios(M,Mk,full){
   var p=S.prem, A=M.anos, B=Mk.anos;
   var cs=function(m){ return sum(m.anos.map(function(a){return a.custo;})); };
   var linhas=[['SDR sênior',p.sdrBase,p.mktSdr],['Closer sênior',p.closerBase,p.mktCloser],['Executivo de Negócios',p.execBase,p.mktExec]];
-  var h='<div class="callout warn" id="disclaimer-salarios"><h4>Atenção: salários abaixo do mercado</h4><p>Os salários usados neste plano foram definidos pela Dixx e estão abaixo das referências de mercado para nível sênior.'+(full?' Abaixo, a mesma operação nos dois cenários.':'')+' Com salário de mercado, o investimento máximo da Dixx sobe de <b>'+k(-M.pico)+'</b> para <b>'+k(-Mk.pico)+'</b>'+(Mk.acum[59]<0?' e o caixa não se recupera em 5 anos':'')+'.</p>';
+  var h='<div class="callout warn" id="disclaimer-salarios"><h4>Atenção: salários abaixo do mercado</h4><p>Os valores de salário + comissão usados neste plano foram definidos pela Dixx e estão abaixo das referências de mercado para nível sênior.'+(full?' Abaixo, a mesma operação nos dois cenários.':'')+' Com salário de mercado, o investimento máximo da Dixx sobe de <b>'+k(-M.pico)+'</b> para <b>'+k(-Mk.pico)+'</b>'+(Mk.acum[59]<0?' e o caixa não se recupera em 5 anos':'')+'.</p>';
   if(!full) return h+'<p class="small">Comparação completa na seção Investimento.</p></div>';
-  h+='</div><div class="cols"><div class="card"><h3>Salário base informado × mercado</h3><div class="scroll"><table class="t"><thead><tr><th>Função</th><th class="r">Informado</th><th class="r">Mercado</th><th class="r">Defasagem</th></tr></thead><tbody>'+
+  h+='</div><div class="cols"><div class="card"><h3>Salário + comissão: informado × mercado</h3><div class="scroll"><table class="t"><thead><tr><th>Função</th><th class="r">Informado</th><th class="r">Mercado</th><th class="r">Defasagem</th></tr></thead><tbody>'+
     linhas.map(function(l){ return '<tr><td>'+l[0]+'</td><td class="r">'+brl(l[1])+'</td><td class="r">'+brl(l[2])+'</td><td class="r neg">'+pct(gapPct(l[1],l[2]),0)+'</td></tr>'; }).join('')+
-    '<tr class="tot"><td>Folha base do time inicial</td><td class="r">'+brl(p.sdrBase+p.closerBase+p.execBase)+'</td><td class="r">'+brl(p.mktSdr+p.mktCloser+p.mktExec)+'</td><td class="r neg">'+pct(gapPct(p.sdrBase+p.closerBase+p.execBase,p.mktSdr+p.mktCloser+p.mktExec),0)+'</td></tr></tbody></table></div>'+
+    '<tr class="tot"><td>Folha do time inicial (salário + comissão)</td><td class="r">'+brl(p.sdrBase+p.closerBase+p.execBase)+'</td><td class="r">'+brl(p.mktSdr+p.mktCloser+p.mktExec)+'</td><td class="r neg">'+pct(gapPct(p.sdrBase+p.closerBase+p.execBase,p.mktSdr+p.mktCloser+p.mktExec),0)+'</td></tr></tbody></table></div>'+
     '<p class="small muted">Mercado: executivo de contas sênior com mediana de R$ 17 mil e faixa de R$ 11,7 a 20,8 mil em SP (Robert Half); SDR pleno de R$ 7 a 10 mil com variável (Jobrise, 2026). Valores de mercado editáveis em Metas.</p></div>'+
     '<div class="card"><h3>A operação nos dois cenários</h3><div class="scroll"><table class="t"><thead><tr><th></th><th class="r">Salário informado</th><th class="r">Salário de mercado</th></tr></thead><tbody>'+
     '<tr><td>Custo do time no ano 1</td><td class="r">'+brl(A[0].custo)+'</td><td class="r">'+brl(B[0].custo)+'</td></tr>'+
@@ -584,7 +584,7 @@ function disclaimerSalarios(M,Mk,full){
     '<tr><td>Investimento máximo da Dixx</td><td class="r">'+brl(-M.pico)+'<small>'+mesLabel(M.picoMes)+'</small></td><td class="r">'+brl(-Mk.pico)+'<small>'+mesLabel(Mk.picoMes)+'</small></td></tr>'+
     '<tr><td>Passa a se pagar mês a mês</td><td class="r">'+(M.breakEven>=0?mesLabel(M.breakEven):'não ocorre em 5 anos')+'</td><td class="r">'+(Mk.breakEven>=0?mesLabel(Mk.breakEven):'não ocorre em 5 anos')+'</td></tr>'+
     '<tr class="tot"><td>Caixa acumulado no fim do ano 5</td><td class="r '+(M.acum[59]<0?'neg':'pos')+'">'+brl(M.acum[59])+'</td><td class="r '+(Mk.acum[59]<0?'neg':'pos')+'">'+brl(Mk.acum[59])+'</td></tr></tbody></table></div>'+
-    '<p class="small muted">Mesmas metas, canais, recorrente e compra das cotas; muda só o salário base (com encargos e reajuste). A remuneração variável é igual nos dois cenários.</p></div></div>'+
+    '<p class="small muted">Mesmas metas, canais, recorrente e compra das cotas; muda só o valor de salário + comissão de cada pessoa (com encargos e reajuste).</p></div></div>'+
     '<div class="card"><h3>Caixa acumulado da Dixx: salário informado × mercado</h3>'+legend([{nome:'Salário informado',cor:'--accent'},{nome:'Salário de mercado',cor:'--s2'}])+'<div class="scroll" id="chMk"></div></div>';
   return h;
 }
@@ -643,7 +643,7 @@ function secRepasse(M){
   h+=timelineBE(R);
   h+='<div class="card"><h3>Caixa acumulado da Dixx em 10 anos<small>salário de mercado; a linha tracejada é o acordo atual com o salário informado</small></h3>'+legend([{nome:'Acordo atual',cor:'--s2'},{nome:'Acordo atual · salário informado',cls:'dash'},{nome:'Padrão Omie',cor:'--s1'},{nome:'Proposta Dixx (33%)',cor:'--accent'}])+'<div class="scroll" id="chRep"></div></div>';
   h+='<div class="cols"><div class="callout"><h4>Proposta: 33% recorrente, o mesmo das franquias Omie, sem setup e sem bônus</h4><p>A Dixx receberia '+pct(0.33,0)+' da mensalidade na captação direta e '+pct(Math.max(0,0.33-p.comissaoParceiro),0)+' na indicação, com o parceiro ficando com '+pct(p.comissaoParceiro,0)+'. O setup continua 100% da Weesu e não há bônus de primeira mensalidade. O custo comercial da Weesu no ano 1 fica em '+pct(pr.inf.pctW1,1)+' da receita, abaixo dos 15% que um SaaS gasta em média só com vendas, e abaixo do que a própria Omie paga às franquias.</p></div>'+
-    '<div class="callout warn"><h4>Por que o acordo atual não fecha para a Dixx</h4><p>Com 20%, a Dixx precisa pagar salários cerca de 50% abaixo do mercado para não ter prejuízo, e mesmo assim só atinge o breakeven em '+beTxt(at.inf)+', perto do fim do contrato. Com salário de mercado, o breakeven fica em '+beTxt(at.mkt)+', ou seja, depois dos 5 anos de recorrência acordados. Com 33%, o breakeven com salário de mercado vem em '+beTxt(pr.mkt)+'.</p></div></div>';
+    '<div class="callout warn"><h4>O risco do acordo atual para a Dixx</h4><p>Com '+pct(p.revDireta,0)+', a Dixx depende de pagar '+pct(-gapPct(p.sdrBase+p.closerBase+p.execBase,p.mktSdr+p.mktCloser+p.mktExec),0)+' abaixo do mercado em salário + comissão. Assim, o breakeven vem em '+beTxt(at.inf)+'. Com salário de mercado, vai para '+beTxt(at.mkt)+(at.mkt.rec<0||at.mkt.rec>59?', depois dos 5 anos de recorrência acordados':(at.mkt.rec>47?', já no último ano da recorrência acordada':''))+', e o resultado em 5 anos cai para '+brl(at.mkt.acum5)+'. Com 33%, o breakeven com salário de mercado vem em '+beTxt(pr.mkt)+'.</p></div></div>';
   return h;
 }
 function timelineBE(R){
@@ -682,34 +682,34 @@ function afterSociedade(M){
 function secInvest(M){
   var p=S.prem, f=p.fatorEncargos, hcS=arr5(p.hcSdr), hcC=arr5(p.hcCloser), hcE=arr5(p.hcExec);
   var pessoas=[
-    {nome:'SDR sênior',papel:'Prospecção ativa na nossa base: Onda 1 (157 Hot) e Onda 2 (614)',base:p.sdrBase,varTxt:brl(p.sdrPorReuniao)+' por reunião qualificada realizada',varAlvo:p.sdrPorReuniao*p.reunioesSdrPlena,prep:'1–2 semanas',prim:'Reuniões no mês 1',plena:'Mês 3',ref:'SDR pleno: R$ 7 a 10 mil com variável (Jobrise, 2026); sênior acima'},
-    {nome:'Closer sênior',papel:'Diagnóstico, proposta e fechamento de todos os canais, incluindo high ticket',base:p.closerBase,varTxt:pct(p.closerPctNmrr,0)+' do NMRR fechado (50% na assinatura, 50% no go-live)',varAlvo:p.closerPctNmrr*p.metaM1,prep:'2–3 semanas',prim:'Fecha o pipeline já no mês 1',plena:'Mês 3–4',ref:'Executivo de contas sênior: R$ 11,7 a 20,8 mil, mediana de R$ 17 mil em SP (Robert Half)'},
-    {nome:'Executivo de Negócios',papel:'E-commerce Puro, contabilidades, bases dos franqueados Omie e prospecção high ticket junto aos ERPs corporativos',base:p.execBase,varTxt:pct(p.execPctNmrrInd,0)+' do NMRR via indicação; garantia de '+brl(p.execGarantia)+' nos 3 primeiros meses',varAlvo:p.execGarantia,prep:'4–6 semanas',prim:'Indicações no mês 2–3',plena:'Mês 6–9',ref:'Sem faixa pública para canais em SaaS; base alinhada ao executivo de contas sênior'}
+    {nome:'SDR sênior',papel:'Prospecção ativa na nossa base: Onda 1 (157 Hot) e Onda 2 (614)',base:p.sdrBase,varTxt:p.comissaoInclusa? brl(Math.round(p.sdrBase*2/3/100)*100)+' fixo + '+brl(Math.round(p.sdrBase/3/p.reunioesSdrPlena))+' por reunião qualificada realizada ('+p.reunioesSdrPlena+' reuniões = '+brl(Math.round(p.sdrBase/3/p.reunioesSdrPlena)*p.reunioesSdrPlena)+')' : brl(p.sdrPorReuniao)+' por reunião qualificada realizada',varAlvo:p.sdrPorReuniao*p.reunioesSdrPlena,prep:'1–2 semanas',prim:'Reuniões no mês 1',plena:'Mês 3',ref:'SDR pleno: R$ 7 a 10 mil com variável (Jobrise, 2026); sênior acima'},
+    {nome:'Closer sênior',papel:'Diagnóstico, proposta e fechamento de todos os canais, incluindo high ticket',base:p.closerBase,varTxt:p.comissaoInclusa? brl(Math.round(p.closerBase*0.6/100)*100)+' fixo + '+pct(p.closerBase*0.4/p.metaM1,0)+' do NMRR fechado (na meta de '+brl(p.metaM1)+', '+brl(p.closerBase*0.4)+'), metade na assinatura e metade no go-live' : pct(p.closerPctNmrr,0)+' do NMRR fechado (50% na assinatura, 50% no go-live)',varAlvo:p.closerPctNmrr*p.metaM1,prep:'2–3 semanas',prim:'Fecha o pipeline já no mês 1',plena:'Mês 3–4',ref:'Executivo de contas sênior: R$ 11,7 a 20,8 mil, mediana de R$ 17 mil em SP (Robert Half)'},
+    {nome:'Executivo de Negócios',papel:'E-commerce Puro, contabilidades, bases dos franqueados Omie e prospecção high ticket junto aos ERPs corporativos',base:p.execBase,varTxt:p.comissaoInclusa? brl(Math.round(p.execBase*2/3/100)*100)+' fixo + até '+brl(Math.round(p.execBase/3/100)*100)+' de comissão sobre o NMRR de indicações e ERPs, com mínimo garantido nos 3 primeiros meses' : pct(p.execPctNmrrInd,0)+' do NMRR via indicação, com mínimo garantido nos 3 primeiros meses',varAlvo:p.execGarantia,prep:'4–6 semanas',prim:'Indicações no mês 2–3',plena:'Mês 6–9',ref:'Sem faixa pública para canais em SaaS; base alinhada ao executivo de contas sênior'}
   ];
   var A=M.anos;
-  var h='<div class="sec-head"><span class="label">Investimento da Dixx em pessoas</span><h2>'+k(A[0].custo)+' no ano 1 com 3 pessoas focais; '+k(sum(A.map(function(a){return a.custo;})))+' em 5 anos com o time crescendo</h2><p>Salários base definidos pela Dixx, com fator de encargos de '+nf(f,2)+'× e reajuste de '+pct(p.reajuste,0)+' ao ano. O custo é 100% da Dixx; a Weesu responde pelo marketing.</p></div>';
+  var h='<div class="sec-head"><span class="label">Investimento da Dixx em pessoas</span><h2>'+k(A[0].custo)+' no ano 1 com 3 pessoas focais; '+k(sum(A.map(function(a){return a.custo;})))+' em 5 anos com o time crescendo</h2><p>Valores de salário + comissão definidos pela Dixx (média mensal por pessoa), com fator de encargos de '+nf(f,2)+'× e reajuste de '+pct(p.reajuste,0)+' ao ano. O custo é 100% da Dixx; a Weesu responde pelo marketing.</p></div>';
   h+=disclaimerSalarios(M,modeloMercado(),true);
   h+='<div class="cols3">';
   pessoas.forEach(function(x){
     h+='<div class="card person"><h4>'+x.nome+'</h4><p class="small muted">'+x.papel+'</p><div class="kv">'+
-     '<div><span>Salário base</span><span>'+brl(x.base)+'</span></div><div><span>Custo fixo com encargos</span><span>'+brl(x.base*f)+'</span></div>'+
-     '<div><span>Variável no mês 1</span><span>'+brl(x.varAlvo)+'</span></div><div><span>Preparação</span><span>'+x.prep+'</span></div>'+
+     '<div><span>Salário + comissão (média/mês)</span><span>'+brl(x.base)+'</span></div><div><span>Custo com encargos</span><span>'+brl(x.base*f)+'</span></div>'+
+     (p.comissaoInclusa?'':'<div><span>Comissão extra no mês 1</span><span>'+brl(x.varAlvo)+'</span></div>')+'<div><span>Preparação</span><span>'+x.prep+'</span></div>'+
      '<div><span>Primeiro resultado</span><span>'+x.prim+'</span></div><div><span>Produtividade plena</span><span>'+x.plena+'</span></div></div>'+
-     '<p class="small"><b>Variável:</b> '+x.varTxt+'</p><p class="small muted">'+x.ref+'</p></div>';
+     '<p class="small"><b>'+(p.comissaoInclusa?'Regra de comissão sugerida (dentro do valor)':'Comissão')+':</b> '+x.varTxt+'</p><p class="small muted">'+x.ref+'</p></div>';
   });
   h+='</div>';
   var rampCloser=[0.6,0.85,1,1,1,1,1,1,1,1,1,1], rampExec=[0.15,0.25,0.35,0.45,0.55,0.65,0.75,0.8,0.85,0.9,0.95,1];
   h+='<div class="card"><h3>Tempo de preparo e rampa de produtividade<small>% da capacidade plena no ano 1</small></h3><div class="scroll"><div class="ramp" style="min-width:560px"><span></span>'+ROT.map(function(r){return '<span class="h">'+r+'</span>';}).join('');
   [['SDR',RAMP_SDR],['Closer',rampCloser],['Exec. Negócios',rampExec]].forEach(function(r){ h+='<span class="small">'+r[0]+'</span>'+r[1].map(function(v){ return '<span class="c" style="background:color-mix(in srgb,var(--accent) '+Math.round(v*80+8)+'%,var(--soft))'+(v>0.55?';color:var(--on-accent)':'')+'">'+Math.round(v*100)+'</span>'; }).join(''); });
-  h+='</div></div><p class="small muted">Mesmo experiente, cada pessoa precisa aprender produto, base e mercado. Os canais de indicação são os mais lentos para amadurecer (recrutar, treinar e só então receber indicações) e os que mais escalam com menor custo. Por isso o Executivo de Negócios tem garantia de variável nos 3 primeiros meses.</p></div>';
+  h+='</div></div><p class="small muted">Mesmo experiente, cada pessoa precisa aprender produto, base e mercado. Os canais de indicação são os mais lentos para amadurecer (recrutar, treinar e só então receber indicações) e os que mais escalam com menor custo. Por isso a comissão do Executivo de Negócios deve ter um mínimo garantido nos 3 primeiros meses.</p></div>';
   h+='<div class="card"><h3>Time por ano</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">SDR</th><th class="r">Closer</th><th class="r">Exec. Negócios</th><th class="r">Custo do time</th><th class="r">NMRR vendido</th><th class="r">Custo por R$ de NMRR</th></tr></thead><tbody>';
   A.forEach(function(a,y){ h+='<tr><td>'+ANOS[y]+'</td><td class="r">'+hcS[y]+'</td><td class="r">'+hcC[y]+'</td><td class="r">'+hcE[y]+'</td><td class="r">'+brl(a.custo)+'</td><td class="r">'+brl(a.nmrr)+'</td><td class="r">'+nf(a.custo/a.nmrr,2)+'</td></tr>'; });
   h+='</tbody></table></div></div>';
-  h+='<div class="card"><h3>Ano 1, mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Fixo c/ encargos</th><th class="r">Variável c/ encargos</th><th class="r">Custo do time</th><th class="r">Compra das cotas</th><th class="r">Recorrente recebida</th><th class="r">Caixa do mês</th><th class="r">Acumulado</th></tr></thead><tbody>';
-  for(var i=0;i<12;i++){ h+='<tr><td>'+ROT[i]+'</td><td class="r">'+brl(M.custoFixo[i])+'</td><td class="r">'+brl(M.custoVar[i])+'</td><td class="r">'+brl(M.custo[i])+'</td><td class="r">'+brl(M.cotas[i])+'</td><td class="r">'+brl(M.rev[i])+'</td><td class="r '+(M.caixa[i]<0?'neg':'pos')+'">'+brl(M.caixa[i])+'</td><td class="r '+(M.acum[i]<0?'neg':'pos')+'">'+brl(M.acum[i])+'</td></tr>'; }
+  h+='<div class="card"><h3>Ano 1, mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">'+(p.comissaoInclusa?'Salário + comissão c/ encargos':'Fixo c/ encargos')+'</th>'+(p.comissaoInclusa?'':'<th class="r">Comissão c/ encargos</th>')+'<th class="r">Custo do time</th><th class="r">Compra das cotas</th><th class="r">Recorrente recebida</th><th class="r">Caixa do mês</th><th class="r">Acumulado</th></tr></thead><tbody>';
+  for(var i=0;i<12;i++){ h+='<tr><td>'+ROT[i]+'</td><td class="r">'+brl(M.custoFixo[i])+'</td>'+(p.comissaoInclusa?'':'<td class="r">'+brl(M.custoVar[i])+'</td>')+'<td class="r">'+brl(M.custo[i])+'</td><td class="r">'+brl(M.cotas[i])+'</td><td class="r">'+brl(M.rev[i])+'</td><td class="r '+(M.caixa[i]<0?'neg':'pos')+'">'+brl(M.caixa[i])+'</td><td class="r '+(M.acum[i]<0?'neg':'pos')+'">'+brl(M.acum[i])+'</td></tr>'; }
   h+='</tbody></table></div></div>';
   h+='<div class="tiles"><div class="tile"><span class="label">CAC no ano 1</span><span class="num">'+brl(M.cac)+'</span><span class="note">custo do time comercial ÷ contratos; o setup não abate</span></div>'+
-   '<div class="tile"><span class="label">Payback do CAC (Weesu)</span><span class="num">'+nf(M.cac/(p.ticketLow*p.margemBruta),1)+' meses</span><span class="note">sobre ticket de '+brl(p.ticketLow)+'</span></div>'+
+   '<div class="tile"><span class="label">Payback do CAC</span><span class="num">'+nf(M.cac/(p.ticketLow*p.margemBruta),1)+' meses</span><span class="note">sobre ticket de '+brl(p.ticketLow)+'</span></div>'+
    '<div class="tile"><span class="label">LTV por cliente</span><span class="num">'+k(p.ticketLow*p.margemBruta/p.churn)+'</span><span class="note">margem de '+pct(p.margemBruta,0)+' ÷ churn de '+pct(p.churn)+'</span></div>'+
    '<div class="tile"><span class="label">LTV:CAC</span><span class="num">'+nf(p.ticketLow*p.margemBruta/p.churn/M.cac,1)+'×</span><span class="note">referência SaaS: 3× ou mais</span></div></div>';
   h+='<div class="callout"><h4>O setup é 100% da Weesu</h4><p>Setup médio de '+brl(p.setupMedio)+' por contrato, recebido integralmente pela Weesu para custear a implantação. A Dixx não recebe nenhuma parte do setup, e ele não abate o custo comercial: a Dixx é remunerada só pela recorrente.</p></div>';
@@ -717,13 +717,15 @@ function secInvest(M){
 }
 
 function secPlano(){
+  var Mp=modelo(), p=S.prem, fx={meta1:brl(Mp.meta[0]),nmrr3:brl(sum(Mp.meta.slice(0,3))),nmrr6:brl(sum(Mp.meta.slice(0,6))),nmrr12:brl(sum(Mp.meta.slice(0,12))),mrr12:k(Mp.mrr[11]),meta12:brl(Mp.meta[11]),dir:pct(p.revDireta,0),ind:pct(p.revIndicacao,0),parc:pct(p.comissaoParceiro,0)};
+  var F=function(t){ return String(t).replace(/\{(\w+)\}/g,function(_,k){ return fx[k]!=null?fx[k]:'{'+k+'}'; }); };
   var total=0,feitos=0; HORIZ.forEach(function(hz){ hz.acts.forEach(function(a){ total++; if(S.acoes[a[0]]&&S.acoes[a[0]].feito) feitos++; }); });
   var h='<div class="sec-head"><span class="label">Plano de ação por horizonte</span><h2>'+feitos+' de '+total+' ações concluídas</h2><p>Cada horizonte tem um resultado esperado, as ações, quem responde por elas e como medir. Marque o que estiver concluído: fica salvo para todos que acessam o painel.</p></div><div class="horiz">';
   HORIZ.forEach(function(hz){
     var n=hz.acts.length, d=hz.acts.filter(function(a){return S.acoes[a[0]]&&S.acoes[a[0]].feito;}).length;
-    h+='<section class="hz"><header><span class="label">'+hz.per+'</span><h3>'+hz.nome+'</h3></header><p class="goal">'+hz.goal+'</p><div class="prog" aria-label="'+d+' de '+n+' concluídas"><i style="width:'+(d/n*100)+'%"></i></div><ul class="acts">';
+    h+='<section class="hz"><header><span class="label">'+hz.per+'</span><h3>'+hz.nome+'</h3></header><p class="goal">'+esc(F(hz.goal))+'</p><div class="prog" aria-label="'+d+' de '+n+' concluídas"><i style="width:'+(d/n*100)+'%"></i></div><ul class="acts">';
     hz.acts.forEach(function(a){ var ok=S.acoes[a[0]]&&S.acoes[a[0]].feito;
-      h+='<li class="act'+(ok?' done':'')+'"><input type="checkbox" id="ac-'+a[0]+'" data-acao="'+a[0]+'"'+(ok?' checked':'')+(S.canWrite?'':' disabled')+'><label for="ac-'+a[0]+'"><span class="txt">'+esc(a[1])+'</span><span class="who">'+esc(a[2])+' · '+esc(a[3])+'</span></label></li>'; });
+      h+='<li class="act'+(ok?' done':'')+'"><input type="checkbox" id="ac-'+a[0]+'" data-acao="'+a[0]+'"'+(ok?' checked':'')+(S.canWrite?'':' disabled')+'><label for="ac-'+a[0]+'"><span class="txt">'+esc(F(a[1]))+'</span><span class="who">'+esc(a[2])+' · '+esc(F(a[3]))+'</span></label></li>'; });
     h+='</ul></section>';
   });
   h+='</div><div class="card"><h3>Ritual de gestão</h3><div class="scroll"><table class="t"><thead><tr><th>Cadência</th><th>Quem</th><th>Pauta</th></tr></thead><tbody>'+
@@ -778,7 +780,7 @@ var VEND=['v_pipe','v_base','v_cli','v_contab','v_ecom','v_erp'];
 var mesSel=MESES[0];
 function secAcomp(M){
   var i=MESES.indexOf(mesSel), r=S.realizado[mesSel]||{};
-  var h='<div class="sec-head"><span class="label">Previsto × realizado</span><h2>Acompanhamento mensal de fechamentos, conversões e recorrente</h2><p>Lance os números do mês a partir do CRM. As conversões e a recorrente devida à operação comercial são calculadas na hora; depois de 2 ou 3 meses, as conversões substituem as premissas do funil.</p></div>';
+  var h='<div class="sec-head"><span class="label">Previsto × realizado</span><h2>Acompanhamento mensal de fechamentos, conversões e recorrente</h2><p>Lance os números do mês a partir do CRM. As conversões e a recorrente devida à Dixx são calculadas na hora; depois de 2 ou 3 meses, as conversões substituem as premissas do funil.</p></div>';
   h+='<div class="card"><div class="row"><div class="field" style="max-width:220px"><label for="mesSel">Mês</label><select id="mesSel">'+MESES.map(function(m,j){return '<option value="'+m+'"'+(m===mesSel?' selected':'')+'>'+ROT[j]+(S.realizado[m]?' · lançado':'')+'</option>';}).join('')+'</select></div>'+
    '<div class="tile" style="padding:0 12px"><span class="label">Meta do mês</span><span class="num" style="font-size:20px">'+brl(M.meta[i])+'</span></div>'+
    '<div class="tile" style="padding:0 12px"><span class="label">Contratos esperados</span><span class="num" style="font-size:20px">'+nf(M.deals[i],1)+'</span></div>'+
@@ -845,7 +847,7 @@ function secMetodo(){
   h+='<div class="card"><h3>Fontes dos custos de pessoal</h3><ul class="small" style="padding-left:18px;display:flex;flex-direction:column;gap:6px">'+
    '<li>Executivo de contas sênior em São Paulo: R$ 11,7 a 20,8 mil, mediana de R$ 17 mil (<a href="https://www.roberthalf.com/br/pt/vagas-detalhes/executivoa-de-contas-g/sao-paulo" target="_blank" rel="noopener">Robert Half</a>); em Belo Horizonte, mediana de R$ 15,45 mil (<a href="https://www.roberthalf.com/br/pt/vagas-detalhes/executivoa-de-contas-g/belo-horizonte" target="_blank" rel="noopener">Robert Half</a>).</li>'+
    '<li>SDR pleno: R$ 7 a 10 mil com variável; AE de R$ 12 a 25 mil com comissão (<a href="https://jobrise.io/pt/blog/tech-sales-brasil-sdr-ae-vagas/" target="_blank" rel="noopener">Jobrise, 2026</a>).</li>'+
-   '<li>Encargos CLT fora do Simples: 1,56× a 1,9× o salário (<a href="https://valorfinal.com.br/guia/custo-funcionario" target="_blank" rel="noopener">ValorFinal</a>, <a href="https://www.contabilidadezen.com.br/blog/quanto-custa-funcionario-encargos-2026/" target="_blank" rel="noopener">Contabilidade Zen</a>). O plano usa 1,7×.</li></ul></div>';
+   '<li>Encargos CLT fora do Simples: 1,56× a 1,9× o salário (<a href="https://valorfinal.com.br/guia/custo-funcionario" target="_blank" rel="noopener">ValorFinal</a>, <a href="https://www.contabilidadezen.com.br/blog/quanto-custa-funcionario-encargos-2026/" target="_blank" rel="noopener">Contabilidade Zen</a>). O plano usa 1,7× sobre o valor de salário + comissão, porque a comissão também gera encargos.</li></ul></div>';
   h+='<div class="card"><h3>Premissas a validar</h3><ul class="small" style="padding-left:18px;display:flex;flex-direction:column;gap:6px">'+
    '<li>Valuation projetado mantém o múltiplo de hoje ('+nf(p.valuation/(p.mrrInicial*12),1)+'× o ARR). A tabela de sensibilidade mostra o efeito de múltiplos menores.</li>'+
    '<li>A Dixx compra os '+pct(p.equityPct,0)+' a preço fixo de '+brl(p.valuation*p.equityPct*p.pagaCotas)+' (valuation de hoje), em parcelas mensais iguais ao longo de '+p.prazoCotasMeses+' meses. O calendário exato ainda não está definido.</li>'+
