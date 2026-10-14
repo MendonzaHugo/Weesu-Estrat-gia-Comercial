@@ -479,8 +479,8 @@ function legend(items){ return '<div class="legend">'+items.map(function(it){ re
 /* ---------- seções ---------- */
 var BLOCOS=[
  {id:'intro',nome:'Introdução',abas:[['abertura','Abertura'],['canais','Canais'],['metas','Metas']]},
- {id:'soc',nome:'Sociedade',abas:[['receitas','Receitas da Dixx'],['sociedade','Sociedade'],['repasse','Repasse viável']]},
- {id:'exec',nome:'Execução e projeções',curto:'Execução',abas:[['investimento','Investimento'],['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket'],['dezanos','10 anos'],['abcanais','Abertura de canais']]}
+ {id:'soc',nome:'Sociedade',abas:[['receitas','Receitas da Dixx'],['sociedade','Sociedade'],['repasse','Repasse viável'],['investimento','Investimento'],['dezanos','10 anos'],['abcanais','Abertura de canais']]},
+ {id:'exec',nome:'Execução',abas:[['plano','Plano de ação'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket']]}
 ];
 var SECOES=[]; BLOCOS.forEach(function(b){ b.abas.forEach(function(a){ SECOES.push(a); }); });
 var EXTRAS=[['metodo','Método e fontes','Método']]; // fora dos 3 blocos
