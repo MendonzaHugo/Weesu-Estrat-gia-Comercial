@@ -342,7 +342,7 @@ function arr5(s){ var a=String(s||'').split(/[,;\s]+/).map(Number).filter(functi
 /* ---------- estado ---------- */
 var S={prem:Object.assign({},DEF),pipeline:[],realizado:{},acoes:{},wms:{},db:null,canWrite:false,loaded:{pipeline:false}};
 var aba='abertura';
-try{ var h=(location.hash||'').slice(1); if(h) aba=({investimento:'time'})[h]||h; }catch(e){}
+try{ var h=(location.hash||'').slice(1); if(h) aba=h; }catch(e){}
 
 /* ---------- fechamentos anteriores ao plano (status ganho, mês antes de nov/26) ---------- */
 function preplano(){
@@ -488,8 +488,7 @@ function legend(items){ return '<div class="legend">'+items.map(function(it){ re
 /* ---------- seções ---------- */
 var BLOCOS=[
  {id:'estr',nome:'Estratégia',abas:[['abertura','Abertura'],['canais','Canais e ICP'],['metas','Metas e funil']]},
- {id:'time',nome:'Time e rotina',curto:'Time',abas:[['time','Time'],['rotina','Rotina e indicadores']]},
- {id:'exec',nome:'Execução',abas:[['plano','Plano 30/90/180'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket']]},
+ {id:'exec',nome:'Execução',abas:[['plano','Plano 30/90/180'],['rotina','Rotina e indicadores'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket']]},
  {id:'proj',nome:'Projeções',abas:[['dezanos','10 anos'],['abcanais','Abertura de canais']]}
 ];
 var SECOES=[]; BLOCOS.forEach(function(b){ b.abas.forEach(function(a){ SECOES.push(a); }); });
