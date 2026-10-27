@@ -852,24 +852,26 @@ function secPipeline(){
   var tot=sum(ab.map(function(x){return +x.mrr||0;})), pond=sum(ab.map(function(x){return (+x.mrr||0)*(+x.prob||0);})), setupP=sum(ab.map(function(x){return (+x.setup||0)*(+x.prob||0);}));
   var nov=sum(ab.filter(function(x){return x.mes==='2026-11';}).map(function(x){return (+x.mrr||0)*(+x.prob||0);}));
   var hi=ab.filter(function(x){return (+x.mrr||0)>=S.prem.ticketHigh;});
-  var h='<div class="sec-head"><span class="label">Negócios em andamento · Carteira Comercial (08/10/2026) e MeliXP do e-commerce Puro (07/10/2026)</span>';
+  var semAcao=ab.filter(function(x){return x.proximaAcao==='Sem próxima ação';}).length, parados=ab.filter(function(x){return (+x.diasSemInteracao||0)>7;}).length;
+  var atrasL=ab.filter(function(x){return x.mes&&x.mes<MESES[0];}), atras=atrasL.length, atrasV=sum(atrasL.map(function(x){return (+x.mrr||0)*(+x.prob||0);}));
+  var h='<div class="sec-head"><span class="label">Negócios em andamento · CRM Weesu (27/10/2026) e base MeliXP do e-commerce Puro</span>';
   if(!S.loaded.pipeline) return h+'<h2>Pipeline</h2></div><div class="empty">Carregando os negócios em andamento…</div>';
   if(!d.length) return h+'<h2>Pipeline</h2></div><div class="empty">Nenhum negócio cadastrado ainda.</div>';
-  h+='<h2>'+ab.length+' negócios abertos somam '+k(tot)+' de mensalidade; ponderados, '+k(pond)+'</h2><p>'+(hi.length?hi.length+' deles já são high ticket ('+hi.map(function(x){return esc(x.nome);}).join(', ')+'). ':'')+'Para novembro, o pipeline ponderado é de '+brl(nov)+' contra a meta de '+brl(S.prem.metaM1)+'. Chance e mês previsto são estimativas iniciais: ajuste aqui e a previsão muda junto.</p></div>';
-  h+='<div class="tiles"><div class="tile"><span class="label">Mensalidade em aberto</span><span class="num">'+k(tot)+'</span><span class="note">'+ab.length+' negócios</span></div><div class="tile"><span class="label">Ponderada</span><span class="num">'+k(pond)+'</span><span class="note">'+nf(sum(ab.map(function(x){return +x.prob||0;})),1)+' contratos esperados</span></div><div class="tile"><span class="label">Setup ponderado</span><span class="num">'+k(setupP)+'</span><span class="note">receita de implantação</span></div><div class="tile"><span class="label">Ticket médio do pipeline</span><span class="num">'+k(tot/Math.max(1,ab.length))+'</span><span class="note">contra '+brl(S.prem.ticketLow)+' de hoje</span></div></div>';
+  h+='<h2>'+ab.length+' negócios abertos somam '+k(tot)+' de mensalidade; ponderados, '+k(pond)+'</h2><p>'+(hi.length?hi.length+' deles já são high ticket ('+hi.map(function(x){return esc(x.nome);}).join(', ')+'). ':'')+'Para novembro, o pipeline ponderado é de '+brl(nov)+' contra a meta de '+brl(S.prem.metaM1)+'. Etapa, chance e previsão vêm do CRM; '+semAcao+' dos '+ab.length+' abertos estão sem próxima ação e '+parados+' estão há mais de 7 dias sem interação.'+(atras?' Outros '+atras+' têm previsão em outubro ainda em aberto ('+k(atrasV)+' ponderados): se escorregarem, entram em novembro.':'')+'</p></div>';
+  h+='<div class="tiles"><div class="tile"><span class="label">Mensalidade em aberto</span><span class="num">'+k(tot)+'</span><span class="note">'+ab.length+' negócios</span></div><div class="tile"><span class="label">Ponderada</span><span class="num">'+k(pond)+'</span><span class="note">'+nf(sum(ab.map(function(x){return +x.prob||0;})),1)+' contratos esperados</span></div><div class="tile"><span class="label">Setup ponderado</span><span class="num">'+k(setupP)+'</span><span class="note">receita de implantação</span></div><div class="tile"><span class="label">Sem próxima ação</span><span class="num">'+semAcao+' de '+ab.length+'</span><span class="note">'+parados+' parados há mais de 7 dias</span></div></div>';
   var NL=S.pipeline.filter(function(x){return x.status!=='lead';}), nP=NL.filter(function(x){return x.origem==='puro';}).length, nL=S.pipeline.length-NL.length;
   h+=mxFunilHTML();
   h+='<div class="row" role="group" aria-label="Filtrar origem">'+[['todos','Negócios ('+NL.length+')'],['puro','E-commerce Puro ('+nP+')'],['direta','Captação direta ('+(NL.length-nP)+')'],['leads','Base MeliXP sem negócio ('+nL+')']].map(function(o){return '<button class="chip" data-pf="'+o[0]+'" aria-pressed="'+(pipeFiltro===o[0])+'">'+o[1]+'</button>';}).join('')+'</div>';
   h+='<div class="card"><div class="scroll"><table class="t"><thead><tr><th>Negócio</th><th>Etapa / situação</th><th class="r">Mensalidade</th><th class="r">Setup</th><th>Chance</th><th>Mês previsto</th><th>Status</th><th class="r">Ponderado</th></tr></thead><tbody>';
-  var opts=MESES.concat(['2027-11+']);
+  var opts=[''].concat(MESES).concat(['2027-11+']);
   d.forEach(function(x){ var dis=S.canWrite?'':' disabled';
     h+='<tr'+(x.status!=='aberto'?' class="dim"':'')+'><td><b>'+esc(x.nome)+'</b>'+((+x.mrr||0)>=S.prem.ticketHigh?' <span class="pill acc">high ticket</span>':'')+(x.origem==='puro'?' <span class="pill" style="background:color-mix(in srgb,var(--s5) 22%,transparent);color:var(--ink)">e-commerce Puro'+(x.tier?' · '+esc(x.tier):'')+'</span>':'')+'<small>'+esc(x.segmento)+' · '+esc(x.produto||'')+'</small></td><td>'+esc(x.etapa)+'<small><span class="pill '+(x.tom||'')+'">'+esc(x.situacao)+'</span></small><small>'+esc(x.pendencia||'')+'</small></td>'+
      '<td class="r">'+brl(x.mrr)+(x.mrrEstimado?'<small>estimada pelo tier</small>':(x.pedDia?'<small>'+nf(x.pedDia,0)+' ped/dia</small>':''))+'</td><td class="r">'+brl(x.setup)+'</td>'+
      '<td><input class="inl" type="number" min="0" max="100" step="5" id="pp-'+x.id+'" data-pid="'+x.id+'" data-f="prob" value="'+Math.round((+x.prob||0)*100)+'" aria-label="Chance de fechar (%)"'+dis+'>%</td>'+
-     (x.mes&&x.mes<MESES[0]? '<td>'+mesNome(x.mes)+'<small>antes do plano</small></td>' : '<td><select class="inl" id="pm-'+x.id+'" data-pid="'+x.id+'" data-f="mes" aria-label="Mês previsto"'+dis+'>'+opts.map(function(m,i){return '<option value="'+m+'"'+(x.mes===m?' selected':'')+'>'+(ROT[i]||'depois')+'</option>';}).join('')+'</select></td>')+
+     (x.mes&&x.mes<MESES[0]? '<td>'+mesNome(x.mes)+'<small>antes do plano</small></td>' : '<td><select class="inl" id="pm-'+x.id+'" data-pid="'+x.id+'" data-f="mes" aria-label="Mês previsto"'+dis+'>'+opts.map(function(m,i){return '<option value="'+m+'"'+((x.mes||'')===m?' selected':'')+'>'+(m===''?'sem data':(ROT[i-1]||'depois'))+'</option>';}).join('')+'</select></td>')+
      '<td><select class="inl" id="ps-'+x.id+'" data-pid="'+x.id+'" data-f="status" aria-label="Status"'+dis+'>'+[['aberto','Aberto'],['lead','Lead (sem negócio)'],['ganho','Ganho'],['perdido','Perdido']].map(function(o){return '<option value="'+o[0]+'"'+(x.status===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></td>'+
      '<td class="r">'+(x.status==='aberto'?brl((+x.mrr||0)*(+x.prob||0)):'—')+'</td></tr>'; });
-  h+='</tbody></table></div><p class="small muted">Mensalidade de casos com faixa ou "a definir" usa o meio da faixa ou a simulação da Carteira Comercial. Nos leads MeliXP, a mensalidade sai da Tabela A pelo volume declarado (pedidos/dia × 26); sem volume, é estimada pelo tier (A R$ 3.000, B R$ 2.000, C R$ 1.500, D R$ 1.000). Leads do MeliXP sem apresentação ficam como base (status Lead) e não entram no pipeline nem na previsão individual; quando um deles agendar apresentação, mude o status para Aberto. Dados de contato ficam no CRM, fora deste painel.</p></div>';
+  h+='</tbody></table></div><p class="small muted">Negócios, etapas, valores, chance e previsão: retrato do CRM Weesu em 27/10/2026; negócios sem previsão aparecem como "sem data" e não entram na previsão mensal. Nomes de pessoas físicas aparecem só com iniciais. Nos leads MeliXP, a mensalidade sai da Tabela A pelo volume declarado (pedidos/dia × 26); sem volume, é estimada pelo tier (A R$ 3.000, B R$ 2.000, C R$ 1.500, D R$ 1.000). Leads do MeliXP sem apresentação ficam como base (status Lead) e não entram no pipeline nem na previsão individual; quando um deles agendar apresentação, mude o status para Aberto. Dados de contato ficam no CRM, fora deste painel.</p></div>';
   return h;
 }
 
@@ -882,7 +884,7 @@ var VEND=['v_pipe','v_base','v_cli','v_contab','v_ecom','v_erp'];
 var mesSel=MESES[0];
 function preplanoHTML(){
   var P=preplano(), p=S.prem; if(!P.itens.length) return '';
-  var h='<div class="card"><h3>Fechamentos já realizados antes do plano<small>'+mesNome(P.mesFech)+'</small></h3>';
+  var h='<div class="card"><h3>Fechamentos já realizados antes do plano<small>'+(function(){ var ms=P.itens.map(function(d){return d.mes;}).filter(function(v,i,s){return s.indexOf(v)===i;}).sort(); return ms.map(mesNome).join(', '); })()+'</small></h3>';
   h+='<div class="tiles" style="margin-bottom:12px"><div class="tile"><span class="label">NMRR fechado</span><span class="num">'+brl(P.total)+'</span><span class="note">'+P.itens.filter(function(d){return !d.upsell;}).length+' clientes novos e '+P.itens.filter(function(d){return d.upsell;}).length+' upsell</span></div>'+
    '<div class="tile"><span class="label">Setup fechado</span><span class="num">'+brl(P.setup)+'</span><span class="note">100% da Weesu</span></div>'+
    '<div class="tile"><span class="label">Ticket médio</span><span class="num">'+brl(P.total/Math.max(1,P.itens.filter(function(d){return !d.upsell;}).length))+'</span><span class="note">dos clientes novos</span></div>'+
@@ -969,7 +971,7 @@ function secMetodo(){
    '<li>Time: Hugo (liderança, parceiros e fechamento) e 1 SDR, os dois operando desde agosto, sem rampa no modelo; Closer como 3ª pessoa conforme os gatilhos do funil.</li>'+
    '<li>Conversões: '+pct(p.convReuniaoVenda,0)+' de reunião em venda; '+pct(p.convIndicacao,0)+' de indicação em venda (contabilidades e bases dos franqueados); '+pct(p.convEcom,0)+' no e-commerce Puro; '+pct(p.convErp,0)+' nos ERPs corporativos, com ciclo de 2 meses.</li>'+
    '<li>Rampa dos canais no ano: bases de até 8 franqueados Omie somadas à nossa base, indicação de clientes ativos subindo de 0,5 para 2 vendas/mês, 24 contabilidades (0,3 indicação/mês cada), 6 novas indicações/mês do e-commerce Puro além dos leads MeliXP, e 4 ERPs corporativos parceiros de integração (0,5 oportunidade/mês cada, prospectada e fechada pelo time comercial, sem comissão) em out/27.</li>'+
-   '<li>Chance de fechar e mês previsto de cada negócio do pipeline: estimados pela etapa e pelo engajamento na Carteira Comercial.</li></ul></div>';
+   '<li>Chance de fechar e mês previsto de cada negócio do pipeline: vêm do CRM Weesu (retrato de 27/10/2026), pela probabilidade de cada etapa.</li></ul></div>';
   return h;
 }
 
@@ -980,7 +982,7 @@ function render(){
   h=(SEC[aba]||secAbertura)(M);
   var ix=SECOES.findIndex(function(s){return s[0]===aba;}), nx=ix<0?null:SECOES[ix+1], nb=nx&&blocoDe(nx[0])!==blocoDe(aba)?blocoDe(nx[0]):null;
   if(nx) h+='<div class="proxima"><button class="btn ghost" data-ir="'+nx[0]+'">Próximo: '+(nb?(BLOCOS.indexOf(nb)+1)+'. '+nb.nome+' · ':'')+nx[1]+' →</button></div>';
-  el('main').innerHTML='<div class="wrap">'+h+'<footer>Plano Comercial Weesu · base de leads de 12/10/2026 · pipeline de 08/10/2026 · valores em reais, premissas revisadas mensalmente</footer></div>';
+  el('main').innerHTML='<div class="wrap">'+h+'<footer>Plano Comercial Weesu · base de leads de 12/10/2026 · pipeline do CRM de 27/10/2026 · valores em reais, premissas revisadas mensalmente</footer></div>';
   var AF={abertura:afterAbertura,dezanos:afterDezAnos,abcanais:afterAbCanais,acompanhamento:afterAcomp,metas:afterMetas}; if(AF[aba]) AF[aba](M);
 }
 
