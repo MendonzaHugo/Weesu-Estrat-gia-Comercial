@@ -236,13 +236,13 @@ var DEF = {
   setupMedio:12500, margemBruta:0.80,
   revDireta:0.20, revIndicacao:0.10, comissaoParceiro:0.10, vigenciaMeses:60,
   fatorEncargos:1.70, reajuste:0.05, sdrBase:3000, closerBase:6000, execBase:6000, comissaoInclusa:1, mktSdr:6000, mktCloser:11000, mktExec:12000, mktDiretor:25000,
-  hcSdr:'1,2,2,2,3', hcCloser:'1,1,2,2,2', hcExec:'1,1,1,2,2',
+  hcSdr:'1,1,1,1,1', hcCloser:'0,0,0,0,0', hcExec:'0,0,0,0,0',
   sdrPorReuniao:150, closerPctNmrr:0.40, execPctNmrrInd:0.25, execGarantia:2500,
   reunioesSdrPlena:20, convReuniaoVenda:0.15, convIndicacao:0.25, convEcom:0.30, convErp:0.20, mxRespPres:0.36, mxResposta:0.33, mxFechamento:0.20, mxTicket:2000
 };
 // rampa de produtividade (literatura: SDR ~3 meses; AE/closer ~5 meses, Bridge Group; gestor de canais/parcerias 6 a 9 meses)
-var RAMP_SDR=[0.25,0.5,0.75,1,1,1,1,1,1,1,1,1];
-var RAMP_CLOSER=[0.2,0.35,0.5,0.65,0.8,0.9,1,1,1,1,1,1];
+var RAMP_SDR=[1,1,1,1,1,1,1,1,1,1,1,1];   // SDR já opera desde agosto
+var RAMP_CLOSER=[1,1,1,1,1,1,1,1,1,1,1,1]; // Hugo conduz e fecha desde agosto
 var RAMP_EXEC=[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1,1];
 var FRANQ=[0,1,2,3,4,5,6,6,7,7,8,8];            // volume adicional da base de outros franqueados Omie (somado à nossa base)
 var CLIENTES=[0,0.5,1,1,1,1,1.5,1.5,1.5,2,2,2];  // vendas/mês por indicação de clientes ativos
@@ -267,52 +267,52 @@ var CANAIS=[
 ];
 
 var PREM_CAMPOS=[
- ['Empresa hoje',[['mrrInicial','MRR atual (R$)','r'],['clientesIniciais','Clientes ativos','n'],['valuation','Valuation de referência (R$)','r','usado nas projeções de 10 anos']]],
- ['Metas e retenção',[['metaM1','Meta de NMRR do mês 1 (R$)','r'],['cresc1','Crescimento da meta ao mês · ano 1','p','cenário oficial: 5%'],['cresc2','· ano 2','p'],['cresc3','· ano 3','p'],['cresc4','· ano 4','p'],['cresc5','· ano 5','p'],['churn','Churn mensal do MRR','p','faixa de 1% a 2%']]],
- ['Ticket e mix',[['ticketLow','Ticket low (ERPs de entrada) (R$)','r'],['ticketHigh','Ticket high (ERPs corporativos) (R$)','r'],['shareHigh','NMRR high ticket a partir do ano 2','p'],['shareInd','NMRR via indicações a partir do ano 2','p'],['shareInb','NMRR via inbound a partir do ano 2','p','captação direta; o resto é prospecção ativa e ERPs'],['setupMedio','Setup médio (R$)','r'],['margemBruta','Margem bruta da mensalidade','p']]],
+ ['Empresa hoje',[['mrrInicial','MRR atual (R$)','r'],['clientesIniciais','Clientes ativos','n']]],
+ ['Metas e retenção',[['metaM1','Meta de NMRR do mês 1 (R$)','r'],['cresc1','Crescimento da meta ao mês','p','cenário oficial: 5%'],['churn','Churn mensal do MRR','p','faixa de 1% a 2%']]],
+ ['Ticket e mix',[['ticketLow','Ticket low (ERPs de entrada) (R$)','r'],['ticketHigh','Ticket high (ERPs corporativos) (R$)','r'],['setupMedio','Setup médio (R$)','r'],['margemBruta','Margem bruta da mensalidade','p']]],
  ['Parceiros',[['comissaoParceiro','Comissão recorrente do parceiro na indicação','p']]],
- ['Time e custos',[['comissaoInclusa','Comissão já incluída no valor (1 = sim, 0 = somar à parte)','n'],['mktSdr','Salário + comissão · SDR sênior (R$/mês, mercado)','r','média mensal'],['mktCloser','Salário + comissão · Closer sênior (R$/mês, mercado)','r'],['mktExec','Salário + comissão · Executivo de Negócios (R$/mês, mercado)','r'],['fatorEncargos','Fator de encargos','x','custo total ÷ salário'],['reajuste','Reajuste salarial ao ano','p'],['hcSdr','SDRs por ano (anos 1 a 5)','t'],['hcCloser','Closers por ano','t'],['hcExec','Executivos de Negócios por ano','t']]],
- ['Funil do ano 1 (até medir o real)',[['reunioesSdrPlena','Reuniões realizadas por SDR ao mês','n'],['convReuniaoVenda','Reunião → venda (nossa base)','p'],['convIndicacao','Indicação → venda (contabilidades e bases dos franqueados)','p'],['convEcom','Indicação → venda (e-commerce Puro)','p'],['convErp','Oportunidade → venda (ERPs corporativos, direta)','p'],['convInbound','Lead inbound qualificado → venda','p'],['mxResposta','MeliXP: contatado → resposta (real: 33%)','p'],['mxRespPres','MeliXP: resposta → apresentação (real: 36%)','p'],['mxFechamento','MeliXP: apresentação → contrato','p','cenário conservador do relatório: 20%'],['mxTicket','MeliXP: ticket médio esperado (R$)','r']]]
+ ['Funil (até medir o real)',[['reunioesSdrPlena','Reuniões realizadas por SDR ao mês','n'],['convReuniaoVenda','Reunião → venda (nossa base)','p'],['convIndicacao','Indicação → venda (contabilidades e bases dos franqueados)','p'],['convEcom','Indicação → venda (e-commerce Puro)','p'],['convErp','Oportunidade → venda (ERPs corporativos, direta)','p'],['convInbound','Lead inbound qualificado → venda','p'],['mxResposta','MeliXP: contatado → resposta (real: 33%)','p'],['mxRespPres','MeliXP: resposta → apresentação (real: 36%)','p'],['mxFechamento','MeliXP: apresentação → contrato','p','cenário conservador do relatório: 20%'],['mxTicket','MeliXP: ticket médio esperado (R$)','r']]]
 ];
 
 /* ---------- Ações por horizonte ---------- */
 var HORIZ=[
  {id:'m1',nome:'Próximos 30 dias',per:'até 30/11/2026',goal:'{meta1} de NMRR em novembro, quase todo do pipeline atual, e a máquina comercial rodando: CRM limpo, rituais na agenda e cadências no ar',acts:[
-  ['n1a','Fechar os negócios previstos para novembro: Pink Urban, All Filmes, Casa da Laurinha, Coutinho Shopping e Alex Araujo','Closer','NMRR ≥ R$ 15 mil','30/11'],
-  ['n1k','Limpar o pipeline no CRM: toda oportunidade com origem, etapa, valor, próxima ação e data; nenhum negócio com mais de 7 dias sem interação','Closer + SDR','100% com próxima ação','07/11'],
+  ['n1a','Fechar os negócios previstos para novembro: Pink Urban, All Filmes, Casa da Laurinha, Coutinho Shopping e Alex Araujo','Hugo','NMRR ≥ R$ 15 mil','30/11'],
+  ['n1k','Limpar o pipeline no CRM: toda oportunidade com origem, etapa, valor, próxima ação e data; nenhum negócio com mais de 7 dias sem interação','Hugo + SDR','100% com próxima ação','07/11'],
   ['n1l','Colocar na agenda os rituais (diária, revisão semanal de pipeline, fechamento mensal) e publicar o painel de indicadores','Hugo','Rituais acontecendo','07/11'],
   ['n1c','Aprovar a política comercial: piso de setup, alçada de desconto e regra de canal (quem originou o cliente)','Sócios + comercial','Política publicada','15/11'],
   ['n1d','Subir a Onda 1 da nossa base (157 contas Hot de TOTVS, Omie e Senior) com cadência por ERP e roteiro por frente (pronta × diagnóstico)','SDR','157 contas em cadência','15/11'],
-  ['n1g','MeliXP: registrar o desfecho das apresentações com data passada, convidar os 18 que responderam e ligar para os 11 tier A sem resposta','SDR + Closer','+6 apresentações','15/11'],
-  ['n1i','Lançar o programa de indicação de clientes ativos: convite aos clientes, regra do benefício e formulário de indicação','Closer + Weesu (marketing)','Programa lançado','15/11'],
-  ['n1e','Obter as bases de outros franqueados Omie e somá-las à nossa base, com a mesma cadência de prospecção','SDR + Executivo de Negócios','Bases importadas no CRM','30/11'],
-  ['n1f','Reativar as contabilidades parceiras que já conhecemos pela Omie, com kit de indicação','Executivo de Negócios','2 contabilidades ativas','30/11'],
+  ['n1g','MeliXP: registrar o desfecho das apresentações com data passada, convidar os 18 que responderam e ligar para os 11 tier A sem resposta','SDR + Hugo','+6 apresentações','15/11'],
+  ['n1i','Lançar o programa de indicação de clientes ativos: convite aos clientes, regra do benefício e formulário de indicação','Hugo + Weesu (marketing)','Programa lançado','15/11'],
+  ['n1e','Obter as bases de outros franqueados Omie e somá-las à nossa base, com a mesma cadência de prospecção','SDR + Hugo','Bases importadas no CRM','30/11'],
+  ['n1f','Reativar as contabilidades parceiras que já conhecemos pela Omie, com kit de indicação','Hugo','2 contabilidades ativas','30/11'],
   ['n1j','Montar com o marketing da Weesu a frente de inbound: ICP, oferta de diagnóstico gratuito da operação, landing page, formulário ligado ao CRM e retorno do SDR em até 1 hora útil','Weesu (marketing) + SDR','Formulário no CRM','30/11'],
-  ['n1h','Abrir conversa com os canais de Sankhya, Senior e TOTVS para a frente high ticket','Executivo de Negócios + sócios','2 conversas abertas','30/11']]},
+  ['n1h','Abrir conversa com os canais de Sankhya, Senior e TOTVS para a frente high ticket','Hugo + sócios','2 conversas abertas','30/11']]},
  {id:'m3',nome:'90 dias',per:'até 31/01/2027',goal:'{nmrr3} de NMRR acumulado, funil real medido por etapa e o primeiro ERP corporativo parceiro',acts:[
   ['n3a','Cadência em 100% da Onda 1 e início da Onda 2 (614 contas com ERP conhecido)','SDR','20 reuniões realizadas/mês','31/12'],
-  ['n3b','6 contabilidades ativas, com reunião mensal de pipeline, e 1 venda/mês por indicação de clientes','Executivo de Negócios','Indicações recorrentes','31/01'],
+  ['n3b','6 contabilidades ativas, com reunião mensal de pipeline, e 1 venda/mês por indicação de clientes','Hugo','Indicações recorrentes','31/01'],
   ['n3g','Inbound: 3 conteúdos por mês sobre dores de estoque e expedição, busca paga por ERP (Omie, Bling, Olist) e 3 a 4 leads qualificados por mês','Weesu (marketing) + SDR','≥ 3 leads qualificados/mês','31/01'],
-  ['n3c','Primeiro acordo de integração com ERP corporativo (Sankhya, Senior ou TOTVS) e lista de clientes-alvo para o time prospectar','Executivo de Negócios + sócios','1 ERP parceiro','31/01'],
+  ['n3c','Primeiro acordo de integração com ERP corporativo (Sankhya, Senior ou TOTVS) e lista de clientes-alvo para o time prospectar','Hugo + sócios','1 ERP parceiro','31/01'],
   ['n3d','Trocar as premissas do funil pelas conversões medidas no CRM','Hugo','Premissas revisadas','31/01'],
   ['n3h','Validar o ICP com os primeiros fechamentos: ramo, ERP, pedidos por dia, ticket e motivo de compra; ajustar o score da base','Hugo','ICP v2 publicado','31/01'],
   ['n3i','Validar o CNAE das 223 empresas do SAM marcadas e confirmar o ERP das 335 contas "a confirmar"','SDR','Base revisada','31/01'],
   ['n3e','Definir com o produto os requisitos do Seenc para high ticket (LPN, estoque entre CNPJs, integrações com ERPs corporativos)','Comercial + produto','Roadmap decidido','31/01'],
-  ['n3f','Manter pipeline de 3× a meta do mês seguinte para atravessar os meses em que a capacidade fica abaixo da meta','Closer','Cobertura ≥ 3×','contínuo']]},
+  ['n3f','Manter pipeline de 3× a meta do mês seguinte para atravessar os meses em que a capacidade fica abaixo da meta','Hugo','Cobertura ≥ 3×','contínuo']]},
  {id:'m6',nome:'180 dias',per:'até 30/04/2027',goal:'{nmrr6} de NMRR acumulado, canais de indicação maduros e os primeiros contratos high ticket',acts:[
-  ['n6a','2 ERPs corporativos parceiros e 3 propostas high ticket na mesa','Executivo de Negócios + Closer','3 propostas ≥ R$ 10 mil','30/04'],
-  ['n6b','12 contabilidades ativas e indicação de clientes acompanhada a cada nova implantação','Executivo de Negócios','≥ 35% do NMRR via indicações','30/04'],
-  ['n6f','Medir custo por lead e conversão do inbound e ajustar a verba de mídia para chegar a {inb}% do NMRR no ano 2','Weesu (marketing) + comercial','CPL e conversão medidos','31/03'],
-  ['n6c','Publicar 3 casos com ROI (erros de expedição, produtividade, acuracidade)','Closer + implantação','3 casos','31/03'],
+  ['n6a','2 ERPs corporativos parceiros e 3 propostas high ticket na mesa','Hugo','3 propostas ≥ R$ 10 mil','30/04'],
+  ['n6b','12 contabilidades ativas e indicação de clientes acompanhada a cada nova implantação','Hugo','≥ 35% do NMRR via indicações','30/04'],
+  ['n6f','Medir custo por lead e conversão do inbound e ajustar a verba de mídia para chegar a {inb}% do NMRR no ano seguinte','Weesu (marketing) + comercial','CPL e conversão medidos','31/03'],
+  ['n6c','Publicar 3 casos com ROI (erros de expedição, produtividade, acuracidade)','Hugo + implantação','3 casos','31/03'],
   ['n6d','Revisar o comissionamento do time com 5 meses de dados reais','Hugo','Plano v2','31/03'],
+  ['n6g','Decidir a contratação do Closer pelos gatilhos do funil (ver Rotina e indicadores)','Hugo + sócios','Decisão registrada','30/04'],
   ['n6e','Estudo de América Latina: Argentina a partir do caso Grupoucza (moeda, fiscal, integrações)','Comercial + produto','Estudo concluído','30/04']]},
  {id:'m12',nome:'12 meses',per:'até 31/10/2027',goal:'{nmrr12} de NMRR no ano e MRR de {mrr12} em out/27',acts:[
   ['n12a','NMRR de {meta12} no mês 12','Time comercial','Meta do mês 12','31/10'],
-  ['n12b','4 ERPs corporativos parceiros de integração (TOTVS, Sankhya, Senior, Oracle ou SAP Business One), sem comissão','Executivo de Negócios','4 parceiros','31/10'],
-  ['n12c','Ticket médio dos novos contratos acima de R$ 4 mil','Closer','Ticket ≥ R$ 4 mil','31/10'],
-  ['n12f','Inbound com cerca de 11 leads qualificados por mês, perto de 15% do NMRR no mês 12 e verba aprovada para chegar a {inb}% no ano 2','SDR + Weesu (marketing)','≈ 11 leads qualificados/mês','31/10'],
-  ['n12g','Revisar ICP, canais e premissas com 12 meses de dados reais','Hugo + sócios','Premissas do ano 2','30/09'],
-  ['n12e','Plano do ano 2: segundo SDR e decisão sobre América Latina','Comercial + sócios','Plano do ano 2','31/10']]}
+  ['n12b','4 ERPs corporativos parceiros de integração (TOTVS, Sankhya, Senior, Oracle ou SAP Business One), sem comissão','Hugo','4 parceiros','31/10'],
+  ['n12c','Ticket médio dos novos contratos acima de R$ 4 mil','Hugo','Ticket ≥ R$ 4 mil','31/10'],
+  ['n12f','Inbound com cerca de 11 leads qualificados por mês, perto de 15% do NMRR no mês 12 e verba aprovada para chegar a {inb}% no ano seguinte','SDR + Weesu (marketing)','≈ 11 leads qualificados/mês','31/10'],
+  ['n12g','Revisar ICP, canais e premissas com 12 meses de dados reais','Hugo + sócios','Premissas revisadas','30/09'],
+  ['n12e','Plano do ano seguinte: canais, metas e decisão sobre América Latina','Hugo + sócios','Plano aprovado','31/10']]}
 ];
 
 /* ---------- Requisitos do WMS para indústria, distribuição e high ticket ---------- */
@@ -488,8 +488,7 @@ function legend(items){ return '<div class="legend">'+items.map(function(it){ re
 /* ---------- seções ---------- */
 var BLOCOS=[
  {id:'estr',nome:'Estratégia',abas:[['abertura','Abertura'],['canais','Canais e ICP'],['metas','Metas e funil']]},
- {id:'exec',nome:'Execução',abas:[['plano','Plano 30/90/180'],['rotina','Rotina e indicadores'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket']]},
- {id:'proj',nome:'Projeções',abas:[['dezanos','10 anos'],['abcanais','Abertura de canais']]}
+ {id:'exec',nome:'Execução',abas:[['plano','Plano 30/90/180'],['rotina','Rotina e indicadores'],['pipeline','Pipeline'],['acompanhamento','Acompanhamento'],['wms','WMS e high ticket']]}
 ];
 var SECOES=[]; BLOCOS.forEach(function(b){ b.abas.forEach(function(a){ SECOES.push(a); }); });
 var EXTRAS=[['metodo','Método e fontes','Método']]; // fora dos blocos
@@ -544,7 +543,7 @@ function prioridadeHTML(M){
   var cor={Agora:'good',Construir:'warn',Depois:''};
   var h='<div class="card"><h3>Prioridade dos canais<small>onde colocar energia primeiro; NMRR projetado no ano 1</small></h3><div class="scroll"><table class="t"><thead><tr><th>Canal</th><th class="r">NMRR no ano 1</th><th>Esforço do time</th><th>Primeiro resultado</th><th>Prioridade</th><th>Como</th></tr></thead><tbody>'+
    L.map(function(r){ return '<tr><td><b>'+r[0]+'</b></td><td class="r">'+(r[1]?brl(r[1]):'—')+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td><span class="pill '+cor[r[4]]+'">'+r[4]+'</span></td><td class="small">'+r[5]+'</td></tr>'; }).join('')+
-   '</tbody></table></div><p class="small muted">Agora: gera resultado nos primeiros 60 dias com pouco esforço novo. Construir: começa no mês 1, mas só rende a partir do trimestre seguinte. Depois: decisão para o plano do ano 2.</p></div>';
+   '</tbody></table></div><p class="small muted">Agora: gera resultado nos primeiros 60 dias com pouco esforço novo. Construir: começa no mês 1, mas só rende a partir do trimestre seguinte. Depois: decisão para o plano do ano seguinte.</p></div>';
   return h;
 }
 
@@ -556,8 +555,8 @@ function funilHTML(M){
     var dDir=dl*(1-ind)/n, dInd=dl*ind/n, prop=dDir/f.propostaVenda, reun=prop/f.reuniaoProposta, cont=reun/f.contatoReuniao, leads=cont/f.leadContato, indic=dInd/p.convIndicacao, cob=(M.meta[Math.min(b,M.meta.length-1)]||M.meta[b-1])*f.cobertura;
     return '<tr><td>'+rot+'</td><td class="r">'+brl(nm/n)+'</td><td class="r">'+nf(dl/n,1)+'</td><td class="r">'+nf(dInd,1)+'</td><td class="r">'+nf(indic,0)+'</td><td class="r">'+nf(dDir,1)+'</td><td class="r">'+nf(prop,0)+'</td><td class="r">'+nf(reun,0)+'</td><td class="r">'+nf(cont,0)+'</td><td class="r">'+nf(leads,0)+'</td><td class="r">'+k(cob)+'</td></tr>'; };
   var h='<div class="card"><h3>Funil reverso: o que a meta exige por mês<small>média do período</small></h3><div class="scroll"><table class="t"><thead><tr><th>Período</th><th class="r">Meta NMRR</th><th class="r">Contratos</th><th class="r">Via indicação</th><th class="r">Indicações recebidas</th><th class="r">Via prospecção e inbound</th><th class="r">Propostas</th><th class="r">Reuniões realizadas</th><th class="r">Contatos efetivos</th><th class="r">Leads trabalhados</th><th class="r">Pipeline necessário<small>'+f.cobertura+'× a meta seguinte</small></th></tr></thead><tbody>'+
-   linha('Meses 1–3 (nov–jan)',0,3)+linha('Meses 4–6 (fev–abr)',3,6)+linha('Meses 7–12 (mai–out/27)',6,12)+linha('Ano 2',12,24)+
-   '</tbody></table></div><p class="small muted">Conversões usadas até medir o real: lead → contato efetivo '+pct(f.leadContato,0)+'; contato → reunião realizada '+pct(f.contatoReuniao,0)+'; reunião → proposta '+pct(f.reuniaoProposta,0)+'; proposta → venda '+pct(f.propostaVenda,0)+' (reunião → venda ≈ '+pct(f.reuniaoProposta*f.propostaVenda,0)+'); indicação → venda '+pct(p.convIndicacao,0)+'. A capacidade de um SDR é de cerca de '+p.reunioesSdrPlena+' reuniões realizadas por mês: quando a coluna de reuniões passar disso por SDR, é hora de contratar. Ciclo de venda de 30 a 45 dias: o pipeline do mês seguinte precisa estar montado no mês atual.</p></div>';
+   linha('Meses 1–3 (nov–jan)',0,3)+linha('Meses 4–6 (fev–abr)',3,6)+linha('Meses 7–12 (mai–out/27)',6,12)+
+   '</tbody></table></div><p class="small muted">Conversões usadas até medir o real: lead → contato efetivo '+pct(f.leadContato,0)+'; contato → reunião realizada '+pct(f.contatoReuniao,0)+'; reunião → proposta '+pct(f.reuniaoProposta,0)+'; proposta → venda '+pct(f.propostaVenda,0)+' (reunião → venda ≈ '+pct(f.reuniaoProposta*f.propostaVenda,0)+'); indicação → venda '+pct(p.convIndicacao,0)+'. O SDR agenda cerca de '+p.reunioesSdrPlena+' reuniões realizadas por mês; acima disso, a diferença precisa vir de inbound e indicações. Todas as reuniões e propostas passam pelo Hugo, que também cuida dos parceiros: esse volume é o principal gatilho para contratar o Closer (ver Rotina e indicadores). Ciclo de venda de 30 a 45 dias: o pipeline do mês seguinte precisa estar montado no mês atual.</p></div>';
   return h;
 }
 function afterMetas(){}
@@ -567,20 +566,19 @@ function secRotina(M){
   var p=S.prem, hcS=arr5(p.hcSdr);
   var h='<div class="sec-head"><span class="label">Rotina comercial</span><h2>Quem faz o quê, em que cadência e com quais números</h2><p>O plano só vira resultado com rotina: cada pessoa sabe o que entrega, o pipeline é revisado toda semana e os números do mês são lidos contra a meta. A cadência segue a lógica das 4 Disciplinas da Execução: poucos indicadores de direção, placar visível e cobrança curta e frequente.</p></div>';
   var papeis=[
-   ['SDR','Prospecção na nossa base (Ondas 1 e 2), qualificação do inbound em até 1 hora útil, agendamento de reuniões','Reuniões qualificadas realizadas',p.reunioesSdrPlena+' por mês, por SDR'],
-   ['Closer','Diagnóstico, proposta, negociação e fechamento de todos os canais; passagem para implantação','NMRR fechado','meta do mês ('+brl(M.meta[0])+' em nov/26)'],
-   ['Executivo de Negócios','Recrutar, treinar e acompanhar parceiros (contabilidades, e-commerce Puro, franqueados Omie, ERPs corporativos)','Parceiros ativos e indicações','24 contabilidades e 4 ERPs em out/27'],
-   ['Hugo · liderança comercial','Ritual de gestão: metas, rituais, CRM, coaching, forecast e revisão das premissas','Previsto × realizado','forecast com erro < 15%'],
+   ['Hugo · liderança comercial','Ritual de gestão (metas, rituais, CRM, forecast); diagnóstico, proposta e fechamento de todos os canais; parceiros (contabilidades, e-commerce Puro, franqueados Omie, ERPs corporativos)','NMRR fechado e previsto × realizado','meta do mês ('+brl(M.meta[0])+' em nov/26)'],
+   ['SDR','Prospecção na nossa base (Ondas 1 e 2), qualificação do inbound em até 1 hora útil, agendamento de reuniões para o Hugo','Reuniões qualificadas realizadas',p.reunioesSdrPlena+' por mês'],
+   ['Closer · 3ª pessoa, quando o funil pedir','Assume diagnóstico, proposta e fechamento; o Hugo passa a focar em parceiros, high ticket e gestão','NMRR fechado','a definir na contratação'],
    ['Weesu · marketing','Conteúdo, mídia, materiais de venda e eventos; geração de leads inbound','Leads inbound qualificados','11 por mês em out/27'],
    ['Weesu · implantação','Go-live, adoção e retenção; casos de sucesso e indicações','Clientes no ar no prazo','churn ≤ '+pct(p.churn)+' ao mês']];
   h+='<div class="card"><h3>Papéis e responsabilidades</h3><div class="scroll"><table class="t"><thead><tr><th>Papel</th><th>Responsável por</th><th>Indicador principal</th><th>Referência de meta</th></tr></thead><tbody>'+
    papeis.map(function(r){ return '<tr><td><b>'+r[0]+'</b></td><td class="small">'+r[1]+'</td><td>'+r[2]+'</td><td class="small">'+r[3]+'</td></tr>'; }).join('')+'</tbody></table></div></div>';
   var rit=[
-   ['Diária','15 min','SDR, Closer e Exec. Negócios','Agenda do dia, reuniões marcadas, negócios sem próxima ação, bloqueios'],
-   ['Semanal · pipeline','45 min','Time comercial','Negócio a negócio: etapa, próxima ação e data, chance e mês previsto; previsão do mês'],
+   ['Diária','15 min','Hugo e SDR','Agenda do dia, reuniões marcadas, negócios sem próxima ação, bloqueios'],
+   ['Semanal · pipeline','45 min','Hugo e SDR','Negócio a negócio: etapa, próxima ação e data, chance e mês previsto; previsão do mês'],
    ['Semanal · marketing × vendas','30 min','SDR e marketing da Weesu','Leads inbound recebidos e qualificados, tempo de resposta, motivo de descarte'],
    ['Quinzenal · 1:1','30 min','Hugo e cada pessoa','Indicadores individuais, escuta de ligações e reuniões, plano de desenvolvimento'],
-   ['Mensal · fechamento','2 h','Time comercial e sócios da Weesu','Previsto × realizado, conversões por etapa e canal, churn e expansão, decisões de produto'],
+   ['Mensal · fechamento','2 h','Hugo e sócios da Weesu','Previsto × realizado, conversões por etapa e canal, churn e expansão, decisões de produto'],
    ['Trimestral · revisão','meio dia','Hugo e sócios','ICP, prioridade de canais, premissas do modelo, roadmap do WMS para high ticket']];
   h+='<div class="card"><h3>Rituais<small>conduzidos por Hugo, responsável pelo ritual de gestão</small></h3><div class="scroll"><table class="t"><thead><tr><th>Cadência</th><th>Duração</th><th>Quem</th><th>Pauta</th></tr></thead><tbody>'+
    rit.map(function(r){ return '<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td><td>'+r[2]+'</td><td class="small">'+r[3]+'</td></tr>'; }).join('')+'</tbody></table></div></div>';
@@ -599,24 +597,25 @@ function secRotina(M){
     '<li>Origem definida no primeiro registro; parceiro indicado sempre vinculado ao negócio.</li>'+
     '<li>Negócio perdido sempre com motivo (preço, produto, timing, concorrente, sem resposta).</li>'+
     '<li>Previsão do mês = soma ponderada pela chance de cada negócio com mês previsto no período.</li></ul></div></div>';
-  h+='<div class="callout"><h4>Contratação guiada pelos números</h4><p>O time cresce quando o funil pede, não pela data. Segundo SDR quando as reuniões necessárias passarem de '+p.reunioesSdrPlena+' por mês com cobertura de pipeline abaixo de '+FUNIL.cobertura+'×; segundo Closer quando o primeiro estiver com mais de 25 negócios ativos ou o ciclo passar de 45 dias; segundo Executivo de Negócios quando houver mais de 20 parceiros ativos. O plano prevê '+hcS.join(', ')+' SDRs nos anos 1 a 5.</p></div>';
+  h+='<div class="callout"><h4>Quando contratar o Closer</h4><p>Hoje o time tem 2 pessoas: o Hugo lidera, cuida dos parceiros e fecha, e o SDR prospecta e agenda. A 3ª pessoa é um Closer, contratado quando o funil pedir, não por data. Gatilhos: o Hugo com mais de 20 negócios ativos ao mesmo tempo; ciclo de venda passando de 45 dias; negócios ficando mais de 7 dias sem interação por falta de agenda; ou meta do mês acima do que o Hugo consegue fechar por dois meses seguidos. Com o Closer, o Hugo libera tempo para parceiros, high ticket e gestão. A decisão está prevista no plano de 180 dias.</p></div>';
   return h;
 }
 
 function secAbertura(M){
-  var A=M.anos, a1=A[0], a5=A[4], p=S.prem, hc=function(y){ return arr5(p.hcSdr)[y]+arr5(p.hcCloser)[y]+arr5(p.hcExec)[y]; };
-  var h='<div class="hero"><span class="label">Weesu · estratégia de captação 2026–2031</span><h2>De crescimento por indicação para <span>uma máquina de vendas previsível</span></h2>'+
-   '<p>A Weesu chegou a '+k(p.mrrInicial)+' de MRR e '+p.clientesIniciais+' clientes sem uma área comercial estruturada: tudo veio de parceiros e indicações.'+(function(){ var P=preplano(); if(!P.itens.length) return ''; var nc=P.itens.filter(function(d){return !d.upsell;}).length, nu=P.itens.length-nc; return ' A operação comercial começou em agosto e, até aqui, trouxe '+nc+' clientes novos'+(nu?' e '+nu+' upsell':'')+', com '+brl(P.total)+' de NMRR. O plano parte de '+k(mrrHoje())+' de MRR e '+cliHoje()+' clientes.'; })()+' A estratégia organiza os canais que já funcionam, cria motores próprios de geração de demanda e leva a Weesu para contratos maiores.</p></div>';
+  var A=M.anos, a1=A[0], p=S.prem, tri=function(q){ var s=q*3; return sum(M.meta.slice(s,s+3))/sum(M.deals.slice(s,s+3)); };
+  var hiA=sum(M.meta.slice(0,12).map(function(v,i){return v*M.hi[i];}))/a1.nmrr;
+  var h='<div class="hero"><span class="label">Weesu · estratégia comercial · nov/26 a out/27</span><h2>De crescimento por indicação para <span>uma máquina de vendas previsível</span></h2>'+
+   '<p>A Weesu chegou a '+k(p.mrrInicial)+' de MRR e '+p.clientesIniciais+' clientes sem uma área comercial estruturada: tudo veio de parceiros e indicações.'+(function(){ var P=preplano(); if(!P.itens.length) return ''; var nc=P.itens.filter(function(d){return !d.upsell;}).length, nu=P.itens.length-nc; return ' A operação comercial começou em agosto e, até aqui, trouxe '+nc+' clientes novos'+(nu?' e '+nu+' upsell':'')+', com '+brl(P.total)+' de NMRR. O plano parte de '+k(mrrHoje())+' de MRR e '+cliHoje()+' clientes.'; })()+' Este plano cobre os próximos 12 meses: organizar os canais que já funcionam, criar motores próprios de demanda e começar a levar a Weesu para contratos maiores.</p></div>';
   h+='<div class="tiles">'+
-   '<div class="tile"><span class="label">MRR no fim do ano 1</span><span class="num">'+k(a1.mrr)+'</span><span class="note">'+nf(a1.mrr/mrrHoje(),1)+'× o atual</span></div>'+
-   '<div class="tile"><span class="label">Contratos no ano 1</span><span class="num">'+nf(a1.deals,0)+'</span><span class="note">cerca de '+nf(a1.deals/12,1)+' por mês, ticket médio de '+brl(a1.ticket)+'</span></div>'+
-   '<div class="tile"><span class="label">MRR no fim do ano 5</span><span class="num">'+k(a5.mrr)+'</span><span class="note">ARR de '+k(a5.arr)+' · '+nf(a5.cli,0)+' clientes</span></div>'+
-   '<div class="tile"><span class="label">Time comercial</span><span class="num">'+hc(0)+' → '+hc(4)+'</span><span class="note">pessoas no ano 1 e no ano 5, contratadas conforme o funil pede</span></div></div>';
+   '<div class="tile"><span class="label">NMRR no ano</span><span class="num">'+k(a1.nmrr)+'</span><span class="note">'+brl(M.meta[0])+' em nov/26, '+brl(M.meta[11])+' em out/27</span></div>'+
+   '<div class="tile"><span class="label">Contratos no ano</span><span class="num">'+nf(a1.deals,0)+'</span><span class="note">cerca de '+nf(a1.deals/12,1)+' por mês, ticket médio de '+brl(a1.ticket)+'</span></div>'+
+   '<div class="tile"><span class="label">MRR em out/27</span><span class="num">'+k(a1.mrr)+'</span><span class="note">'+nf(a1.mrr/mrrHoje(),1)+'× o atual · '+nf(a1.cli,0)+' clientes</span></div>'+
+   '<div class="tile"><span class="label">Time comercial</span><span class="num">2 pessoas</span><span class="note">Hugo e 1 SDR; Closer como 3ª pessoa quando o funil pedir</span></div></div>';
   h+='<div class="card"><h3>A estratégia em três movimentos</h3><div class="cols3" style="gap:12px">'+
-   '<div class="callout"><h4>1. Organizar o que já funciona</h4><p>Indicação de clientes, contabilidades, e-commerce Puro e franqueados Omie passam a ter dono, regra, cadência e meta. Esses canais respondem por '+pct(a1.ind,0)+' do NMRR no ano 1 e convertem mais com menor custo.</p></div>'+
-   '<div class="callout"><h4>2. Criar motores próprios</h4><p>Prospecção ativa sobre a nossa base (157 contas Hot, depois 614) e inbound alimentado pelo marketing da Weesu, chegando a '+pct(p.shareInb,0)+' do NMRR a partir do ano 2. É o que torna o crescimento previsível.</p></div>'+
-   '<div class="callout"><h4>3. Subir o ticket</h4><p>Frente high ticket com os ERPs corporativos como parceiros de integração: '+pct(p.shareHigh,0)+' do NMRR a partir do ano 2, com ticket a partir de '+brl(p.ticketHigh)+'. Depende de o Seenc atender indústria e distribuição.</p></div></div></div>';
-  h+='<div class="card"><h3>Os pontos focais da captação<small>ano 1, capacidade projetada por canal; a linha tracejada é a meta</small></h3>'+legend(CANAIS.map(function(c){return {nome:c.nome,cor:c.cor};}).concat([{nome:'Meta (5% ao mês)',cls:'dash'}]))+'<div class="scroll" id="chCap"></div></div>';
+   '<div class="callout"><h4>1. Organizar o que já funciona</h4><p>Indicação de clientes, contabilidades, e-commerce Puro e franqueados Omie passam a ter dono, regra, cadência e meta. Esses canais respondem por '+pct(a1.ind,0)+' do NMRR do ano e convertem mais com menor custo.</p></div>'+
+   '<div class="callout"><h4>2. Criar motores próprios</h4><p>Prospecção ativa sobre a nossa base (157 contas Hot, depois 614) e inbound alimentado pelo marketing da Weesu, que começa do zero e chega a cerca de 15% do NMRR em out/27. É o que torna o crescimento previsível.</p></div>'+
+   '<div class="callout"><h4>3. Começar a subir o ticket</h4><p>Frente high ticket com os ERPs corporativos como parceiros de integração: '+pct(hiA,0)+' do NMRR do ano, com ticket a partir de '+brl(p.ticketHigh)+'. O ticket médio dos novos contratos vai de '+brl(tri(0))+' no 1º trimestre para '+brl(tri(3))+' no 4º.</p></div></div></div>';
+  h+='<div class="card"><h3>Os pontos focais da captação<small>capacidade projetada por canal, mês a mês; a linha tracejada é a meta</small></h3>'+legend(CANAIS.map(function(c){return {nome:c.nome,cor:c.cor};}).concat([{nome:'Meta (5% ao mês)',cls:'dash'}]))+'<div class="scroll" id="chCap"></div></div>';
   return h;
 }
 function afterAbertura(M){
@@ -626,7 +625,7 @@ function afterAbertura(M){
 
 function secCanais(M){
   var c=M.cap, t=function(id){ return sum(c[id]); };
-  var h='<div class="sec-head"><span class="label">Canais e ICP</span><h2>Seis frentes de captação, com inbound chegando a '+pct(S.prem.shareInb,0)+' do NMRR</h2><p>A Weesu já cresce por parceiros e indicações. A estratégia organiza esses canais, soma a prospecção ativa sobre a nossa base, abre a frente high ticket com os ERPs corporativos e cria o inbound sales, alimentado pelo marketing da Weesu, como canal de escala.</p></div>';
+  var h='<div class="sec-head"><span class="label">Canais e ICP</span><h2>Seis frentes de captação para os próximos 12 meses</h2><p>A Weesu já cresce por parceiros e indicações. A estratégia organiza esses canais, soma a prospecção ativa sobre a nossa base, abre a frente high ticket com os ERPs corporativos e cria o inbound sales, alimentado pelo marketing da Weesu, como canal de escala.</p></div>';
   h+=icpHTML();
   h+=prioridadeHTML(M);
   h+='<div class="focos">';
@@ -635,45 +634,41 @@ function secCanais(M){
   var puroTxt=PU.length? ' No Mercado Livre Experience (23 a 25/09/2026) foram '+MX.leads+' leads: '+MX.contatados+' contatados, '+MX.responderam+' responderam, '+MX.apresentacoes+' apresentações agendadas e '+MX.fechamento+' reunião de fechamento (Stoky). Hoje são '+PUa.length+' negócios abertos vindos do parceiro, com '+k(sum(PUa.map(function(d){return +d.mrr||0;})))+' de mensalidade ('+k(sum(PUa.map(function(d){return (+d.mrr||0)*(+d.prob||0);})))+' ponderados).' : '';
   var F=[
    {c:'--s2',n:'Nossa base e base de outros franqueados Omie',d:'Carteiras ativas de TOTVS, Omie e Senior já analisadas (949 empresas com aderência, 157 prioritárias na Onda 1 e 614 com ERP conhecido na Onda 2), somadas às bases de outros franqueados Omie. Mesma oferta, mesmo playbook e a mesma cadência do SDR.',tipo:'Captação direta · SDR',rem:'Onda 1 (157 Hot), depois Onda 2 (614)',a1:t('base')},
-   {c:'--s3',n:'Indicação de clientes ativos',d:'Os 50 clientes atuais, que já chegaram por indicação, passam a indicar de forma organizada: convite após cada implantação bem-sucedida, regra clara de benefício e acompanhamento do Closer.',tipo:'Indicação · Closer',rem:'benefício de '+pct(S.prem.comissaoParceiro,0)+' ao cliente que indica',a1:t('cli')},
-   {c:'--s4',n:'Contabilidades parceiras',d:'Contabilidades a que já tínhamos acesso pela Omie. Conhecem o porte e a operação dos clientes e indicam quem tem dor de estoque.',tipo:'Indicação · Executivo de Negócios',rem:pct(S.prem.comissaoParceiro,0)+' recorrente à contabilidade',a1:t('contab')},
-   {c:'--s5',n:'E-commerce Puro',d:'Parceiro que indica operações de e-commerce que já chegam com a necessidade identificada, o que tende a aumentar a conversão. Concentra as indicações no início e perde participação ao longo do tempo, chegando a '+pct(PURO_ANO[4],0)+' do NMRR no ano 5.',tipo:'Indicação · Closer',rem:pct(S.prem.comissaoParceiro,0)+' recorrente ao parceiro',a1:t('ecom')},
-   {c:'--s7',n:'Inbound sales',d:'Leads que chegam pelo marketing da Weesu (site, conteúdo, busca paga, redes, eventos e webinars). O SDR qualifica em até 1 hora útil e o Closer conduz. É o canal que escala sem depender de parceiro: começa pequeno no ano 1 e chega a '+pct(S.prem.shareInb,0)+' do NMRR a partir do ano 2.',tipo:'Captação direta · SDR + Closer',rem:'mídia e conteúdo pagos pela Weesu',a1:t('inb')},
-   {c:'--s6',n:'ERPs corporativos (high ticket)',d:'O time comercial vai atrás, diretamente, das operações que rodam TOTVS, Sankhya, Senior, Oracle e SAP Business One, com ticket a partir de '+brl(S.prem.ticketHigh)+'. Os ERPs entram como parceiros de integração e abrem portas, sem receber comissão.',tipo:'Captação direta · Exec. Negócios + Closer',rem:'sem comissão ao ERP',a1:t('erp')}
+   {c:'--s3',n:'Indicação de clientes ativos',d:'Os 50 clientes atuais, que já chegaram por indicação, passam a indicar de forma organizada: convite após cada implantação bem-sucedida, regra clara de benefício e acompanhamento do Hugo.',tipo:'Indicação · Hugo',rem:'benefício de '+pct(S.prem.comissaoParceiro,0)+' ao cliente que indica',a1:t('cli')},
+   {c:'--s4',n:'Contabilidades parceiras',d:'Contabilidades a que já tínhamos acesso pela Omie. Conhecem o porte e a operação dos clientes e indicam quem tem dor de estoque.',tipo:'Indicação · Hugo',rem:pct(S.prem.comissaoParceiro,0)+' recorrente à contabilidade',a1:t('contab')},
+   {c:'--s5',n:'E-commerce Puro',d:'Parceiro que indica operações de e-commerce que já chegam com a necessidade identificada, o que tende a aumentar a conversão. Concentra as indicações no início, com o MeliXP, e perde participação ao longo do ano à medida que os outros canais amadurecem.',tipo:'Indicação · Hugo',rem:pct(S.prem.comissaoParceiro,0)+' recorrente ao parceiro',a1:t('ecom')},
+   {c:'--s7',n:'Inbound sales',d:'Leads que chegam pelo marketing da Weesu (site, conteúdo, busca paga, redes, eventos e webinars). O SDR qualifica em até 1 hora útil e o Hugo conduz. É o canal que escala sem depender de parceiro: começa do zero e chega a cerca de 15% do NMRR em out/27.',tipo:'Captação direta · SDR + Hugo',rem:'mídia e conteúdo pagos pela Weesu',a1:t('inb')},
+   {c:'--s6',n:'ERPs corporativos (high ticket)',d:'O time comercial vai atrás, diretamente, das operações que rodam TOTVS, Sankhya, Senior, Oracle e SAP Business One, com ticket a partir de '+brl(S.prem.ticketHigh)+'. Os ERPs entram como parceiros de integração e abrem portas, sem receber comissão.',tipo:'Captação direta · Hugo',rem:'sem comissão ao ERP',a1:t('erp')}
   ];
   F.forEach(function(f){ h+='<div class="foco'+(f.star?' star':'')+'">'+(f.star?'<span class="pill acc" style="align-self:flex-start">Primeiro parceiro formalizado</span>':'')+'<h4><i style="background:var('+f.c+')"></i>'+f.n+'</h4><p>'+f.d+'</p><div class="kv"><div><span>Tipo</span><span>'+f.tipo+'</span></div><div><span>Parceiro e alvo</span><span>'+f.rem+'</span></div><div><span>NMRR previsto no ano 1</span><span>'+brl(f.a1)+'</span></div></div></div>'; });
   h+='<div class="foco opt"><h4>Licenças Omie <span class="pill">possibilidade</span></h4><p>Captação pela revenda do ERP Omie: oferecer ERP + Seenc/Hub em um pacote para empresas que ainda vão escolher ou trocar de ERP, aproveitando a experiência do time com a base Omie. Abre uma porta de entrada antes da dor de estoque aparecer e pode gerar receita própria de revenda.</p><p class="small muted">Não é ponto focal nem entra nos números. Depende de acordo com a Omie (modelo de revenda, território e conflito com as franquias).</p></div>';
-  h+='<div class="foco opt"><h4>América Latina <span class="pill">possibilidade</span></h4><p>Não é ponto focal nem entra nos números. Há sinal de demanda: Grupoucza (Infinitcell) vende no Mercado Livre da Argentina e a Weesu já decidiu fazer a integração. Antes de abrir a frente: moeda, fiscal local e integrações com os ERPs da região.</p><p class="small muted">Estudo previsto para o 6º mês; decisão no plano do ano 2.</p></div>';
+  h+='<div class="foco opt"><h4>América Latina <span class="pill">possibilidade</span></h4><p>Não é ponto focal nem entra nos números. Há sinal de demanda: Grupoucza (Infinitcell) vende no Mercado Livre da Argentina e a Weesu já decidiu fazer a integração. Antes de abrir a frente: moeda, fiscal local e integrações com os ERPs da região.</p><p class="small muted">Estudo previsto para o 6º mês; decisão no plano do ano seguinte.</p></div>';
   h+='</div>';
-  // evolução do mix de captação
-  var p=S.prem, mixA=M.anos.map(function(a,y){ var s=y*12, e=s+12, nm=a.nmrr, ind, inb, puro;
-    if(y===0){ var cs=function(ch){ return sum(M.meta.slice(0,12).map(function(v,i){return M.capTot[i]>0? v*c[ch][i]/M.capTot[i] : 0;}))/nm; }; ind=sum(M.meta.slice(0,12).map(function(v,i){return v*M.ind[i];}))/nm; inb=cs('inb'); puro=cs('ecom'); }
-    else { ind=p.shareInd; inb=p.shareInb; puro=Math.min(ind,PURO_ANO[y]); }
-    var out=Math.max(0,1-ind-inb), tk=a.nmrr/a.deals;
-    return {nm:nm,ind:ind,puro:puro,outInd:ind-puro,inb:inb,out:out,leads:nm*inb/12/(tk*p.convInbound)}; });
-  var inb12=M.capTot[11]>0? M.meta[11]*c.inb[11]/M.capTot[11]/M.meta[11] : 0;
+  // evolução do mix de captação, por trimestre
+  var p=S.prem, QN=['1º tri · nov–jan','2º tri · fev–abr','3º tri · mai–jul','4º tri · ago–out'];
+  var mixA=[0,1,2,3].map(function(q){ var s=q*3, e=s+3, nm=sum(M.meta.slice(s,e));
+    var cs=function(ch){ return sum(M.meta.slice(s,e).map(function(v,i){ var j=s+i; return M.capTot[j]>0? v*c[ch][j]/M.capTot[j] : 0; }))/nm; };
+    var ind=sum(M.meta.slice(s,e).map(function(v,i){return v*M.ind[s+i];}))/nm, inb=cs('inb'), puro=cs('ecom'), out=Math.max(0,1-ind-inb), tk=nm/sum(M.deals.slice(s,e));
+    return {nm:nm,ind:ind,puro:puro,outInd:ind-puro,inb:inb,out:out,leads:nm*inb/3/(tk*p.convInbound)}; });
   var bar=function(m){ return '<div class="mixbar"><i style="width:'+(m.puro*100)+'%;background:var(--s5)"></i><i style="width:'+(m.outInd*100)+'%;background:var(--s3)"></i><i style="width:'+(m.inb*100)+'%;background:var(--s7)"></i><i style="width:'+(m.out*100)+'%;background:var(--s2)"></i></div>'; };
-  h+='<div class="card"><h3>Evolução do mix de captação<small>participação no NMRR de cada ano</small></h3>'+legend([{nome:'E-commerce Puro',cor:'--s5'},{nome:'Outras indicações (clientes e contabilidades)',cor:'--s3'},{nome:'Inbound sales',cor:'--s7'},{nome:'Prospecção ativa, pipeline e ERPs',cor:'--s2'}])+'<div class="scroll"><table class="t"><thead><tr><th>Ano</th><th style="width:30%">Mix</th><th class="r">NMRR do ano</th><th class="r">Indicações</th><th class="r">Das indicações, e-commerce Puro</th><th class="r">Inbound</th><th class="r">NMRR via inbound</th><th class="r">Prospecção ativa e ERPs</th><th class="r">Leads inbound qualificados<small>por mês, em média</small></th></tr></thead><tbody>';
-  mixA.forEach(function(m,y){ h+='<tr><td style="white-space:nowrap">'+ANOS[y]+'</td><td>'+bar(m)+'</td><td class="r">'+brl(m.nm)+'</td><td class="r">'+pct(m.ind,0)+'</td><td class="r">'+pct(m.puro,0)+'<small>'+brl(m.nm*m.puro)+'</small></td><td class="r"><b>'+pct(m.inb,0)+'</b></td><td class="r">'+brl(m.nm*m.inb)+'</td><td class="r">'+pct(m.out,0)+'</td><td class="r">'+nf(m.leads,0)+'</td></tr>'; });
-  h+='</tbody></table></div><p class="small muted">No ano 1 o inbound começa do zero e sobe até '+pct(inb12,0)+' do NMRR em out/27 (de 1 para 11 leads qualificados por mês, com '+pct(p.convInbound,0)+' de conversão). Do ano 2 em diante, a meta é '+pct(p.shareInb,0)+' do NMRR. O e-commerce Puro concentra as indicações no início, com o MeliXP, e perde participação à medida que contabilidades, clientes ativos, inbound e ERPs amadurecem: de '+pct(mixA[0].puro,0)+' do NMRR no ano 1 para '+pct(mixA[4].puro,0)+' no ano 5, reduzindo a dependência de um único parceiro. Leads qualificados = NMRR via inbound ÷ ticket médio do ano ÷ conversão. A mídia e o conteúdo são da Weesu; o time comercial qualifica e fecha.</p></div>';
+  h+='<div class="card"><h3>Evolução do mix de captação no ano<small>participação no NMRR de cada trimestre</small></h3>'+legend([{nome:'E-commerce Puro',cor:'--s5'},{nome:'Outras indicações (clientes e contabilidades)',cor:'--s3'},{nome:'Inbound sales',cor:'--s7'},{nome:'Prospecção ativa, pipeline e ERPs',cor:'--s2'}])+'<div class="scroll"><table class="t"><thead><tr><th>Trimestre</th><th style="width:30%">Mix</th><th class="r">NMRR</th><th class="r">Indicações</th><th class="r">Das indicações, e-commerce Puro</th><th class="r">Inbound</th><th class="r">Prospecção ativa e ERPs</th><th class="r">Leads inbound qualificados<small>por mês, em média</small></th></tr></thead><tbody>';
+  mixA.forEach(function(m,q){ h+='<tr><td style="white-space:nowrap">'+QN[q]+'</td><td>'+bar(m)+'</td><td class="r">'+brl(m.nm)+'</td><td class="r">'+pct(m.ind,0)+'</td><td class="r">'+pct(m.puro,0)+'</td><td class="r"><b>'+pct(m.inb,0)+'</b></td><td class="r">'+pct(m.out,0)+'</td><td class="r">'+nf(m.leads,0)+'</td></tr>'; });
+  h+='</tbody></table></div><p class="small muted">O e-commerce Puro concentra as indicações no começo, puxado pelos leads do MeliXP, e perde participação ao longo do ano: de '+pct(mixA[0].puro,0)+' do NMRR no 1º trimestre para '+pct(mixA[3].puro,0)+' no 4º, reduzindo a dependência de um único parceiro. O inbound começa do zero e chega a '+pct(mixA[3].inb,0)+' no 4º trimestre (de 1 para 11 leads qualificados por mês, com '+pct(p.convInbound,0)+' de conversão). A mídia e o conteúdo são da Weesu; o time comercial qualifica e fecha.</p></div>';
   h+='<div class="card"><h3>De low ticket para high ticket</h3><div class="vs">'+
    '<div><span class="label">Hoje</span><h4>Low ticket · '+brl(S.prem.ticketLow)+' de mensalidade</h4><p class="small">Clientes de ERPs de entrada: Omie, Bling, Olist e Athon. Bom volume, ticket baixo para o ramo de WMS.</p><p class="small muted">Continua sendo a base de volume pela nossa base, franqueados e contabilidades.</p></div>'+
    '<div class="hi"><span class="label">Para onde vamos</span><h4>High ticket · a partir de '+brl(S.prem.ticketHigh)+'</h4><p class="small">Operações que rodam em TOTVS, Sankhya, Senior, Oracle e SAP Business One, prospectadas diretamente pelo time comercial, com os ERPs como parceiros de integração, sem comissão. Nessa frente, o foco deixa de ser Omie, Bling, Olist e Athon.</p><p class="small muted">Já há prova no pipeline: Pink Urban (R$ 18.000), All Filmes (R$ 12.550) e DBN (R$ 12.000).</p></div></div>'+
-   '<p class="small">Com '+pct(S.prem.shareHigh,0)+' do NMRR em high ticket a partir do ano 2, o ticket médio dos novos contratos sobe de '+brl(M.anos[0].ticket)+' no ano 1 para '+brl(M.anos[1].ticket)+' no ano 2. A mesma meta passa a exigir menos contratos, menos implantações e menos esforço por real vendido. A condição é o Seenc atender os requisitos dessas operações (ver a seção WMS e high ticket).</p></div>';
+   '<p class="small">À medida que a frente high ticket entra, o ticket médio dos novos contratos sobe de '+brl(sum(M.meta.slice(0,3))/sum(M.deals.slice(0,3)))+' no 1º trimestre para '+brl(sum(M.meta.slice(9,12))/sum(M.deals.slice(9,12)))+' no 4º. A mesma meta passa a exigir menos contratos, menos implantações e menos esforço por real vendido. A condição é o Seenc atender os requisitos dessas operações (ver a aba WMS e high ticket).</p></div>';
   // base de leads
   var fn=[['Linhas nas planilhas',4397],['Registros ativos',2500],['TAM (empresas únicas)',2032],['SAM (comércio e indústria)',949],['SAM com ERP conhecido (Onda 2)',614],['SOM: contas Hot (Onda 1)',157]];
   h+='<div class="cols"><div class="card"><h3>Nossa base: do total à prioridade</h3><div class="funnel">'+fn.map(function(f){return '<div class="fn"><span>'+f[0]+'</span><div class="trk"><i style="width:'+(f[1]/4397*100)+'%"></i></div><span class="num">'+nf(f[1],0)+'</span></div>';}).join('')+'</div><p class="small muted">Foco inicial nas 157 contas Hot, depois nas 614 com ERP conhecido. O peso do ramo no score é igual para todos.</p></div>'+
-   '<div class="card"><h3>Por que os canais de indicação são centrais</h3><p class="small">A meta pede cerca de '+nf(M.anos[0].deals,0)+' contratos no ano 1. Trabalhar as 949 empresas da nossa base com 5% de conversão rende perto de 47. O restante vem das indicações, que também convertem mais e custam menos: o parceiro só recebe quando o cliente paga.</p><p class="small">Todos os 50 clientes atuais vieram desse jeito. A prospecção ativa é o canal novo, e suas taxas serão medidas a partir do mês 1.</p></div></div>';
+   '<div class="card"><h3>Por que os canais de indicação são centrais</h3><p class="small">A meta pede cerca de '+nf(M.anos[0].deals,0)+' contratos no ano. Trabalhar as 949 empresas da nossa base com 5% de conversão rende perto de 47. O restante vem das indicações, que também convertem mais e custam menos: o parceiro só recebe quando o cliente paga.</p><p class="small">Todos os 50 clientes atuais vieram desse jeito. A prospecção ativa é o canal novo, e suas taxas serão medidas a partir do mês 1.</p></div></div>';
   return h;
 }
 
 function secMetas(M){
   var p=S.prem, A=M.anos;
-  var h='<div class="sec-head"><span class="label">Metas e funil · cenário oficial</span><h2>R$ 15.000 de NMRR em novembro, crescendo 5% ao mês no ano 1</h2><p>Do ano 2 em diante o crescimento da meta desacelera ('+[p.cresc2,p.cresc3,p.cresc4,p.cresc5].map(function(v){return pct(v,0);}).join(', ')+' ao mês). A meta é de NMRR bruto: o churn de '+pct(p.churn)+' ao mês não desconta da meta, mas entra na projeção do MRR.</p></div>';
-  h+='<div class="card"><h3>Cinco anos</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">NMRR vendido</th><th class="r">Contratos</th><th class="r">Ticket médio novo</th><th class="r">Via indicação</th><th class="r">MRR final</th><th class="r">Clientes</th><th class="r">Setup vendido</th></tr></thead><tbody>';
-  A.forEach(function(a,y){ h+='<tr><td>'+ANOS[y]+'<small>'+ANOS_P[y]+'</small></td><td class="r">'+brl(a.nmrr)+'</td><td class="r">'+nf(a.deals,0)+'</td><td class="r">'+brl(a.ticket)+'</td><td class="r">'+pct(a.ind,0)+'</td><td class="r">'+brl(a.mrr)+'</td><td class="r">'+nf(a.cli,0)+'</td><td class="r">'+brl(a.setup)+'</td></tr>'; });
-  h+='<tr class="tot"><td>5 anos</td><td class="r">'+brl(sum(A.map(function(a){return a.nmrr;})))+'</td><td class="r">'+nf(sum(A.map(function(a){return a.deals;})),0)+'</td><td></td><td></td><td class="r">'+brl(A[4].mrr)+'</td><td class="r">'+nf(A[4].cli,0)+'</td><td class="r">'+brl(sum(A.map(function(a){return a.setup;})))+'</td></tr></tbody></table></div></div>';
-  h+='<div class="card"><h3>Ano 1, mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Meta NMRR</th><th class="r">Contratos</th><th class="r">Churn do MRR</th><th class="r">MRR final</th><th class="r">Capacidade dos canais</th><th class="r">Folga ou gap</th></tr></thead><tbody>';
+  var h='<div class="sec-head"><span class="label">Metas e funil · nov/26 a out/27</span><h2>'+brl(p.metaM1)+' de NMRR em novembro, crescendo '+pct(p.cresc1,0)+' ao mês até '+brl(M.meta[11])+' em out/27</h2><p>São '+brl(A[0].nmrr)+' de NMRR no ano e cerca de '+nf(A[0].deals,0)+' contratos. A meta é de NMRR bruto: o churn de '+pct(p.churn)+' ao mês não desconta da meta, mas entra na projeção do MRR.</p></div>';
+  h+='<div class="card"><h3>Mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Meta NMRR</th><th class="r">Contratos</th><th class="r">Churn do MRR</th><th class="r">MRR final</th><th class="r">Capacidade dos canais</th><th class="r">Folga ou gap</th></tr></thead><tbody>';
   for(var i=0;i<12;i++){ var g=M.capTot[i]-M.meta[i]; h+='<tr><td>'+ROT[i]+'</td><td class="r">'+brl(M.meta[i])+'</td><td class="r">'+nf(M.deals[i],1)+'</td><td class="r">'+brl(M.churnR[i])+'</td><td class="r">'+brl(M.mrr[i])+'</td><td class="r">'+brl(M.capTot[i])+'</td><td class="r '+(g<0?'neg':'pos')+'">'+(g<0?'−':'+')+brl(Math.abs(g))+'</td></tr>'; }
   h+='</tbody></table></div><p class="small muted">Capacidade = pipeline atual ponderado + nossa base e franqueados Omie (SDR) + indicação de clientes ativos + contabilidades + e-commerce Puro + ERPs corporativos + inbound sales, com as premissas abaixo.</p></div>';
   h+=funilHTML(M);
@@ -817,7 +812,7 @@ function secInvest(M){
   h+='<div class="card"><h3>Time por ano</h3><div class="scroll"><table class="t"><thead><tr><th>Ano</th><th class="r">SDR</th><th class="r">Closer</th><th class="r">Exec. Negócios</th><th class="r">Custo do time</th><th class="r">NMRR vendido</th><th class="r">Custo por R$ de NMRR</th></tr></thead><tbody>';
   A.forEach(function(a,y){ h+='<tr><td>'+ANOS[y]+'</td><td class="r">'+hcS[y]+'</td><td class="r">'+hcC[y]+'</td><td class="r">'+hcE[y]+'</td><td class="r">'+brl(a.custo)+'</td><td class="r">'+brl(a.nmrr)+'</td><td class="r">'+nf(a.custo/a.nmrr,2)+'</td></tr>'; });
   h+='</tbody></table></div></div>';
-  h+='<div class="card"><h3>Ano 1, mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">'+(p.comissaoInclusa?'Salário + comissão c/ encargos':'Fixo c/ encargos')+'</th>'+(p.comissaoInclusa?'':'<th class="r">Comissão c/ encargos</th>')+'<th class="r">Custo do time</th><th class="r">Reuniões esperadas</th><th class="r">Contratos esperados</th><th class="r">Custo por contrato</th></tr></thead><tbody>';
+  h+='<div class="card"><h3>Mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">'+(p.comissaoInclusa?'Salário + comissão c/ encargos':'Fixo c/ encargos')+'</th>'+(p.comissaoInclusa?'':'<th class="r">Comissão c/ encargos</th>')+'<th class="r">Custo do time</th><th class="r">Reuniões esperadas</th><th class="r">Contratos esperados</th><th class="r">Custo por contrato</th></tr></thead><tbody>';
   for(var i=0;i<12;i++){ h+='<tr><td>'+ROT[i]+'</td><td class="r">'+brl(M.custoFixo[i])+'</td>'+(p.comissaoInclusa?'':'<td class="r">'+brl(M.custoVar[i])+'</td>')+'<td class="r">'+brl(M.custo[i])+'</td><td class="r">'+nf(M.reun[i],0)+'</td><td class="r">'+nf(M.deals[i],1)+'</td><td class="r">'+brl(M.custo[i]/Math.max(0.1,M.deals[i]))+'</td></tr>'; }
   h+='</tbody></table></div></div>';
   h+='<div class="tiles"><div class="tile"><span class="label">CAC no ano 1</span><span class="num">'+brl(M.cac)+'</span><span class="note">custo do time comercial ÷ contratos; o setup não abate</span></div>'+
@@ -971,10 +966,9 @@ function secMetodo(){
    '<li>SDR pleno: R$ 7 a 10 mil com variável; AE de R$ 12 a 25 mil com comissão (<a href="https://jobrise.io/pt/blog/tech-sales-brasil-sdr-ae-vagas/" target="_blank" rel="noopener">Jobrise, 2026</a>).</li>'+
    '<li>Encargos CLT fora do Simples: 1,56× a 1,9× o salário (<a href="https://valorfinal.com.br/guia/custo-funcionario" target="_blank" rel="noopener">ValorFinal</a>, <a href="https://www.contabilidadezen.com.br/blog/quanto-custa-funcionario-encargos-2026/" target="_blank" rel="noopener">Contabilidade Zen</a>). O plano usa 1,7× sobre o valor de salário + comissão, porque a comissão também gera encargos.</li></ul></div>';
   h+='<div class="card"><h3>Premissas a validar</h3><ul class="small" style="padding-left:18px;display:flex;flex-direction:column;gap:6px">'+
-   '<li>Valuation projetado mantém o múltiplo de hoje ('+nf(p.valuation/(p.mrrInicial*12),1)+'× o ARR). A tabela de sensibilidade mostra o efeito de múltiplos menores.</li>'+
-   '<li>A partir do ano 2: '+pct(p.shareInd,0)+' do NMRR via indicação, '+pct(p.shareInb,0)+' via inbound e '+pct(Math.max(0,1-p.shareInd-p.shareInb),0)+' via prospecção ativa e ERPs; '+pct(p.shareHigh,0)+' em high ticket, com ticket de '+brl(p.ticketHigh)+'.</li>'+
-   '<li>Conversões do ano 1: '+pct(p.convReuniaoVenda,0)+' de reunião em venda; '+pct(p.convIndicacao,0)+' de indicação em venda (contabilidades e bases dos franqueados); '+pct(p.convEcom,0)+' no e-commerce Puro; '+pct(p.convErp,0)+' nos ERPs corporativos, com ciclo de 2 meses.</li>'+
-   '<li>Rampa no ano 1: bases de até 8 franqueados Omie somadas à nossa base, indicação de clientes ativos subindo de 0,5 para 2 vendas/mês, 24 contabilidades (0,3 indicação/mês cada), 6 novas indicações/mês do e-commerce Puro além dos leads MeliXP, e 4 ERPs corporativos parceiros de integração (0,5 oportunidade/mês cada, prospectada e fechada pelo time comercial, sem comissão) em out/27.</li>'+
+   '<li>Time: Hugo (liderança, parceiros e fechamento) e 1 SDR, os dois operando desde agosto, sem rampa no modelo; Closer como 3ª pessoa conforme os gatilhos do funil.</li>'+
+   '<li>Conversões: '+pct(p.convReuniaoVenda,0)+' de reunião em venda; '+pct(p.convIndicacao,0)+' de indicação em venda (contabilidades e bases dos franqueados); '+pct(p.convEcom,0)+' no e-commerce Puro; '+pct(p.convErp,0)+' nos ERPs corporativos, com ciclo de 2 meses.</li>'+
+   '<li>Rampa dos canais no ano: bases de até 8 franqueados Omie somadas à nossa base, indicação de clientes ativos subindo de 0,5 para 2 vendas/mês, 24 contabilidades (0,3 indicação/mês cada), 6 novas indicações/mês do e-commerce Puro além dos leads MeliXP, e 4 ERPs corporativos parceiros de integração (0,5 oportunidade/mês cada, prospectada e fechada pelo time comercial, sem comissão) em out/27.</li>'+
    '<li>Chance de fechar e mês previsto de cada negócio do pipeline: estimados pela etapa e pelo engajamento na Carteira Comercial.</li></ul></div>';
   return h;
 }
