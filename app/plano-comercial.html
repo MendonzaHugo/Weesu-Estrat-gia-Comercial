@@ -231,7 +231,7 @@ footer{font-size:12.5px;color:var(--muted)}
 /* ---------- Premissas padrão (editáveis em Metas; ajustes ficam salvos) ---------- */
 var DEF = {
   mrrInicial:202000, clientesIniciais:50, valuation:19000000, equityPct:0.05, anosVesting:5, pagaCotas:1, prazoCotasMeses:60,
-  metaM1:15000, cresc1:0.05, cresc2:0.03, cresc3:0.02, cresc4:0.01, cresc5:0.01, churn:0.015,
+  metaM1:21000, cresc1:0, cresc2:0.03, cresc3:0.02, cresc4:0.01, cresc5:0.01, churn:0.015,
   ticketLow:3000, ticketHigh:12000, shareHigh:0.30, shareInd:0.60, shareInb:0.25, convInbound:0.20,
   setupMedio:12500, margemBruta:0.80,
   revDireta:0.20, revIndicacao:0.10, comissaoParceiro:0.10, vigenciaMeses:60,
@@ -277,7 +277,7 @@ var PREM_CAMPOS=[
 /* ---------- Ações por horizonte ---------- */
 var HORIZ=[
  {id:'m1',nome:'Próximos 30 dias',per:'até 30/11/2026',goal:'{meta1} de NMRR em novembro, quase todo do pipeline atual, e a máquina comercial rodando: CRM limpo, rituais na agenda e cadências no ar',acts:[
-  ['n1a','Fechar os negócios com chance de 80% ou mais (Delta, Tudo Limpinho, Shield, All Filmes, Be Factory, Confort Club Shoes e Mantycom) e destravar as pendências de Stoky (integração Sankhya), Casa da Laurinha (API do ERP Times) e Auto Speed (prazo do Protheus)','Hugo','NMRR ≥ R$ 15 mil','30/11'],
+  ['n1a','Fechar os negócios com chance de 80% ou mais (Delta, Tudo Limpinho, Shield, All Filmes, Be Factory, Confort Club Shoes e Mantycom) e destravar as pendências de Stoky (integração Sankhya), Casa da Laurinha (API do ERP Times) e Auto Speed (prazo do Protheus)','Hugo','NMRR ≥ R$ 21 mil','30/11'],
   ['n1k','Limpar o pipeline no CRM: atualizar as previsões vencidas (All Filmes, Confort Club Shoes e Shield), concluir as atividades antigas de 45 negócios, retomar os follow-ups atrasados desde 28/10, unificar a Mantycom duplicada e registrar as 3 propostas emitidas fora do CRM (AZP e dois sellers UpSeller)','Hugo + SDR','100% com próxima ação datada','07/11'],
   ['n1m','Levar à diretoria a tréplica do Grupo Stockfacil (indústria a R$ 1.200, 59% abaixo da Tabela B; R$ 2.200/mês nos meses 1 a 3 e R$ 2.500 depois) antes da validade de 10/11','Hugo + diretoria','Decisão registrada','10/11'],
   ['n1l','Colocar na agenda os rituais (diária, revisão semanal de pipeline, fechamento mensal) e publicar o painel de indicadores','Hugo','Rituais acontecendo','07/11'],
@@ -612,7 +612,7 @@ function secAbertura(M){
   var h='<div class="hero"><span class="label">Weesu · estratégia comercial · nov/26 a out/27</span><h2>De crescimento por indicação para <span>uma máquina de vendas previsível</span></h2>'+
    '<p>A Weesu chegou a '+k(p.mrrInicial)+' de MRR e '+p.clientesIniciais+' clientes sem uma área comercial estruturada: tudo veio de parceiros e indicações.'+(function(){ var P=preplano(); if(!P.itens.length) return ''; var nc=P.itens.filter(function(d){return !d.upsell;}).length, nu=P.itens.length-nc; return ' A operação comercial começou em agosto e, até aqui, trouxe '+nc+' clientes novos'+(nu?' e '+nu+' upsell':'')+', com '+brl(P.total)+' de NMRR. O plano parte de '+k(mrrHoje())+' de MRR e '+cliHoje()+' clientes.'; })()+' Este plano cobre os próximos 12 meses: organizar os canais que já funcionam, criar motores próprios de demanda e começar a levar a Weesu para contratos maiores.</p></div>';
   h+='<div class="tiles">'+
-   '<div class="tile"><span class="label">NMRR no ano</span><span class="num">'+k(a1.nmrr)+'</span><span class="note">'+brl(M.meta[0])+' em nov/26, '+brl(M.meta[11])+' em out/27</span></div>'+
+   '<div class="tile"><span class="label">NMRR no ano</span><span class="num">'+k(a1.nmrr)+'</span><span class="note">'+(Math.abs(M.meta[11]-M.meta[0])<1? brl(M.meta[0])+' por mês, de nov/26 a out/27' : brl(M.meta[0])+' em nov/26, '+brl(M.meta[11])+' em out/27')+'</span></div>'+
    '<div class="tile"><span class="label">Contratos no ano</span><span class="num">'+nf(a1.deals,0)+'</span><span class="note">cerca de '+nf(a1.deals/12,1)+' por mês, ticket médio de '+brl(a1.ticket)+'</span></div>'+
    '<div class="tile"><span class="label">MRR em out/27</span><span class="num">'+k(a1.mrr)+'</span><span class="note">'+nf(a1.mrr/mrrHoje(),1)+'× o atual · '+nf(a1.cli,0)+' clientes</span></div>'+
    '<div class="tile"><span class="label">Time comercial</span><span class="num">2 pessoas</span><span class="note">Hugo e 1 SDR; Closer como 3ª pessoa quando o funil pedir</span></div></div>';
@@ -620,7 +620,7 @@ function secAbertura(M){
    '<div class="callout"><h4>1. Organizar o que já funciona</h4><p>Indicação de clientes, contabilidades, e-commerce Puro e franqueados Omie passam a ter dono, regra, cadência e meta. Esses canais respondem por '+pct(a1.ind,0)+' do NMRR do ano e convertem mais com menor custo.</p></div>'+
    '<div class="callout"><h4>2. Criar motores próprios</h4><p>Prospecção ativa sobre a nossa base (157 contas Hot, depois 614) e inbound alimentado pelo marketing da Weesu, que começa do zero e chega a cerca de 15% do NMRR em out/27. É o que torna o crescimento previsível.</p></div>'+
    '<div class="callout"><h4>3. Começar a subir o ticket</h4><p>Frente high ticket com os ERPs corporativos como parceiros de integração: '+pct(hiA,0)+' do NMRR do ano, com ticket a partir de '+brl(p.ticketHigh)+'. O ticket médio dos novos contratos vai de '+brl(tri(0))+' no 1º trimestre para '+brl(tri(3))+' no 4º.</p></div></div></div>';
-  h+='<div class="card"><h3>Os pontos focais da captação<small>capacidade projetada por canal, mês a mês; a linha tracejada é a meta</small></h3>'+legend(CANAIS.map(function(c){return {nome:c.nome,cor:c.cor};}).concat([{nome:'Meta (5% ao mês)',cls:'dash'}]))+'<div class="scroll" id="chCap"></div></div>';
+  h+='<div class="card"><h3>Os pontos focais da captação<small>capacidade projetada por canal, mês a mês; a linha tracejada é a meta</small></h3>'+legend(CANAIS.map(function(c){return {nome:c.nome,cor:c.cor};}).concat([{nome:'Meta ('+(S.prem.cresc1>0?pct(S.prem.cresc1,0)+' ao mês':brl(S.prem.metaM1)+'/mês')+')',cls:'dash'}]))+'<div class="scroll" id="chCap"></div></div>';
   return h;
 }
 function afterAbertura(M){
@@ -672,7 +672,7 @@ function secCanais(M){
 
 function secMetas(M){
   var p=S.prem, A=M.anos;
-  var h='<div class="sec-head"><span class="label">Metas e funil · nov/26 a out/27</span><h2>'+brl(p.metaM1)+' de NMRR em novembro, crescendo '+pct(p.cresc1,0)+' ao mês até '+brl(M.meta[11])+' em out/27</h2><p>São '+brl(A[0].nmrr)+' de NMRR no ano e cerca de '+nf(A[0].deals,0)+' contratos. A meta é de NMRR bruto: o churn de '+pct(p.churn)+' ao mês não desconta da meta, mas entra na projeção do MRR.</p></div>';
+  var h='<div class="sec-head"><span class="label">Metas e funil · nov/26 a out/27</span><h2>'+(p.cresc1>0? brl(p.metaM1)+' de NMRR em novembro, crescendo '+pct(p.cresc1,0)+' ao mês até '+brl(M.meta[11])+' em out/27' : brl(p.metaM1)+' de NMRR por mês, de nov/26 a out/27')+'</h2><p>São '+brl(A[0].nmrr)+' de NMRR no ano e cerca de '+nf(A[0].deals,0)+' contratos. A meta é de NMRR bruto: o churn de '+pct(p.churn)+' ao mês não desconta da meta, mas entra na projeção do MRR.</p></div>';
   h+='<div class="card"><h3>Mês a mês</h3><div class="scroll"><table class="t"><thead><tr><th>Mês</th><th class="r">Meta NMRR</th><th class="r">Contratos</th><th class="r">Churn do MRR</th><th class="r">MRR final</th><th class="r">Capacidade dos canais</th><th class="r">Folga ou gap</th></tr></thead><tbody>';
   for(var i=0;i<12;i++){ var g=M.capTot[i]-M.meta[i]; h+='<tr><td>'+ROT[i]+'</td><td class="r">'+brl(M.meta[i])+'</td><td class="r">'+nf(M.deals[i],1)+'</td><td class="r">'+brl(M.churnR[i])+'</td><td class="r">'+brl(M.mrr[i])+'</td><td class="r">'+brl(M.capTot[i])+'</td><td class="r '+(g<0?'neg':'pos')+'">'+(g<0?'−':'+')+brl(Math.abs(g))+'</td></tr>'; }
   h+='</tbody></table></div><p class="small muted">Capacidade = pipeline atual ponderado + nossa base e franqueados Omie (SDR) + indicação de clientes ativos + contabilidades + e-commerce Puro + ERPs corporativos + inbound sales, com as premissas abaixo.</p></div>';
@@ -995,7 +995,7 @@ function secMetodo(){
    ['As 4 Disciplinas da Execução e OKRs','McChesney, Covey e Huling; John Doerr','Indicadores de atividade × resultado, placar visível e cadência de cobrança.']
   ];
   var p=S.prem;
-  var h='<div class="sec-head"><span class="label">Método, premissas e fontes</span><h2>Como o plano foi montado</h2><p>Meta de cima para baixo (5% ao mês sobre R$ 15 mil no ano 1) cruzada com a capacidade de baixo para cima de cada canal, e o funil reverso para traduzir a meta em atividade. O ICP e a prioridade da base vêm da análise das bases Omie, Senior e TOTVS.</p></div>';
+  var h='<div class="sec-head"><span class="label">Método, premissas e fontes</span><h2>Como o plano foi montado</h2><p>Meta de cima para baixo ('+(S.prem.cresc1>0? pct(S.prem.cresc1,0)+' ao mês sobre '+brl(S.prem.metaM1):brl(S.prem.metaM1)+' por mês, sem crescimento')+' no ano 1) cruzada com a capacidade de baixo para cima de cada canal, e o funil reverso para traduzir a meta em atividade. O ICP e a prioridade da base vêm da análise das bases Omie, Senior e TOTVS.</p></div>';
   h+='<div class="card"><h3>Referências</h3><div class="refs">'+refs.map(function(r){return '<div class="ref"><b>'+r[0]+'</b><span class="small muted">'+r[1]+'</span><span>'+r[2]+'</span></div>';}).join('')+'</div></div>';
   h+='<div class="card"><h3>Fontes dos custos de pessoal</h3><ul class="small" style="padding-left:18px;display:flex;flex-direction:column;gap:6px">'+
    '<li>Executivo de contas sênior em São Paulo: R$ 11,7 a 20,8 mil, mediana de R$ 17 mil (<a href="https://www.roberthalf.com/br/pt/vagas-detalhes/executivoa-de-contas-g/sao-paulo" target="_blank" rel="noopener">Robert Half</a>); em Belo Horizonte, mediana de R$ 15,45 mil (<a href="https://www.roberthalf.com/br/pt/vagas-detalhes/executivoa-de-contas-g/belo-horizonte" target="_blank" rel="noopener">Robert Half</a>).</li>'+
