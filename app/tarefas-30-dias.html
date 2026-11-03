@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tarefas 30 dias</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@87.5..112,500..800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#F2F5F7;--surface:#FFFFFF;--ink:#15202B;--muted:#586674;--line:#D8DFE6;--soft:#E9EEF2;--accent:#0A6C74;--accent-soft:#D9EEF0;--on-accent:#FFFFFF;--good:#1B7A4B;
+--display:"Archivo","Arial Narrow",Arial,sans-serif;--body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F151B;--surface:#172029;--ink:#E7EDF2;--muted:#9BA8B4;--line:#2B3743;--soft:#1F2A34;--accent:#55C4C0;--accent-soft:#16383B;--on-accent:#0B1A1C;--good:#63C892;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F151B;--surface:#172029;--ink:#E7EDF2;--muted:#9BA8B4;--line:#2B3743;--soft:#1F2A34;--accent:#55C4C0;--accent-soft:#16383B;--on-accent:#0B1A1C;--good:#63C892;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+h1,h2,p,ol{margin:0}
+.wrap{max-width:880px;margin:0 auto;padding:28px 16px 56px;display:flex;flex-direction:column;gap:20px}
+.top{display:flex;flex-direction:column;gap:8px}
+.eyebrow{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:800;font-stretch:88%;font-size:clamp(26px,5vw,36px);line-height:1.06;text-wrap:balance}
+h1 span{color:var(--accent)}
+.lead{font-size:15.5px;max-width:70ch}
+.resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.resumo div{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.resumo b{font-family:var(--display);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.resumo small{font-size:12.5px;color:var(--muted)}
+.prog{height:6px;background:var(--soft);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.barra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn{border:1px solid var(--accent);background:none;color:var(--accent);border-radius:4px;padding:6px 14px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+.grupo{display:flex;flex-direction:column;gap:10px}
+.grupo h2{display:flex;align-items:baseline;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.data{font-family:var(--display);font-weight:800;font-stretch:90%;font-size:20px}
+.cont{font-size:13px;color:var(--muted);font-weight:500}
+.lista{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+.tarefa label{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px;cursor:pointer}
+.tarefa input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--accent)}
+.corpo{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tema{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.txt{font-size:14.5px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:12.5px;color:var(--muted)}
+.meta b{font-weight:600;color:var(--ink);margin-right:4px}
+.tarefa.feita .txt{text-decoration:line-through;color:var(--muted)}
+.tarefa[hidden]{display:none}
+footer{font-size:12.5px;color:var(--muted)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:560px){.resumo{grid-template-columns:minmax(0,1fr)}}
+@media print{@page{size:A4;margin:14mm}html,body{background:#fff}.barra,.prog{display:none}.wrap{padding:0;max-width:none}.tarefa label{break-inside:avoid;border-color:#bbb}.grupo h2{break-after:avoid}}
+</style></head><body>
+<main class="wrap">
+ <header class="top">
+  <span class="eyebrow">Plano Comercial Weesu · Execução</span>
+  <h1>Tarefas dos <span>próximos 30 dias</span></h1>
+  <p class="lead">Até 30/11/2026: R$ 15 mil de NMRR em novembro, quase todo vindo do pipeline atual, e a máquina comercial rodando, com CRM limpo, rituais na agenda e cadências no ar.</p>
+ </header>
+ <div class="resumo">
+  <div><span class="eyebrow">Tarefas</span><b>14</b><small>em 4 prazos, de 07/11 a 30/11</small></div>
+  <div><span class="eyebrow">Meta de novembro</span><b>R$ 15 mil</b><small>de NMRR; pipeline ponderado do mês de R$ 49,6 mil</small></div>
+  <div><span class="eyebrow">Concluídas</span><b id="feitas">0 de 14</b><small>marcação salva só neste navegador</small></div>
+ </div>
+ <div class="prog" aria-hidden="true"><i id="barra"></i></div>
+ <div class="barra">
+  <div class="chips" role="group" aria-label="Filtrar por responsável"><button class="chip" data-f="" aria-pressed="true">Todos</button><button class="chip" data-f="hugo" aria-pressed="false">Hugo</button><button class="chip" data-f="sdr" aria-pressed="false">SDR</button><button class="chip" data-f="sócio|diretoria" aria-pressed="false">Sócios e diretoria</button><button class="chip" data-f="marketing" aria-pressed="false">Marketing</button></div>
+  <button class="btn" onclick="window.print()">Imprimir</button>
+ </div>
+ <section class="grupo"><h2><span class="data">Até 07/11</span><span class="cont">2 tarefas</span></h2><ol class="lista"><li class="tarefa" data-id="n1k" data-quem="Hugo + SDR"><label><input type="checkbox" data-id="n1k"><span class="corpo"><span class="tema">CRM e gestão</span><span class="txt">Limpar o pipeline no CRM: atualizar as previsões vencidas (All Filmes, Confort Club Shoes e Shield), concluir as atividades antigas de 45 negócios, retomar os follow-ups atrasados desde 28/10, unificar a Mantycom duplicada e registrar as 3 propostas emitidas fora do CRM (AZP e dois sellers UpSeller)</span><span class="meta"><span><b>Responsável</b> Hugo + SDR</span><span><b>Indicador</b> 100% com próxima ação datada</span></span></span></label></li><li class="tarefa" data-id="n1l" data-quem="Hugo"><label><input type="checkbox" data-id="n1l"><span class="corpo"><span class="tema">CRM e gestão</span><span class="txt">Colocar na agenda os rituais (diária, revisão semanal de pipeline, fechamento mensal) e publicar o painel de indicadores</span><span class="meta"><span><b>Responsável</b> Hugo</span><span><b>Indicador</b> Rituais acontecendo</span></span></span></label></li></ol></section><section class="grupo"><h2><span class="data">Até 10/11</span><span class="cont">1 tarefa</span></h2><ol class="lista"><li class="tarefa" data-id="n1m" data-quem="Hugo + diretoria"><label><input type="checkbox" data-id="n1m"><span class="corpo"><span class="tema">Fechamento</span><span class="txt">Levar à diretoria a tréplica do Grupo Stockfacil (indústria a R$ 1.200, 59% abaixo da Tabela B; R$ 2.200/mês nos meses 1 a 3 e R$ 2.500 depois) antes da validade de 10/11</span><span class="meta"><span><b>Responsável</b> Hugo + diretoria</span><span><b>Indicador</b> Decisão registrada</span></span></span></label></li></ol></section><section class="grupo"><h2><span class="data">Até 15/11</span><span class="cont">4 tarefas</span></h2><ol class="lista"><li class="tarefa" data-id="n1c" data-quem="Sócios + comercial"><label><input type="checkbox" data-id="n1c"><span class="corpo"><span class="tema">CRM e gestão</span><span class="txt">Aprovar a política comercial: piso de setup, alçada de desconto, regra de canal (quem originou o cliente) e as lacunas da tabela de preços (Hub para sellers, locação padrão de coletor, custo interno de implantação e integração de ERP fora do operador logístico)</span><span class="meta"><span><b>Responsável</b> Sócios + comercial</span><span><b>Indicador</b> Política publicada</span></span></span></label></li><li class="tarefa" data-id="n1d" data-quem="SDR"><label><input type="checkbox" data-id="n1d"><span class="corpo"><span class="tema">Prospecção</span><span class="txt">Subir a Onda 1 da nossa base (157 contas Hot de TOTVS, Omie e Senior) com cadência por ERP e roteiro por frente (pronta × diagnóstico)</span><span class="meta"><span><b>Responsável</b> SDR</span><span><b>Indicador</b> 157 contas em cadência</span></span></span></label></li><li class="tarefa" data-id="n1g" data-quem="SDR + Hugo"><label><input type="checkbox" data-id="n1g"><span class="corpo"><span class="tema">Prospecção</span><span class="txt">MeliXP: registrar o desfecho das apresentações com data passada, convidar os 18 que responderam e ligar para os 11 tier A sem resposta</span><span class="meta"><span><b>Responsável</b> SDR + Hugo</span><span><b>Indicador</b> +6 apresentações</span></span></span></label></li><li class="tarefa" data-id="n1i" data-quem="Hugo + Weesu (marketing)"><label><input type="checkbox" data-id="n1i"><span class="corpo"><span class="tema">Canais</span><span class="txt">Lançar o programa de indicação de clientes ativos: convite aos clientes, regra do benefício e formulário de indicação</span><span class="meta"><span><b>Responsável</b> Hugo + Weesu (marketing)</span><span><b>Indicador</b> Programa lançado</span></span></span></label></li></ol></section><section class="grupo"><h2><span class="data">Até 30/11</span><span class="cont">7 tarefas</span></h2><ol class="lista"><li class="tarefa" data-id="n1a" data-quem="Hugo"><label><input type="checkbox" data-id="n1a"><span class="corpo"><span class="tema">Fechamento</span><span class="txt">Fechar os negócios com chance de 80% ou mais (Delta, Tudo Limpinho, Shield, All Filmes, Be Factory, Confort Club Shoes e Mantycom) e destravar as pendências de Stoky (integração Sankhya), Casa da Laurinha (API do ERP Times) e Auto Speed (prazo do Protheus)</span><span class="meta"><span><b>Responsável</b> Hugo</span><span><b>Indicador</b> NMRR ≥ R$ 15 mil</span></span></span></label></li><li class="tarefa" data-id="n1n" data-quem="SDR + Hugo"><label><input type="checkbox" data-id="n1n"><span class="corpo"><span class="tema">Prospecção</span><span class="txt">Qualificar antes de agendar: das 64 perdas dos últimos 60 dias, 18 foram desqualificação (sem CNPJ, duplicado, fora do perfil) e 11 pararam de responder. Checar CNPJ, ERP e pedidos/mês no primeiro contato e manter cadência de reengajamento depois da proposta</span><span class="meta"><span><b>Responsável</b> SDR + Hugo</span><span><b>Indicador</b> Desqualificados &lt; 15% das perdas</span></span></span></label></li><li class="tarefa" data-id="n1o" data-quem="Hugo"><label><input type="checkbox" data-id="n1o"><span class="corpo"><span class="tema">Prospecção</span><span class="txt">Revisitar as contas perdidas por preço ou que pararam de responder depois da proposta com a Tabela B (indústrias e distribuidoras) e o combo Omie ERP + Weesu Hub + Seenc WMS</span><span class="meta"><span><b>Responsável</b> Hugo</span><span><b>Indicador</b> 10 contas revisitadas</span></span></span></label></li><li class="tarefa" data-id="n1e" data-quem="SDR + Hugo"><label><input type="checkbox" data-id="n1e"><span class="corpo"><span class="tema">Prospecção</span><span class="txt">Obter as bases de outros franqueados Omie e somá-las à nossa base, com a mesma cadência de prospecção</span><span class="meta"><span><b>Responsável</b> SDR + Hugo</span><span><b>Indicador</b> Bases importadas no CRM</span></span></span></label></li><li class="tarefa" data-id="n1f" data-quem="Hugo"><label><input type="checkbox" data-id="n1f"><span class="corpo"><span class="tema">Canais</span><span class="txt">Reativar as contabilidades parceiras que já conhecemos pela Omie, com kit de indicação</span><span class="meta"><span><b>Responsável</b> Hugo</span><span><b>Indicador</b> 2 contabilidades ativas</span></span></span></label></li><li class="tarefa" data-id="n1j" data-quem="Weesu (marketing) + SDR"><label><input type="checkbox" data-id="n1j"><span class="corpo"><span class="tema">Canais</span><span class="txt">Montar com o marketing da Weesu a frente de inbound: ICP, oferta de diagnóstico gratuito da operação, landing page, formulário ligado ao CRM e retorno do SDR em até 1 hora útil</span><span class="meta"><span><b>Responsável</b> Weesu (marketing) + SDR</span><span><b>Indicador</b> Formulário no CRM</span></span></span></label></li><li class="tarefa" data-id="n1h" data-quem="Hugo + sócios"><label><input type="checkbox" data-id="n1h"><span class="corpo"><span class="tema">Canais</span><span class="txt">Abrir conversa com os canais de Sankhya, Senior e TOTVS para a frente high ticket</span><span class="meta"><span><b>Responsável</b> Hugo + sócios</span><span><b>Indicador</b> 2 conversas abertas</span></span></span></label></li></ol></section>
+ <footer>Fonte: Plano 30/90/180 do painel comercial, com o retrato do CRM de 03/11/2026. O acompanhamento oficial das ações continua no painel.</footer>
+</main>
+<script>
+(function(){
+ var K='weesu-tarefas-30d', st={};
+ try{ st=JSON.parse(localStorage.getItem(K)||'{}')||{}; }catch(e){ st={}; }
+ var boxes=[].slice.call(document.querySelectorAll('input[type=checkbox]')), total=boxes.length;
+ function upd(){ var n=0; boxes.forEach(function(b){ var li=b.closest('.tarefa'); li.classList.toggle('feita',b.checked); if(b.checked) n++; });
+  document.getElementById('feitas').textContent=n+' de '+total; document.getElementById('barra').style.width=(n/total*100)+'%'; }
+ boxes.forEach(function(b){ b.checked=!!st[b.dataset.id]; b.addEventListener('change',function(){ st[b.dataset.id]=b.checked; try{ localStorage.setItem(K,JSON.stringify(st)); }catch(e){} upd(); }); });
+ upd();
+ var chips=[].slice.call(document.querySelectorAll('.chip'));
+ chips.forEach(function(c){ c.addEventListener('click',function(){ var f=c.dataset.f; chips.forEach(function(x){ x.setAttribute('aria-pressed',x===c?'true':'false'); });
+  document.querySelectorAll('.tarefa').forEach(function(li){ var q=li.dataset.quem.toLowerCase(); li.hidden=!!f&&!f.split('|').some(function(x){ return q.indexOf(x)>=0; }); });
+  document.querySelectorAll('.grupo').forEach(function(g){ g.hidden=!g.querySelector('.tarefa:not([hidden])'); }); }); });
+})();
+</script></body></html>
