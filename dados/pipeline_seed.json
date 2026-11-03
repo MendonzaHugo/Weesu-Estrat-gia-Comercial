@@ -2161,22 +2161,6 @@
   "id": "stoky"
  },
  {
-  "etapa": "Fechado em agosto/2026",
-  "mes": "2026-08",
-  "mrr": 2900,
-  "noMrrInicial": false,
-  "nome": "Sul Distribuidora",
-  "preplano": true,
-  "prob": 1,
-  "produto": "Seenc WMS + Weesu Hub",
-  "segmento": "Fechado em ago/26",
-  "situacao": "Cliente",
-  "status": "ganho",
-  "tom": "good",
-  "upsell": false,
-  "id": "suldistribuidora"
- },
- {
   "crm": "2026-11-03",
   "etapa": "Diagnóstico",
   "mes": "2027-07",
